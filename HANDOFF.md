@@ -154,8 +154,8 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.sh)
 
-- Generated: 2026-10-27T17:54
-- Branch: `claude/practical-clarke-t5uwrc`; last commit: `7332098 UI redesign and usability: my-work home, search, badges, boards, timeline`
+- Generated: 2026-10-27T17:58
+- Branch: `claude/practical-clarke-t5uwrc`; last commit: `f1de3c3 Nightly run in batches: flat memory for large networks (NFR-01)`
 - Tests collected: 100 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
@@ -163,13 +163,13 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 
 ### Graph summary
 
-- 2190 nodes · 5177 edges · 134 communities (121 shown, 13 thin omitted)
-- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 283 edges (avg confidence: 0.93)
+- 2192 nodes · 5181 edges · 126 communities (113 shown, 13 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 285 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
 1. `Caller` - 127 edges
-2. `Requirements` - 70 edges
+2. `Requirements` - 72 edges
 3. `login()` - 56 edges
 4. `audit()` - 43 edges
 5. `t()` - 42 edges

@@ -154,9 +154,33 @@ Setting up a real bot:
 
 ```bash
 cd backend
-../.venv/bin/python -m pytest -q          # 91 tests, about 6 minutes
+../.venv/bin/python -m pytest -q          # 100 tests, about 8 minutes
 ../.venv/bin/python -m pytest -m e2e -q   # browser tests (Chromium)
 ../.venv/bin/python ../scripts/e2e_use_cases.py   # the 68-check run of section 2; screenshots in .data/e2e_use_cases/
 ```
 
 With your own passwords: `VG_PASSWORDS_FILE=/path/outside/repo/passwords.json` (a JSON object of user to password).
+
+## 7. Second round (after the review): what was added and rechecked
+
+| Item | Status | Where |
+| --- | --- | --- |
+| Route planner | Done: visiting order (within 15% of the best order, 3% on average, on random sets of six stops), phone route card with Navigate, supervisor map | `agents/route.py`, `GET /route`, `tests/test_route.py` |
+| Weekly manager summary | Done: page, PDF, Monday message | `service/digest.py`, `GET /weekly`, `tests/test_digest.py` |
+| Usability | Done: "my work" home and badges, global ID search, help on every figure, top-10 suspects, case stepper and icon timeline, cases board, phone bottom tabs | `service/work.py`, `web/src` |
+| UI redesign | Done to `docs/UI_UX_DESIGN_REQUIREMENTS.md` (tokens, Inter, icons, KPI sparklines, score rings, sign-in page, dark mode); no sideways scrolling at 360 px on any page | `web/src` |
+| 100,000 meters (NFR-01) | Batched run: peak memory 2.8 GB at 6,458 homes (was 8.4 GB) and 3.1 GB at 13,088 homes, 219 s, same results as one batch; extrapolated 100,000 meters is about 30 min | `service/pipeline.py`, `tests/test_pipeline_batches.py` |
+| Power BI | Prepared: theme, DAX measures, build prompt for Claude on the laptop; the `.pbix` needs Power BI Desktop on Windows | `powerbi/` |
+| Bugs found this round | Chat buttons stayed pressable after a decision made on the case page; the route card hid the case links on the phone; dark-mode menu contrast; phone tab bar layout; "1 stops" | Fixed, with tests where the behaviour is server-side |
+
+**Alignment recheck.**
+- Every addition keeps the SRS and SDD rules: role and region limits, masking, audit, risk-only wording,
+  people decide, and messages hold a case ID and link only.
+- It is listed in `DEVIATIONS.md` ("Additions after the R0 review").
+- The one new outward flow is the Navigate buttons, which hand coordinates to Google Maps or Waze when an
+  inspector taps them. This is flagged there for TNB to decide in R1.
+
+**Final run (second round):**
+- 100 non-browser tests pass;
+- 3 browser tests pass;
+- the end-to-end use-case run passes 68 of 68 checks on the redesigned app.

@@ -116,7 +116,7 @@ shows that the voltage locator works on physics-consistent data, not on TNB mete
 python3 -m venv .venv && .venv/bin/pip install -r backend/requirements.txt
 cd backend
 ../.venv/bin/python -m voltguard train-models   # pattern model + autoencoder (under a minute)
-../.venv/bin/python -m pytest                    # 91 tests, named after SRS IDs; DB tests start a throwaway PostgreSQL
+../.venv/bin/python -m pytest                    # 100 tests, named after SRS IDs; DB tests start a throwaway PostgreSQL
 ../.venv/bin/python -m pytest -m e2e             # 3 browser tests: demo steps 1-7, page speed, the inspector app (needs Node, Chromium)
 ../.venv/bin/python ../scripts/e2e_use_cases.py  # 68 browser checks: every use case from every account (docs/REVIEW_AND_TEST_REPORT.md)
 ../.venv/bin/python -m tests.local_stack --cases # whole stack without Docker: web on :4173 (Linux, PostgreSQL 16 binaries)

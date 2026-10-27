@@ -45,3 +45,13 @@ later change wires them in.
 | Language model drafts the report | Facts, reasons, notes and citations are filled from the database by template; the model writes only the assessment paragraph (`REPORT_MODE=live`), pre-drafted at setup (`predrafted`) or from a template (`mock`) | A 4-bit 7B model on a laptop CPU is slow, and facts must never depend on generation |
 | Chatbot query service | Fixed, whitelisted read-only query templates; the model (if any) only picks a template and its parameters | No model-written SQL reaches the database |
 | Public legal texts for RAG | Not copied into the repository; `scripts/fetch_docs.py` downloads them when a verified URL is set, otherwise prints manual steps. Until loaded, legal questions return "not found" and reports cite Section 37 by name only | No invented or unverified legal text |
+
+## Additions after the R0 review (not in the SDD)
+
+| Addition | What it does | Rule kept |
+| --- | --- | --- |
+| Telegram dispatch bot with buttons (`service/telegram.py`) | Supervisor approves or rejects suggestions; team accepts, says it is on the way, or cannot attend; works without a token as an in-app chat | Messages carry a case ID and link only; each press runs as the linked person with their role and region, is audited and answers a message once |
+| Route planner (`agents/route.py`) | Visiting order of a team's cases with distances and arrival estimates | Locations only through `vg_case_contact`; no routing service is called. The Google Maps / Waze buttons send the destination coordinates (never a name or address) to that app when the inspector taps them. TNB may prefer its own navigation app (open issue for R1) |
+| Weekly summary (`service/digest.py`) | Region page, PDF and a Monday message to managers and supervisors | Zone-level figures and case counts only; value at risk stays a `[TNB tariff: to be supplied]` placeholder |
+| "My work" home and badges (`service/work.py`) | Next actions per role | Reads through the caller's own connection, so role and region rules apply |
+| Batched nightly run (`service/pipeline.py`) | Readings in meter batches, detection in zone batches | Same results as one batch (tested); validation still stops the run on errors |
