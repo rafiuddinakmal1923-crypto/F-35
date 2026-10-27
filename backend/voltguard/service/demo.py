@@ -7,7 +7,6 @@ the test accounts and the demo kit, runs detection once and pre-warms the models
 
 from __future__ import annotations
 
-import os
 import time
 
 from voltguard import auth, config, db
@@ -90,7 +89,7 @@ def prewarm() -> list[str]:
 
 
 def print_script(passwords: dict[str, str]) -> None:
-    base = os.environ.get("PUBLIC_BASE_URL") or "http://localhost:8080"
+    base = config.public_base_url()
     print("\n" + "=" * 78)
     print(f"VoltGuard AI demo ready. Desktop: {base}   Phone (inspector app): {base}/#/field")
     print("=" * 78)

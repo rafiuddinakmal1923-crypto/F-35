@@ -59,7 +59,8 @@ services:
   proxy:
     image: caddy:2.9.1
     ports:
-      - "8080:80"
+      # WEB_PORT in .env if another program already uses 8080
+      - "${WEB_PORT:-8080}:80"
     volumes:
       - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
     depends_on:

@@ -104,7 +104,7 @@ switch ($Target) {
         python -m venv .venv; .\.venv\Scripts\pip install -r backend\requirements.txt }
     "build" { # Build the containers
         docker compose build }
-    "up" { # Start the lite profile on http://localhost:8080
+    "up" { # Start the lite profile on http://localhost:8080 (WEB_PORT in .env)
         docker compose up -d }
     "down" { # Stop everything (data is kept)
         docker compose down }

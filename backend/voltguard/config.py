@@ -70,7 +70,7 @@ def jwt_secret() -> str:
 
 
 def public_base_url() -> str:
-    return _env("PUBLIC_BASE_URL", "http://localhost:8080").rstrip("/")
+    return _env("PUBLIC_BASE_URL", f"http://localhost:{_env('WEB_PORT', '8080')}").rstrip("/")
 
 
 @lru_cache(maxsize=None)

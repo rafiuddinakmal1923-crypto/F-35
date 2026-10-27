@@ -6,5 +6,5 @@ tunnel: voltguard
 credentials-file: /etc/cloudflared/<TUNNEL_ID>.json     # keep the JSON out of git
 ingress:
   - hostname: <TUNNEL_HOSTNAME>
-    service: http://localhost:8080                     # the proxy service only
+    service: http://proxy:80                           # the proxy service only (inside the compose network)
   - service: http_status:404
