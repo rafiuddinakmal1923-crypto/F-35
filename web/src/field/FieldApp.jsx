@@ -44,6 +44,31 @@ function SignIn({ onSignedIn, notice }) {
   );
 }
 
+function AskBox({ token }) {
+  const [q, setQ] = useState("");
+  const [answer, setAnswer] = useState(null);
+  async function ask(e) {
+    e.preventDefault();
+    try {
+      setAnswer(await call(token, "/agents/chat", { method: "POST", body: { agent: "field", message: q } }));
+    } catch (err) {
+      setAnswer({ answer: err instanceof TypeError ? "The assistant needs a connection." : err.message, sources: [] });
+    }
+  }
+  return (
+    <form className="card stack" onSubmit={ask}>
+      <h2>{t("assistant")}</h2>
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="What should I photograph at the meter board?" maxLength={1000} />
+      <button type="submit" disabled={!q.trim()}>Ask</button>
+      {answer ? (
+        <div className="notice">{answer.answer}
+          {answer.sources?.length ? <ol>{answer.sources.map((s, i) => <li key={i}><small>{s.title}{s.section ? `, ${s.section}` : ""}</small></li>)}</ol> : null}
+        </div>
+      ) : null}
+    </form>
+  );
+}
+
 function OutcomeForm({ item, onSaved }) {
   const [outcome, setOutcome] = useState(null);
   const [notes, setNotes] = useState("");
@@ -225,6 +250,7 @@ export default function FieldApp() {
             </a>
           )) : <p className="muted">No assigned cases on this phone.</p>}
           <p><small>{t("wipeNotice")}</small></p>
+          <AskBox token={session.token} />
         </div>
       )}
     </div>

@@ -9,10 +9,10 @@ cited in code but no dedicated test yet; **open** = not implemented yet.
 
 | Priority | tested | code | open |
 | --- | --- | --- | --- |
-| Must | 21 | 3 | 2 |
-| Should | 12 | 0 | 3 |
-| Could | 0 | 1 | 3 |
-| NFR | 3 | 3 | 10 |
+| Must | 23 | 2 | 1 |
+| Should | 14 | 0 | 1 |
+| Could | 2 | 1 | 1 |
+| NFR | 4 | 2 | 10 |
 
 ## Requirements
 
@@ -45,7 +45,7 @@ cited in code but no dedicated test yet; **open** = not implemented yet.
 | FR-UI-02 | Must | Provide a zone view: energy balance over time, hourly gap profile, ranked suspects, nei... | tested | `backend/voltguard/api/routes_zones.py`<br>`web/src/pages/Zone.jsx` | `test_FR_UI_02_zone_view_balance_and_profile` |
 | FR-UI-03 | Must | Provide a premise view: reasons, usage vs. similar homes, neighbour voltage, account co... | tested | `backend/voltguard/api/routes_zones.py`<br>`web/src/pages/Premise.jsx` | `test_FR_UI_03_details_masked_before_a_case_opens`<br>`test_FR_UI_03_details_only_for_case_roles`<br>`test_FR_UI_03_unclaimed_case_masked_for_every_analyst` |
 | FR-UI-04 | Should | Filter all views by district and date range | tested | `backend/voltguard/api/routes_zones.py`<br>`web/src/pages/Overview.jsx` | `test_FR_UI_04_district_filter` |
-| FR-UI-05 | Should | Export an approved case report as PDF, with personal details added by the system at export | open |  |  |
+| FR-UI-05 | Should | Export an approved case report as PDF, with personal details added by the system at export | tested | `backend/voltguard/agents/report.py`<br>`backend/voltguard/pdf.py` | `test_FR_AG_01_FR_UI_05_two_approvals_then_pdf_with_details` |
 | FR-IW-01 | Must | Create cases automatically for premises above the case threshold (a separate job that r... | tested | `backend/voltguard/api/routes_cases.py`<br>`backend/voltguard/service/cases.py` | `test_FR_IW_01_case_job_creates_threshold_cases`<br>`test_FR_IW_01_manual_cases_and_only_supervisor_assigns` |
 | FR-IW-02 | Must | Let an inspector record the outcome (Confirmed theft, False alarm, Inconclusive, No acc... | tested | `backend/voltguard/api/routes_cases.py`<br>`backend/voltguard/service/cases.py`<br>`web/src/field/FieldApp.jsx` | `test_FR_IW_02_03_04_outcomes_status_and_labels` |
 | FR-IW-03 | Must | Track case status: New, Assigned, Visited, Reporting, Closed. False alarm or Inconclusi... | code | `backend/voltguard/api/routes_cases.py`<br>`backend/voltguard/service/cases.py` |  |
@@ -54,12 +54,12 @@ cited in code but no dedicated test yet; **open** = not implemented yet.
 | FR-ML-01 | Should | Retrain the scoring model on new labels at least weekly, with each version recorded | open |  |  |
 | FR-ML-02 | Must | Report hit rate and precision for each model version, separately for model-ranked and r... | open |  |  |
 | FR-ML-03 | Could | Alert the data team to missing data or changes in model behaviour (drift) | open |  |  |
-| FR-AG-01 | Must | Draft a case report with evidence charts, reasons and relevant legal provisions, using ... | open |  |  |
+| FR-AG-01 | Must | Draft a case report with evidence charts, reasons and relevant legal provisions, using ... | tested | `backend/voltguard/agents/report.py` | `test_FR_AG_01_FR_UI_05_two_approvals_then_pdf_with_details`<br>`test_FR_AG_01_draft_has_placeholders_only_and_cites_the_act` |
 | FR-AG-02 | Must | Suggest the nearest on-duty team for a new case, send reminders when overdue, and escal... | tested | `backend/voltguard/agents/dispatch.py`<br>`backend/voltguard/api/routes_cases.py`<br>`backend/voltguard/service/scheduler.py` | `test_FR_AG_02_dispatch_suggestion_claim_and_approval`<br>`test_FR_AG_02_reminder_then_escalation_on_demo_timers` |
-| FR-AG-03 | Could | Answer managers' numeric questions through the API's read-only query service, limited t... | open |  |  |
-| FR-AG-04 | Could | Answer inspectors' procedure questions from approved documents, with the source cited | open |  |  |
-| FR-AG-05 | Should | Show the three most similar past cases and their outcomes for each new case | open |  |  |
-| FR-AG-06 | Must | Never disconnect supply, contact customers, or contact external agencies on its own | code | `backend/voltguard/agents/dispatch.py` |  |
+| FR-AG-03 | Could | Answer managers' numeric questions through the API's read-only query service, limited t... | tested | `backend/voltguard/agents/chatbot.py`<br>`web/src/pages/Assistant.jsx` | `test_FR_AG_03_chatbot_answers_with_query_and_refuses_other_region` |
+| FR-AG-04 | Could | Answer inspectors' procedure questions from approved documents, with the source cited | tested | `backend/voltguard/agents/rag.py`<br>`web/src/pages/Assistant.jsx` | `test_FR_AG_04_field_assistant_cites_or_says_not_found` |
+| FR-AG-05 | Should | Show the three most similar past cases and their outcomes for each new case | tested | `backend/voltguard/agents/rag.py` | `test_FR_AG_05_three_similar_closed_cases` |
+| FR-AG-06 | Must | Never disconnect supply, contact customers, or contact external agencies on its own | tested | `backend/voltguard/agents/dispatch.py`<br>`backend/voltguard/agents/guardrails.py` | `test_FR_AG_06_no_tools_to_act_and_requests_refused` |
 | FR-AD-01 | Must | Restrict every view and action by role and region (see 2.2), enforced in the API; dashb... | tested | `backend/voltguard/api/deps.py`<br>`backend/voltguard/api/routes_auth.py`<br>`backend/voltguard/db.py`<br>`web/src/App.jsx` | `test_FR_AD_01_database_enforces_region_and_pii_rules`<br>`test_FR_AD_01_role_and_region_refusals` |
 | FR-AD-02 | Must | Log every case view, assignment, outcome, export and agent action with user and time, i... | tested | `backend/voltguard/api/routes_admin.py`<br>`backend/voltguard/audit.py`<br>`backend/voltguard/db.py`<br>`web/src/pages/Audit.jsx` | `test_FR_AD_02_NFR_12_audit_logged_and_tampering_detected` |
 | FR-AD-03 | Should | Let admins change thresholds and weights without code changes | tested | `backend/voltguard/api/routes_admin.py`<br>`backend/voltguard/config.py`<br>`backend/voltguard/service/settings.py`<br>`web/src/pages/Settings.jsx` | `test_FR_AD_03_threshold_change_applies_on_rerun` |
@@ -77,5 +77,5 @@ cited in code but no dedicated test yet; **open** = not implemented yet.
 | NFR-12 | NFR | Auditability: Each audit row stores its own hash and the previous row's; the latest has... | tested | `backend/voltguard/api/routes_admin.py`<br>`backend/voltguard/audit.py`<br>`backend/voltguard/db.py`<br>`backend/voltguard/service/scheduler.py` (+1) | `test_FR_AD_02_NFR_12_audit_logged_and_tampering_detected` |
 | NFR-13 | NFR | Usability: The inspector view works on a phone screen; labels in English and Bahasa Melayu | code | `web/src/field/FieldApp.jsx`<br>`web/src/i18n.js` |  |
 | NFR-14 | NFR | Maintainability: All services run in containers; models and data versions are recorded | open |  |  |
-| NFR-15 | NFR | AI safety: Agent answers come only from retrieved documents or database results, cite t... | code | `backend/voltguard/agents/scrubber.py` |  |
+| NFR-15 | NFR | AI safety: Agent answers come only from retrieved documents or database results, cite t... | tested | `backend/voltguard/agents/guardrails.py`<br>`backend/voltguard/agents/llm.py`<br>`backend/voltguard/agents/rag.py`<br>`backend/voltguard/agents/scrubber.py` | `test_NFR_15_every_planted_detail_scrubbed_from_seeded_notes`<br>`test_NFR_15_model_never_receives_personal_details`<br>`test_NFR_15_model_output_with_personal_details_is_blocked`<br>`test_NFR_15_planted_instruction_in_retrieved_text_is_data` |
 | NFR-16 | NFR | Device security: The inspector app keeps only assigned cases on the phone, encrypted; w... | tested | `backend/voltguard/api/deps.py`<br>`backend/voltguard/api/routes_auth.py`<br>`backend/voltguard/auth.py`<br>`web/src/field/FieldApp.jsx` (+1) | `test_NFR_16_remote_sign_out` |

@@ -8,8 +8,8 @@ recognisers always run:
 * addresses: No., Lot, Jalan/Jln, Lorong/Lrg, Taman/Tmn, Kampung/Kg, Persiaran, Bandar and
   5-digit postcodes
 * the case's own holder name and address from the restricted table (`known`), word by word
-When Presidio and its spaCy model are installed, its PERSON/LOCATION/EMAIL/PHONE results are
-added on top. The output never contains the removed values, only typed placeholders.
+When Presidio and a spaCy model are installed, its PERSON/EMAIL/PHONE results are added on top
+(no model is downloaded at runtime). The output never contains the removed values, only typed placeholders.
 """
 
 from __future__ import annotations
@@ -57,8 +57,12 @@ _presidio = None
 _presidio_tried = False
 
 
+PRESIDIO_ENTITIES = ["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER"]   # Malaysian addresses: the custom recognisers above
+PSEUDONYM = re.compile(r"\b(?:TX|P|MTR|C|R|H|AE|T)-[A-Z0-9-]+\b")   # VoltGuard's own IDs are not personal details
+
+
 def _presidio_analyzer():
-    """Presidio with its spaCy model, if installed (optional; regexes always run)."""
+    """Presidio with an installed spaCy model (en_core_web_sm, else _lg); never downloads one at runtime."""
     global _presidio, _presidio_tried
     if _presidio_tried:
         return _presidio
@@ -66,12 +70,23 @@ def _presidio_analyzer():
     if os.environ.get("PRESIDIO", "auto") == "off":
         return None
     try:
+        import spacy.util
         from presidio_analyzer import AnalyzerEngine
+        from presidio_analyzer.nlp_engine import NlpEngineProvider
 
-        _presidio = AnalyzerEngine()
+        wanted = [m for m in (os.environ.get("PRESIDIO_MODEL", "en_core_web_sm"), "en_core_web_sm", "en_core_web_lg") if spacy.util.is_package(m)]
+        if not wanted:
+            return None
+        engine = NlpEngineProvider(nlp_configuration={"nlp_engine_name": "spacy",
+                                                      "models": [{"lang_code": "en", "model_name": wanted[0]}]}).create_engine()
+        _presidio = AnalyzerEngine(nlp_engine=engine, supported_languages=["en"])
     except Exception:
         _presidio = None
     return _presidio
+
+
+def engine() -> str:
+    return "presidio + Malaysian recognisers" if _presidio_analyzer() is not None else "Malaysian recognisers (regex)"
 
 
 def _known_patterns(known: list[str]) -> list[re.Pattern]:
@@ -83,7 +98,8 @@ def _known_patterns(known: list[str]) -> list[re.Pattern]:
     return [re.compile(rf"\b{re.escape(w)}\b", re.IGNORECASE) for w in sorted(words, key=len, reverse=True)]
 
 
-def scrub(text: str | None, known: list[str] | None = None) -> ScrubResult:
+def scrub(text: str | None, known: list[str] | None = None, presidio: bool = True) -> ScrubResult:
+    """presidio=False runs only the Malaysian recognisers (for templated text whose free parts were checked already)."""
     if not text:
         return ScrubResult(text or "")
     spans: list[tuple[int, int, str]] = []
@@ -91,10 +107,15 @@ def scrub(text: str | None, known: list[str] | None = None) -> ScrubResult:
         spans += [(m.start(), m.end(), kind) for m in pattern.finditer(text)]
     for pattern in _known_patterns(known or []):
         spans += [(m.start(), m.end(), "NAME") for m in pattern.finditer(text)]
-    analyzer = _presidio_analyzer()
+    analyzer = _presidio_analyzer() if presidio else None
     if analyzer is not None:
-        for r in analyzer.analyze(text=text, language="en", entities=["PERSON", "LOCATION", "EMAIL_ADDRESS", "PHONE_NUMBER"]):
-            if r.score >= 0.6:
+        ids = [(m.start(), m.end()) for m in PSEUDONYM.finditer(text)]
+        for r in analyzer.analyze(text=text, language="en", entities=PRESIDIO_ENTITIES):
+            inside_id = any(a <= r.start and r.end <= b for a, b in ids)
+            # spaCy's small model also tags ordinary phrases ("meter board"); names are capitalised words.
+            words_ = text[r.start:r.end].split()
+            looks_like_name = r.entity_type != "PERSON" or (len(words_) >= 2 and all(w[:1].isupper() for w in words_))
+            if r.score >= 0.6 and not inside_id and looks_like_name:
                 spans.append((r.start, r.end, r.entity_type))
     if not spans:
         return ScrubResult(text)

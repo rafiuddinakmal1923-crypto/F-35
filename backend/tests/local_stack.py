@@ -60,13 +60,10 @@ class LocalStack:
         with db.admin_connection() as conn:
             with conn.transaction():
                 seed_users(conn, {u["user_id"]: PASSWORD for u in demo_users()})
-        try:
-            from voltguard.service import seed
-
-            seed.seed_demo_content(progress=lambda m: None)
-        except ImportError:
-            pass
         pipeline.run_detection("pipeline", progress=lambda m: None)
+        from voltguard.service import seed
+
+        seed.seed_demo_content(progress=lambda m: None)
         if self.with_cases:
             from voltguard.db import Caller
             from voltguard.service import cases

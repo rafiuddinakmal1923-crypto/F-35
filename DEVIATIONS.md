@@ -35,3 +35,13 @@ later change wires them in.
 | Per-table sources `simulated`, `london`, `sgcc`, `datagovmy`, `upload:<name>` | Per-table values `simulated`, `london`, `upload:<name>[@vN]`; SGCC is chosen by `pattern_training: sgcc` and data.gov.my by `rescale: datagovmy` | SGCC has no meter-to-transformer links and data.gov.my holds national monthly totals, so neither can fill a canonical table on its own |
 | data.gov.my rescales profiles to Malaysian consumption levels | Monthly seasonality factors from domestic consumption; the household level stays the configurable `mean_kwh` placeholder | The dataset has no household count, so a per-household level would be an invented figure |
 | London data feeds the simulator | Also converted to canonical tables (pseudo zones of 60 homes, no voltage, phase or transformer meter) | Exercises the AS-1/AS-2/AS-3/AS-7 fallbacks on real household load |
+
+## Agents and RAG
+
+| Prompt / SDD | R0 | Reason |
+| --- | --- | --- |
+| Presidio for notes scrubbing | Malaysian regex recognisers always; Presidio with spaCy `en_core_web_sm` adds PERSON, e-mail and phone (LOCATION left to the address patterns; one-word and lower-case "names" ignored) | Presidio's LOCATION and one-word PERSON hits flagged zone IDs and ordinary words; Presidio would otherwise download a 560 MB model at runtime |
+| multilingual-e5-small embeddings | Used through ONNX Runtime when `fetch-models` has downloaded it; otherwise a deterministic 384-dim hashing embedder plus keyword overlap | The demo must work offline; the index records which embedder built it |
+| Language model drafts the report | Facts, reasons, notes and citations are filled from the database by template; the model writes only the assessment paragraph (`REPORT_MODE=live`), pre-drafted at setup (`predrafted`) or from a template (`mock`) | A 4-bit 7B model on a laptop CPU is slow, and facts must never depend on generation |
+| Chatbot query service | Fixed, whitelisted read-only query templates; the model (if any) only picks a template and its parameters | No model-written SQL reaches the database |
+| Public legal texts for RAG | Not copied into the repository; `scripts/fetch_docs.py` downloads them when a verified URL is set, otherwise prints manual steps. Until loaded, legal questions return "not found" and reports cite Section 37 by name only | No invented or unverified legal text |

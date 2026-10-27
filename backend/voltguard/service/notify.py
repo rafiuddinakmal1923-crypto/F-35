@@ -36,12 +36,14 @@ def compose(kind: str, case_id: str, extra: str = "") -> str:
     return f"{text}\nOpen: {case_link(case_id)}"
 
 
-def output_check(text: str) -> None:
-    """Block names, addresses, IC and phone numbers in outgoing text (the case link itself is allowed)."""
-    without_link = text.split("Open:")[0]
-    result = scrubber.scrub(without_link)
-    if result.changed:
-        raise BlockedMessage(f"message blocked: looks like personal details ({', '.join(result.found)})")
+def output_check(text: str, extra: str = "") -> None:
+    """Block names, addresses, IC and phone numbers in outgoing text (the case link itself is allowed).
+
+    The whole message gets the pattern check; the free-text part also gets the full (Presidio) check.
+    """
+    found = {**scrubber.scrub(text.split("Open:")[0], presidio=False).found, **scrubber.scrub(extra).found}
+    if found:
+        raise BlockedMessage(f"message blocked: looks like personal details ({', '.join(found)})")
 
 
 def _chat_ids() -> dict[str, str]:
@@ -52,7 +54,7 @@ def _chat_ids() -> dict[str, str]:
 def send(conn: psycopg.Connection, kind: str, case_id: str, region: str, recipient: str, extra: str = "") -> dict:
     """Send (or log) one message and record it in `notification`. `recipient` is a team or user ID."""
     text = compose(kind, case_id, extra)
-    output_check(text)
+    output_check(text, extra)
     token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
     channel, status = "console", "sent"
     chat = _chat_ids().get(recipient)

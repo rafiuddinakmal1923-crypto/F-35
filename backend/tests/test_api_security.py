@@ -115,7 +115,7 @@ def test_jobs_run_detection_creates_no_cases(api, pg):
     assert job["status"] == "done", job.get("error")
     assert "TX-CEN-001" in job["result"]["flagged_zones"]
     with psycopg.connect(pg[0]) as conn:
-        assert conn.execute("SELECT count(*) FROM inspection_case WHERE origin <> 'manual'").fetchone()[0] == 0
+        assert conn.execute("SELECT count(*) FROM inspection_case WHERE origin <> 'manual' AND created_by <> 'seed'").fetchone()[0] == 0
 
 
 def test_FR_AD_03_threshold_change_applies_on_rerun(api, pg):

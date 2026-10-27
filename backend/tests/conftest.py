@@ -105,6 +105,9 @@ def api(pg):
         with conn.transaction():
             seed_users(conn, {u["user_id"]: PASSWORD for u in demo_users()})
     pipeline.run_detection("pipeline", progress=lambda m: None)
+    from voltguard.service import seed
+
+    seed.seed_demo_content(progress=lambda m: None)
     from voltguard.api.main import create_app
 
     with TestClient(create_app()) as client:

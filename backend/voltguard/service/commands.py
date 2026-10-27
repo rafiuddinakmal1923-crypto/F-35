@@ -50,3 +50,32 @@ def cmd_verify_audit(args) -> int:
     result = audit.verify()
     print(json.dumps(result.as_dict(), indent=2))
     return 0 if result.ok else 3
+
+
+@command("seed", "Test accounts, demo data and detection, closed cases, RAG index and the pre-drafted report")
+def cmd_seed(args) -> int:
+    from voltguard.service import pipeline, seed
+
+    cmd_seed_users(args)
+    pipeline.run_detection("pipeline")
+    print(json.dumps(seed.seed_demo_content(), indent=2, default=str))
+    return 0
+
+
+@command("index-docs", "Re-index the approved documents and closed-case summaries for RAG")
+def cmd_index_docs(args) -> int:
+    from voltguard.agents import rag
+
+    print(f"Indexed {rag.index_documents()} document passages and {rag.index_case_summaries()} case summaries")
+    return 0
+
+
+@command("fetch-models", "Download the embedding model (multilingual-e5-small, ONNX) into HF_HOME")
+def cmd_fetch_models(args) -> int:
+    from voltguard.agents import embed
+
+    try:
+        print(f"Embedding model in {embed.download()}")
+    except Exception as exc:  # offline: the hashing fallback keeps RAG working
+        print(f"Could not download the embedding model ({exc.__class__.__name__}); the hashing fallback stays in use.")
+    return 0

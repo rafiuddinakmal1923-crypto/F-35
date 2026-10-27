@@ -27,3 +27,6 @@ mlflow-skinny==2.22.0
 # Tests
 pytest==8.3.5
 playwright==1.52.0
+pypdf==5.4.0
+# Presidio's spaCy model, installed explicitly so nothing is downloaded at runtime
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl

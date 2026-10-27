@@ -1,0 +1,21 @@
+# Public documents fetched by scripts/fetch_docs.py into DATA_ROOT/docs_rag/ (not committed).
+# If a URL moves, update it here; on failure the script prints manual download steps.
+documents:
+  - id: esa_1990
+    title: Electricity Supply Act 1990 (Act 447)
+    owner: Attorney General's Chambers of Malaysia (public law text)
+    role_scope: [inspector, analyst, supervisor, manager]
+    url: ""   # direct PDF links change with each reprint; add a verified link here to automate the download
+    manual: Laws of Malaysia Online (https://lom.agc.gov.my), search "Act 447", download the English PDF.
+  - id: penal_code
+    title: Penal Code (Act 574)
+    owner: Attorney General's Chambers of Malaysia (public law text)
+    role_scope: [analyst, supervisor, manager]
+    url: ""
+    manual: Laws of Malaysia Online (https://lom.agc.gov.my), search "Act 574", download the English PDF.
+  - id: st_guidance
+    title: Energy Commission (Suruhanjaya Tenaga) guidance on electricity theft and tampering
+    owner: Suruhanjaya Tenaga (public guidance)
+    role_scope: [inspector, analyst, supervisor, manager]
+    url: ""
+    manual: Download the relevant public guideline from https://www.st.gov.my and save it as st_guidance.pdf in DATA_ROOT/docs_rag/.
