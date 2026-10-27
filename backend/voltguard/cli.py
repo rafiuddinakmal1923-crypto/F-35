@@ -15,7 +15,7 @@ from voltguard import config
 
 COMMANDS: dict[str, tuple[str, callable, callable | None]] = {}
 # Modules that register more commands when imported (data layer, database, demo).
-COMMAND_MODULES = ("voltguard.data.ingest", "voltguard.service.commands")
+COMMAND_MODULES = ("voltguard.data.ingest", "voltguard.service.commands", "voltguard.service.demo")
 
 
 def command(name: str, help_text: str, arguments=None):

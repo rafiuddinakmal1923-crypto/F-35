@@ -87,8 +87,9 @@ def check_unusual_access() -> int:
     with db.admin_connection() as conn:
         with conn.transaction():
             rows = conn.execute(
-                """SELECT user_id, count(*) AS n FROM audit_log WHERE action IN ('case.view', 'premise.view', 'pii.view')
-                   AND ts > now() - interval '1 hour' GROUP BY user_id HAVING count(*) > %s""", (UNUSUAL_VIEWS_PER_HOUR,)).fetchall()
+                """SELECT user_id, count(DISTINCT object_ref) AS n FROM audit_log WHERE action IN ('case.view', 'premise.view', 'pii.view')
+                   AND ts > now() - interval '1 hour' GROUP BY user_id HAVING count(DISTINCT object_ref) > %s""",
+                (UNUSUAL_VIEWS_PER_HOUR,)).fetchall()
             for r in rows:
                 recent = conn.execute("SELECT 1 FROM alert WHERE kind = 'unusual_access' AND detail->>'user_id' = %s AND ts > now() - interval '1 hour'",
                                       (r["user_id"],)).fetchone()

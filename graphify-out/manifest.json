@@ -96,9 +96,9 @@
     "semantic_hash": ""
   },
   "backend/voltguard/evaluation.py": {
-    "mtime": 1793084979.396716,
-    "seen": 1793085328.1674585,
-    "ast_hash": "f77ca2b4cf81565e572cef3fbd364bcd",
+    "mtime": 1793089643.4558287,
+    "seen": 1793089905.0960653,
+    "ast_hash": "b9ee9d4968be8d0815e24c00e5862e60",
     "semantic_hash": ""
   },
   "backend/voltguard/network.py": {
@@ -156,9 +156,9 @@
     "semantic_hash": ""
   },
   "reports/simulation_report.md": {
-    "mtime": 1793084287.8796635,
-    "seen": 1793084885.5176463,
-    "ast_hash": "b3a7ea0dc050e253f65b847e6179d265",
+    "mtime": 1793089699.0044105,
+    "seen": 1793089905.0973277,
+    "ast_hash": "478b81890ff7438f0fd62ba8e97a5d32",
     "semantic_hash": ""
   },
   "VoltGuard AI Software Design Document (SDD).pdf": {
@@ -192,9 +192,9 @@
     "semantic_hash": ""
   },
   "backend/voltguard/cli.py": {
-    "mtime": 1793085018.6820173,
-    "seen": 1793085328.1671262,
-    "ast_hash": "583682d1bd8f387c66612e50c18d5b81",
+    "mtime": 1793089188.3814712,
+    "seen": 1793089905.0955977,
+    "ast_hash": "c2d5d3834c027123508c66b957627542",
     "semantic_hash": ""
   },
   "config/tuned_weights.yaml": {
@@ -222,9 +222,9 @@
     "semantic_hash": ""
   },
   "make.ps1": {
-    "mtime": 1793085225.350025,
-    "seen": 1793085328.1675377,
-    "ast_hash": "cdcc026d3ca3ef1f040f3f103950baf5",
+    "mtime": 1793089128.3066514,
+    "seen": 1793089905.0966132,
+    "ast_hash": "3e5c3e745ade9ab4f1e769c5d5195467",
     "semantic_hash": ""
   },
   "scripts/handoff.sh": {
@@ -234,9 +234,9 @@
     "semantic_hash": ""
   },
   "scripts/setup_env.py": {
-    "mtime": 1793085178.5154371,
-    "seen": 1793085328.1675396,
-    "ast_hash": "d4aca5fefc6db701abdccdc11c94e743",
+    "mtime": 1793089128.3063316,
+    "seen": 1793089905.0966742,
+    "ast_hash": "d3a8900d5430955af2a7cc88f4809758",
     "semantic_hash": ""
   },
   "scripts/traceability.py": {
@@ -258,21 +258,21 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1793089094.5102394,
-    "seen": 1793089096.9195065,
-    "ast_hash": "27a7dd41d62775d22708eeb2d8f10af4",
+    "mtime": 1793089902.6626613,
+    "seen": 1793089905.097132,
+    "ast_hash": "07aa154901ddf083a64ea85d66822c17",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1793085318.570028,
-    "seen": 1793085328.167564,
-    "ast_hash": "27ad399e1778bd5bf5cb726168bff631",
+    "mtime": 1793089776.5501876,
+    "seen": 1793089905.0971518,
+    "ast_hash": "7dd528859d7ec5a3a84590afa67cf61d",
     "semantic_hash": ""
   },
   "TRACEABILITY.md": {
-    "mtime": 1793088783.8053994,
-    "seen": 1793089096.9195402,
-    "ast_hash": "7787f51fa5a99f324187ca3bf900e462",
+    "mtime": 1793089097.1279342,
+    "seen": 1793089905.0971527,
+    "ast_hash": "d524d4133ef7f9c2efbc79672683a128",
     "semantic_hash": ""
   },
   "docker-compose.yml": {
@@ -510,9 +510,9 @@
     "semantic_hash": ""
   },
   "backend/voltguard/api/routes_cases.py": {
-    "mtime": 1793087238.482097,
-    "seen": 1793087963.2869658,
-    "ast_hash": "9cdd5ac1b193fa37a1957ac57f8af366",
+    "mtime": 1793089549.0861795,
+    "seen": 1793089905.095481,
+    "ast_hash": "2d08a596ce1ac4a8f1d73d7890e4c998",
     "semantic_hash": ""
   },
   "backend/voltguard/service/cases.py": {
@@ -558,9 +558,9 @@
     "semantic_hash": ""
   },
   "web/src/components/Common.jsx": {
-    "mtime": 1793087136.2500932,
-    "seen": 1793087963.288002,
-    "ast_hash": "3180cb3ab3ee45ac02df699373379013",
+    "mtime": 1793089528.9347234,
+    "seen": 1793089905.096804,
+    "ast_hash": "15077029431937c09cb662084b21d15c",
     "semantic_hash": ""
   },
   "web/src/components/ZoneMap.jsx": {
@@ -600,15 +600,15 @@
     "semantic_hash": ""
   },
   "web/src/pages/Case.jsx": {
-    "mtime": 1793087233.0380967,
-    "seen": 1793087963.288009,
-    "ast_hash": "52aea217aae5f8900f0fd73479351572",
+    "mtime": 1793089549.1162956,
+    "seen": 1793089905.0969403,
+    "ast_hash": "153210be4c20acf04b794ed7663e6ccd",
     "semantic_hash": ""
   },
   "web/src/pages/Cases.jsx": {
-    "mtime": 1793087206.2460957,
-    "seen": 1793087963.28801,
-    "ast_hash": "5ab4157cce31de9d8578ccc1b35479ab",
+    "mtime": 1793089528.935276,
+    "seen": 1793089905.0969417,
+    "ast_hash": "badb2e9d852fdb2d5c21b36738e8a66f",
     "semantic_hash": ""
   },
   "web/src/pages/DataManager.jsx": {
@@ -798,9 +798,9 @@
     "semantic_hash": ""
   },
   "backend/voltguard/service/monitoring.py": {
-    "mtime": 1793088848.1541543,
-    "seen": 1793089096.9186335,
-    "ast_hash": "aabffede657b4446aa11d0d9da1db1d0",
+    "mtime": 1793089549.1167293,
+    "seen": 1793089905.0962045,
+    "ast_hash": "719a8e9b752746b923b62f45cd42e3dc",
     "semantic_hash": ""
   },
   "web/src/pages/Models.jsx": {
@@ -813,6 +813,42 @@
     "mtime": 1793089037.3741612,
     "seen": 1793089096.9196978,
     "ast_hash": "673c943f6651f6d8b45d64028deaab08",
+    "semantic_hash": ""
+  },
+  "backend/tests/e2e/test_demo_rehearsal.py": {
+    "mtime": 1793089489.7900887,
+    "seen": 1793089905.0949435,
+    "ast_hash": "66204818b1714cd3215ba7c93b448ae3",
+    "semantic_hash": ""
+  },
+  "backend/voltguard/service/demo.py": {
+    "mtime": 1793089160.7421656,
+    "seen": 1793089905.0961633,
+    "ast_hash": "66e6f8314fc7ca42aa1e70cc44b00397",
+    "semantic_hash": ""
+  },
+  "scripts/backtest.py": {
+    "mtime": 1793089218.9331386,
+    "seen": 1793089905.096615,
+    "ast_hash": "5adb7a2b73ca33a40a2159a576b7821c",
+    "semantic_hash": ""
+  },
+  "DEMO.md": {
+    "mtime": 1793089257.4101691,
+    "seen": 1793089905.0971138,
+    "ast_hash": "7a2c982707c22c9290e5b74bea45d590",
+    "semantic_hash": ""
+  },
+  "MODELS.md": {
+    "mtime": 1793089783.8621879,
+    "seen": 1793089905.0971339,
+    "ast_hash": "603e8ea887c9e0c845c24ed81185878e",
+    "semantic_hash": ""
+  },
+  "reports/backtest_report.md": {
+    "mtime": 1793089200.8001196,
+    "seen": 1793089905.097326,
+    "ast_hash": "fa5fce354420080fd88fc9f37833bf9f",
     "semantic_hash": ""
   },
   "web/package-lock.json": {

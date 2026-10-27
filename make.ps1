@@ -43,6 +43,13 @@ function Invoke-Setup {
             Write-Host "Generated $key"
         }
     }
+    if ($text -match "(?m)^DEMO_PASSWORDS=\s*(#.*)?$") {
+        $users = (Select-String -Path config\demo.yaml -Pattern "user_id:\s*([\w.]+)" -AllMatches).Matches | ForEach-Object { $_.Groups[1].Value }
+        $users += "pipeline"
+        $pairs = ($users | ForEach-Object { "$_=$((New-Secret).Substring(0, 20))" }) -join ","
+        $text = $text -replace "(?m)^DEMO_PASSWORDS=.*$", "DEMO_PASSWORDS=$pairs"
+        Write-Host "Generated passwords for $($users.Count) test accounts (DEMO_PASSWORDS)"
+    }
     if ($Local) {
         $text = $text -replace "(?m)^DATA_ROOT=.*$", "DATA_ROOT=./.data"
         $text = $text -replace "(?m)^LLM_MODE=.*$", "LLM_MODE=mock"

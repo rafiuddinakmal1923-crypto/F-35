@@ -71,6 +71,16 @@ export default function Case() {
   const { id } = useParams();
   const { user } = session();
   const detail = useLoad(() => get(`/cases/${id}`), [id]);
+  // Another person may act on this case meanwhile (claim, approval, outcome): poll a cheap change
+  // marker and reload the full page only when it changes (each full load is an audited view).
+  const version = useLoad(() => get(`/cases/${id}/version`), [id], 10000);
+  const marker = version.data ? JSON.stringify(version.data) : null;
+  const [seen, setSeen] = useState(null);
+  useEffect(() => {
+    if (marker && seen && marker !== seen) detail.reload();
+    if (marker) setSeen(marker);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [marker]);
   const similar = useLoad(() => (["analyst", "inspector"].includes(user?.role) ? get(`/cases/${id}/similar`).catch(() => null) : Promise.resolve(null)), [id]);
   const teams = useLoad(() => (user?.role === "supervisor" ? get("/teams") : Promise.resolve([])), [id]);
   const [team, setTeam] = useState("");

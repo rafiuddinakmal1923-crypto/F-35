@@ -1,6 +1,6 @@
 # Simulation report
 
-Generated 2026-10-27T14:53:36 in 102 s by `make.ps1 simreport`. Failures are reported as they are.
+Generated 2026-10-27T08:28:19 in 55 s by `make.ps1 simreport`. Failures are reported as they are.
 ## Summary (copy into the pitch deck)
 
 | Result | Value |
@@ -11,8 +11,8 @@ Generated 2026-10-27T14:53:36 in 102 s by `make.ps1 simreport`. Failures are rep
 | Day-one tap in the demo zone flagged and in the top 5% | yes (rank 1) |
 | Partial bypass in the demo zone flagged and in the top 5% | yes (rank 2) |
 | EV, rooftop solar, metered mining or tenancy-only homes in the top suspects (demo zone) | none |
-| Same, held-out settings | metered_mining |
-| Pattern model AUC on a held-out split (synthetic_sgcc_patterns) | 0.9839 |
+| Same, held-out settings | none |
+| Pattern model AUC on a held-out split (synthetic_sgcc_patterns) | 0.9833 |
 | Smallest total theft that flagged its zone (stress tests, share of zone supply) | 6% |
 | Largest total theft that did not flag its zone (held-out settings) | 1% |
 | Clean held-out zones wrongly flagged | 0 of 6 |
@@ -27,14 +27,17 @@ Generated 2026-10-27T14:53:36 in 102 s by `make.ps1 simreport`. Failures are rep
 
 ## Flag threshold sweep (held-out settings, for OI-7)
 
-The uncertainty margin u is always added on top. Lower thresholds catch smaller taps; the clean-zone column shows the false-alarm cost.
+The rule is gap > max(share x supply, minimum) + uncertainty margin u for 7 days; u is always added. Both parts are lowered together. Lower thresholds can catch smaller taps; the clean-zone column shows the false-alarm cost.
 
-| Flag threshold (share of supply) | Theft zones flagged | Clean zones wrongly flagged | All thefts in top 5% | Smallest flagged zone theft |
+| Flag rule: share of supply / minimum kWh per day | Theft zones flagged | Clean zones wrongly flagged | All thefts in top 5% | Smallest flagged zone theft |
 | --- | --- | --- | --- | --- |
-| 5% (default) | 67% | 0/6 | 18/24 | 9% |
-| 3% | 67% | 0/6 | 18/24 | 9% |
-| 2% | 67% | 0/6 | 18/24 | 9% |
-| 1% | 67% | 0/6 | 18/24 | 9% |
+| 5% / 15 kWh (default) | 67% | 0/6 | 18/24 | 9% |
+| 3% / 10 kWh | 67% | 0/6 | 18/24 | 9% |
+| 2% / 5 kWh | 67% | 0/6 | 18/24 | 9% |
+| 1% / 3 kWh | 67% | 0/6 | 18/24 | 9% |
+| 1% / 0 kWh | 67% | 0/6 | 18/24 | 9% |
+
+Every row is the same: the thefts missed here are about 1% of zone supply or less, which is inside the uncertainty margin u (monthly-read estimates, transformer-meter accuracy and loss-model error), so no threshold on its own makes them visible. Narrowing u needs better inputs: transformer meters of a better accuracy class, fewer monthly-read meters, or a loss model calibrated on TNB network data (OI-9).
 
 ## Stress tests (SDD 10.3): where detection breaks
 
@@ -46,9 +49,9 @@ The uncertainty margin u is always added on top. Lower thresholds catch smaller 
 | monthly meters 50pct | 67% | 6/6 | 6/8 | 8% | 0/2 | none |
 | tx voltage swings | 67% | 6/6 | 6/8 | 8% | 0/2 | none |
 | two thieves | 50% | 10/10 | 10/16 | 9% | 0/0 | none |
-| no voltage | 67% | 5/6 | 5/8 | 8% | 0/2 | none |
-| no phase data | 67% | 5/6 | 5/8 | 8% | 0/2 | none |
-| no transformer meter | 0% | 8/8 | 8/8 | n/a | 0/0 | metered_mining |
+| no voltage | 67% | 6/6 | 6/8 | 8% | 0/2 | none |
+| no phase data | 67% | 6/6 | 6/8 | 8% | 0/2 | none |
+| no transformer meter | 0% | 8/8 | 8/8 | n/a | 0/0 | none |
 | many solar homes | 67% | 6/6 | 6/8 | 8% | 0/2 | none |
 
 ## Held-out thefts, one by one
@@ -86,8 +89,8 @@ The uncertainty margin u is always added on top. Lower thresholds catch smaller 
 | --- | --- | --- | --- |
 | full_bypass_mining | P-CEN-001-054 | 1 |  |
 | partial_bypass | P-CEN-001-049 | 2 |  |
-| ev_charging | P-CEN-001-051 | 17 | ev_charging |
-| metered_mining | P-CEN-001-035 | 7 |  |
-| tenancy_only | P-CEN-001-048 | 33 |  |
+| ev_charging | P-CEN-001-051 | 28 | ev_charging |
+| metered_mining | P-CEN-001-035 | 16 |  |
+| tenancy_only | P-CEN-001-048 | 27 |  |
 | solar | P-CEN-001-001 | 36 | solar |
 | solar | P-CEN-001-063 | 68 | solar |

@@ -129,3 +129,14 @@ def notifications(limit: int = Query(50, le=200), c: Caller = Depends(require("s
 @router.get("/teams")
 def teams(c: Caller = Depends(require("supervisor", "manager", "analyst")), conn=Depends(connection)):
     return conn.execute("SELECT team_id, name, region FROM team ORDER BY team_id").fetchall()
+
+
+@router.get("/cases/{case_id}/version")
+def case_version(case_id: str, c: Caller = Depends(require("supervisor", "analyst", "inspector", "manager")), conn=Depends(connection)):
+    """Cheap change marker for pages that poll (no personal details, so no audit row per poll)."""
+    row = conn.execute("""SELECT c.status, (SELECT max(event_id) FROM case_event e WHERE e.case_id = c.case_id) AS last_event,
+                                 (SELECT string_agg(status, ',' ORDER BY report_id) FROM case_report r WHERE r.case_id = c.case_id) AS reports
+                          FROM inspection_case c WHERE c.case_id = %s""", (case_id,)).fetchone()
+    if not row:
+        raise ApiError(404, "not_found", "Case not found in your region")
+    return row

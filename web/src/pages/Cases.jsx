@@ -9,7 +9,7 @@ const STATUSES = ["", "new", "assigned", "visited", "reporting", "closed"];
 export default function Cases() {
   const [status, setStatus] = useState("");
   const { user } = session();
-  const cases = useLoad(() => get(`/cases${status ? `?status=${status}` : ""}`), [status]);
+  const cases = useLoad(() => get(`/cases${status ? `?status=${status}` : ""}`), [status], 10000);
   return (
     <div className="stack">
       <div className="row" style={{ justifyContent: "space-between" }}>

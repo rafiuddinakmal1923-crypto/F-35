@@ -222,12 +222,14 @@ def simulation_report(progress=print, stress_count: int = 8) -> str:
     held = summarise(evaluate(held_run, held_truth))
 
     # Threshold sweep on the same held-out data (for OI-7: false alarms vs missed small taps).
+    # Both parts of max(theta x supply, G_min) move together: lowering theta alone changes nothing
+    # once G_min dominates, which the first version of this report showed.
     sweep = []
-    for theta in (0.05, 0.03, 0.02, 0.01):
-        progress(f"Threshold sweep {theta:.0%}...")
-        trial = config.deep_merge(cfg, {"zone": {"share_of_supply": theta}})
+    for theta, g_min in ((cfg["zone"]["share_of_supply"], cfg["zone"]["min_gap_kwh_per_day"]), (0.03, 10.0), (0.02, 5.0), (0.01, 3.0), (0.01, 0.0)):
+        progress(f"Threshold sweep {theta:.0%} / {g_min:g} kWh...")
+        trial = config.deep_merge(cfg, {"zone": {"share_of_supply": theta, "min_gap_kwh_per_day": g_min}})
         s = summarise(evaluate(engine.run_tables(held_tables, held_scn.start_date, held_scn.days, trial), held_truth))
-        sweep.append((theta, s))
+        sweep.append(((theta, g_min), s))
 
     progress("Demo scenario...")
     demo_run, demo_truth = run_scenario(simulator.demo_scenario(), cfg, score_all=False)
@@ -276,13 +278,21 @@ def simulation_report(progress=print, stress_count: int = 8) -> str:
     ]
     sections.append("## How to read this\n\n" + "\n".join(notes))
 
-    sweep_rows = ["| Flag threshold (share of supply) | Theft zones flagged | Clean zones wrongly flagged | All thefts in top 5% | Smallest flagged zone theft |",
+    sweep_rows = ["| Flag rule: share of supply / minimum kWh per day | Theft zones flagged | Clean zones wrongly flagged | All thefts in top 5% | Smallest flagged zone theft |",
                   "| --- | --- | --- | --- | --- |"]
-    for theta, s in sweep:
-        sweep_rows.append(f"| {theta:.0%}{' (default)' if theta == cfg['zone']['share_of_supply'] else ''} | {_fmt(s['theft_zone_flag_rate'], True)} | "
+    for (theta, g_min), s in sweep:
+        default = theta == cfg["zone"]["share_of_supply"] and g_min == cfg["zone"]["min_gap_kwh_per_day"]
+        sweep_rows.append(f"| {theta:.0%} / {g_min:g} kWh{' (default)' if default else ''} | {_fmt(s['theft_zone_flag_rate'], True)} | "
                           f"{s['clean_zone_false_flags']}/{s['clean_zones']} | {s['thefts_in_top5']}/{s['thefts']} | {_fmt(s['smallest_flagged_share'], True)} |")
+    if len({(s["theft_zone_flag_rate"], s["clean_zone_false_flags"], s["thefts_in_top5"]) for _, s in sweep}) == 1:
+        sweep_rows.append("")
+        sweep_rows.append("Every row is the same: the thefts missed here are about 1% of zone supply or less, which is inside the "
+                          "uncertainty margin u (monthly-read estimates, transformer-meter accuracy and loss-model error), so no threshold "
+                          "on its own makes them visible. Narrowing u needs better inputs: transformer meters of a better accuracy class, "
+                          "fewer monthly-read meters, or a loss model calibrated on TNB network data (OI-9).")
     sections.append("## Flag threshold sweep (held-out settings, for OI-7)\n\n"
-                    "The uncertainty margin u is always added on top. Lower thresholds catch smaller taps; the clean-zone column shows the false-alarm cost.\n\n"
+                    "The rule is gap > max(share x supply, minimum) + uncertainty margin u for 7 days; u is always added. Both parts are "
+                    "lowered together. Lower thresholds can catch smaller taps; the clean-zone column shows the false-alarm cost.\n\n"
                     + "\n".join(sweep_rows))
 
     rows = ["| Stress test | Theft zones flagged | Thefts in top 5% (ranked zones) | All thefts in top 5% | Smallest flagged tap | Clean zones wrongly flagged | Legitimate homes in top 5% |",

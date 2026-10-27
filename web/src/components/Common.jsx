@@ -67,9 +67,15 @@ export function JobButton({ path, label, onDone, className = "primary" }) {
   );
 }
 
-export function useLoad(loader, deps) {
+export function useLoad(loader, deps, refreshMs = 0) {
   const [state, setState] = useState({ data: null, error: null, loading: true });
   const [tick, setTick] = useState(0);
+  // Optional polling: pages two people work on at once (case pages) pick up each other's changes.
+  useEffect(() => {
+    if (!refreshMs) return undefined;
+    const timer = setInterval(() => setTick((n) => n + 1), refreshMs);
+    return () => clearInterval(timer);
+  }, [refreshMs]);
   useEffect(() => {
     let live = true;
     setState((s) => ({ ...s, loading: true }));

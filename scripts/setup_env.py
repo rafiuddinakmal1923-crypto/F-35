@@ -26,6 +26,12 @@ def main() -> int:
         if pattern.search(text):
             text = pattern.sub(f"{key}={secrets.token_urlsafe(24)}", text)
             print(f"Generated {key}")
+    if re.search(r"^DEMO_PASSWORDS=\s*(#.*)?$", text, re.MULTILINE):
+        users = re.findall(r"user_id:\s*([\w.]+)", (ROOT / "config" / "demo.yaml").read_text(encoding="utf-8")) + ["pipeline"]
+        alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789"
+        pairs = ",".join(f"{u}={'-'.join(''.join(secrets.choice(alphabet) for _ in range(5)) for _ in range(4))}" for u in users)
+        text = re.sub(r"^DEMO_PASSWORDS=.*$", lambda _: f"DEMO_PASSWORDS={pairs}", text, flags=re.MULTILINE)
+        print(f"Generated passwords for {len(users)} test accounts (DEMO_PASSWORDS)")
     if len(sys.argv) > 1 and sys.argv[1] == "--local":
         # Running without Docker: keep data inside the repository and use mock models.
         text = re.sub(r"^DATA_ROOT=.*$", "DATA_ROOT=./.data", text, flags=re.MULTILINE)

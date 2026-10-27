@@ -26,4 +26,5 @@ ENV VG_CONFIG_DIR=/app/config \
 
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --retries=5 CMD curl -fs http://localhost:8000/health || exit 1
-CMD ["uvicorn", "voltguard.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Migrations are idempotent, so a fresh `docker compose up` never serves an empty schema.
+CMD ["sh", "-c", "python -m voltguard migrate && exec uvicorn voltguard.api.main:app --host 0.0.0.0 --port 8000"]
