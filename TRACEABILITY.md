@@ -70,7 +70,7 @@ cited in code but no dedicated test yet; **open** = not implemented yet.
 | NFR-05 | NFR | Scalability: The design scales out by transformer zone towards national coverage | open |  |  |
 | NFR-06 | NFR | Security: Encrypted traffic (TLS 1.2 or higher) and encrypted storage; sign-in through ... | open |  |  |
 | NFR-07 | NFR | Privacy: Complies with PDPA 2010 as amended in 2024, including support for the utility'... | tested |  | `test_NFR_07_rpt_views_hold_no_premise_ids_or_personal_details` |
-| NFR-08 | NFR | Explainability: Every score shows at least three plain-language reasons | tested |  | `test_NFR_08_flagged_premises_show_three_reasons` |
+| NFR-08 | NFR | Explainability: Every score shows at least three plain-language reasons | tested | `backend/voltguard/detection/scoring.py` | `test_NFR_08_flagged_premises_show_three_reasons` |
 | NFR-09 | NFR | Effectiveness (R0): In simulated zones held out from tuning (different zone sizes, tap ... | code | `backend/voltguard/evaluation.py` |  |
 | NFR-10 | NFR | Effectiveness (R1): Hit rate of model-ranked inspections exceeds the pilot zone's curre... | code | `scripts/backtest.py` |  |
 | NFR-11 | NFR | Fairness: Flag rates are monitored by area and by housing tenure (owner or renter); no ... | code | `backend/voltguard/service/monitoring.py` |  |

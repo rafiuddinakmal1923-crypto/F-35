@@ -90,6 +90,18 @@ graphify graph in `graphify-out/` and `TRACEABILITY.md`).
   them in under a minute.
 - Library swaps are listed in `DEVIATIONS.md`; add every new one there.
 
+## Docker check (this session)
+
+- `web` image: built with the repository's own `web/Dockerfile` (Node 20 build, nginx).
+- `api` image: built from a sandbox copy of `backend/Dockerfile` that only adds this cloud
+  session's proxy certificate; every requirement installed on Python 3.12. The sandbox network
+  blocks the Chromium download for PDFs (Playwright) and the Debian mirrors, which a normal network
+  allows; PDF export falls back to fpdf2 when no browser is present.
+- In that image: 34 database-free tests pass; against PostgreSQL the container migrated on start,
+  served /health, and `python -m voltguard demo` ran end to end (models trained on first run).
+- Not pulled here (Docker Hub rate limit): `timescale/timescaledb-ha:pg16`, so TimescaleDB and
+  pgvector were not exercised; the schema detects them and falls back to plain tables.
+
 ## Known issues
 
 - NFR-09 holds for ranked zones (18/18) but not overall (18/24): partial bypasses of about 1% of
@@ -108,8 +120,8 @@ graphify graph in `graphify-out/` and `TRACEABILITY.md`).
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.sh)
 
-- Generated: 2026-10-27T08:31
-- Branch: `claude/practical-clarke-t5uwrc`; last commit: `51c2e71 M7-M8: retraining with hit rates, monitoring alerts and Power BI views`
+- Generated: 2026-10-27T08:42
+- Branch: `claude/practical-clarke-t5uwrc`; last commit: `a3f9abc M9: demo command, demo script, back-test and final documents`
 - Tests collected: 73 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
@@ -117,8 +129,8 @@ graphify graph in `graphify-out/` and `TRACEABILITY.md`).
 
 ### Graph summary
 
-- 1888 nodes · 4360 edges · 130 communities (115 shown, 15 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 249 edges (avg confidence: 0.93)
+- 1893 nodes · 4378 edges · 108 communities (97 shown, 11 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 250 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
@@ -129,9 +141,9 @@ Most connected (core abstractions):
 5. `t()` - 33 edges
 6. `admin_connection()` - 30 edges
 7. `simulate_zone()` - 28 edges
-8. `ingest()` - 27 edges
-9. `run_detection()` - 27 edges
-10. `command()` - 26 edges
+8. `run_detection()` - 28 edges
+9. `command()` - 27 edges
+10. `ingest()` - 27 edges
 
 ### File tree
 

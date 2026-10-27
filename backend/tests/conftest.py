@@ -9,6 +9,14 @@ from voltguard.data import simulator
 from voltguard.detection import engine
 
 
+@pytest.fixture(scope="session", autouse=True)
+def models():
+    """Train the pattern model and autoencoder if this machine has none, so results do not depend on it."""
+    from voltguard.service.pipeline import ensure_models
+
+    ensure_models(progress=lambda m: None)
+
+
 @pytest.fixture(scope="session")
 def cfg():
     return config.thresholds()

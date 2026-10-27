@@ -23,6 +23,19 @@ TAG_TEXT = {
 }
 
 
+# When fewer than three inputs contribute, the remaining lines (to show at least three, NFR-08) say plainly
+# that an aspect added nothing. True whether the data was missing or simply showed nothing unusual.
+ZERO_TEXT = {
+    "gap_from_similar": "No evidence from comparison with similar homes (adds 0)",
+    "change_from_history": "No evidence from a drop against its own history (adds 0)",
+    "night_to_day": "No evidence from night-time use (adds 0)",
+    "zero_streaks": "No evidence from runs of near-zero readings (adds 0)",
+    "flatness": "No evidence from a constant 24/7 load (adds 0)",
+    "voltage_residual": "No evidence from this meter's voltage (adds 0)",
+    "anomaly": "No evidence from the weekly profile (adds 0)",
+}
+
+
 @dataclass
 class Reason:
     feature: str
@@ -99,6 +112,11 @@ def score_premise(x: np.ndarray, tags: list[str], details: dict, sub_reasons: li
     score = int(round(exact))
     contributions.sort(key=lambda r: -abs(r.points))
     top = [Reason(r.feature, round(r.points, 1), r.text) for r in contributions[:3]]
+    for feature, text in ZERO_TEXT.items():
+        if len(top) >= 3:
+            break
+        if all(r.feature != feature for r in contributions):
+            top.append(Reason(feature, 0.0, text))
     rest = sum(r.points for r in contributions[3:])
     lines = list(top)
     capped = exact - 100 * total

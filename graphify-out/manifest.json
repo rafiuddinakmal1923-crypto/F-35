@@ -78,9 +78,9 @@
     "semantic_hash": ""
   },
   "backend/voltguard/detection/scoring.py": {
-    "mtime": 1793084287.87879,
-    "seen": 1793084885.517633,
-    "ast_hash": "11e13c5a6432c9297cc5eab4f3f2c86a",
+    "mtime": 1793090348.8181057,
+    "seen": 1793090538.6391518,
+    "ast_hash": "3feb8132534637202496531ce72739e3",
     "semantic_hash": ""
   },
   "backend/voltguard/detection/voltage.py": {
@@ -150,9 +150,9 @@
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
-    "mtime": 1793088722.13815,
-    "seen": 1793088783.6133692,
-    "ast_hash": "14f89e1d2048231ea010589d01164688",
+    "mtime": 1793090102.9324942,
+    "seen": 1793090538.640468,
+    "ast_hash": "ba7594d86eabd0478fbc92983a9d7395",
     "semantic_hash": ""
   },
   "reports/simulation_report.md": {
@@ -174,9 +174,9 @@
     "semantic_hash": ""
   },
   "backend/tests/conftest.py": {
-    "mtime": 1793088420.2265623,
-    "seen": 1793088783.61142,
-    "ast_hash": "d45b1232b660ae48979f1502b008cb78",
+    "mtime": 1793090348.8184211,
+    "seen": 1793090538.6379669,
+    "ast_hash": "0f3104cdbdcdabb8cf2942588f972a6a",
     "semantic_hash": ""
   },
   "backend/tests/test_detection.py": {
@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1793089902.6626613,
-    "seen": 1793089905.097132,
-    "ast_hash": "07aa154901ddf083a64ea85d66822c17",
+    "mtime": 1793090536.3064775,
+    "seen": 1793090538.6403728,
+    "ast_hash": "783cbfbf8b0ddaea08f53fabc674be3a",
     "semantic_hash": ""
   },
   "README.md": {
@@ -270,9 +270,9 @@
     "semantic_hash": ""
   },
   "TRACEABILITY.md": {
-    "mtime": 1793089097.1279342,
-    "seen": 1793089905.0971527,
-    "ast_hash": "d524d4133ef7f9c2efbc79672683a128",
+    "mtime": 1793089905.338256,
+    "seen": 1793090538.640419,
+    "ast_hash": "9e1ebb8c677587aa302c41c7ebbf8c56",
     "semantic_hash": ""
   },
   "docker-compose.yml": {
@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "backend/voltguard/service/pipeline.py": {
-    "mtime": 1793088870.4075618,
-    "seen": 1793089096.9186554,
-    "ast_hash": "07664b35c92608762082944df7aacaee",
+    "mtime": 1793090167.8855832,
+    "seen": 1793090538.6394098,
+    "ast_hash": "c7ef6832f1384487370708a0d390c724",
     "semantic_hash": ""
   },
   "backend/voltguard/service/scheduler.py": {

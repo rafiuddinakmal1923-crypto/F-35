@@ -279,9 +279,23 @@ def ensure_simulated(progress: Progress = print) -> None:
     simulator.write_run(scn, tables, truth)
 
 
+def ensure_models(progress: Progress = print) -> None:
+    """A fresh DATA_ROOT has no models: train them once (under a minute) so no score input is silently zero."""
+    from voltguard.detection import anomaly, pattern
+
+    if not pattern.model_path().exists():
+        progress("Training the pattern model (first run)...")
+        pattern.train_default(save=True)
+        pattern.reset_cache()
+    if anomaly.load() is None:
+        progress("Training the autoencoder (first run)...")
+        anomaly.train_from_simulation()
+
+
 def run_detection(actor: str = "pipeline", progress: Progress = print) -> dict:
     """Steps 1-4 of the nightly pipeline. Creates no cases."""
     ensure_simulated(progress)
+    ensure_models(progress)
     active = sources.active_sources()
     progress("Loading active sources...")
     tables = sources.load_active_tables(active)

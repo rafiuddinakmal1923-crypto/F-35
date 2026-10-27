@@ -6,10 +6,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends postgresql-client curl \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app/backend
 COPY backend/requirements.txt .
 RUN pip install -r requirements.txt \
@@ -25,6 +21,7 @@ ENV VG_CONFIG_DIR=/app/config \
     DATA_ROOT=/data
 
 EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=5s --retries=5 CMD curl -fs http://localhost:8000/health || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --retries=5 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=4)" || exit 1
 # Migrations are idempotent, so a fresh `docker compose up` never serves an empty schema.
 CMD ["sh", "-c", "python -m voltguard migrate && exec uvicorn voltguard.api.main:app --host 0.0.0.0 --port 8000"]
