@@ -15,7 +15,9 @@ services:
     volumes:
       - pgdata:/home/postgres/pgdata/data           # named volume, never a Windows bind mount
     ports:
-      - "127.0.0.1:5432:5432"
+      # Host port for Power BI only (containers use db:5432). Not 5432: a local PostgreSQL or a
+      # Windows reserved port range often holds it. Change DB_HOST_PORT in .env if this one is taken.
+      - "127.0.0.1:${DB_HOST_PORT:-15432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U voltguard -d voltguard"]
       interval: 5s
