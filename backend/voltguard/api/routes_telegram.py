@@ -10,7 +10,7 @@ from voltguard.db import Caller
 from voltguard.service import notify, telegram
 
 router = APIRouter(tags=["telegram"])
-CHAT_ROLES = ("supervisor", "inspector")
+CHAT_ROLES = ("supervisor", "inspector", "manager")   # managers receive the weekly summary
 
 
 class Press(BaseModel):

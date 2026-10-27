@@ -223,3 +223,6 @@ a.button.primary { background: var(--brand); color: var(--brand-ink); border-col
 .map-stop { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: #2b5278; color: #fff;
   font: 700 12px/1 system-ui, sans-serif; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); }
 .map-stop.joint { background: #c2410c; }
+.kpi .trend { display: block; margin-top: 4px; font-size: 0.78rem; }
+.kpi .trend.ok { color: var(--ok); }
+.kpi .trend.risk { color: var(--risk); }

@@ -31,10 +31,11 @@ _latency: Counter = Counter()
 async def lifespan(app: FastAPI):
     from voltguard.agents import dispatch
 
-    from voltguard.service import monitoring, telegram
+    from voltguard.service import digest, monitoring, telegram
 
     scheduler.register("dispatch_reminders", dispatch.run_reminders, minutes=1)
     scheduler.register("unusual_access", monitoring.check_unusual_access, minutes=15)
+    scheduler.register("weekly_summary", digest.send_weekly, cron={"day_of_week": "mon", "hour": 7, "minute": 45})
     scheduler.start()
     telegram.start_polling()            # only when TELEGRAM_BOT_TOKEN is set
     yield

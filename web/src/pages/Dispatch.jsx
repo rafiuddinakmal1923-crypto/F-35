@@ -6,7 +6,7 @@ import { ErrorBox, useLoad } from "../components/Common.jsx";
 import RouteMap from "../components/RouteMap.jsx";
 import TelegramChat, { useChats } from "../components/TelegramChat.jsx";
 
-function LinkTelegram() {
+export function LinkTelegram() {
   const status = useLoad(() => get("/telegram/status"), []);
   const [code, setCode] = useState(null);
   const [error, setError] = useState(null);

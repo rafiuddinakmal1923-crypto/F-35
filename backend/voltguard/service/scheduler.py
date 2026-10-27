@@ -18,7 +18,8 @@ _extra: list[tuple[str, Callable[[], None], dict]] = []
 
 
 def register(name: str, fn: Callable[[], None], **trigger) -> None:
-    """Modules add their periodic jobs here (e.g. register('reminders', fn, minutes=1)); one job per name."""
+    """Modules add their periodic jobs here (e.g. register('reminders', fn, minutes=1), or a calendar
+    time with register('weekly', fn, cron={'day_of_week': 'mon', 'hour': 8})); one job per name."""
     _extra[:] = [e for e in _extra if e[0] != name]
     _extra.append((name, fn, trigger))
 
@@ -42,7 +43,10 @@ def start() -> BackgroundScheduler | None:
     _scheduler.add_job(_safe("audit_anchor", audit.write_anchor), "cron", hour=23, minute=55, id="audit_anchor")
     _scheduler.add_job(_safe("audit_anchor_startup", audit.write_anchor), "date", id="audit_anchor_startup")
     for name, fn, trigger in _extra:
-        _scheduler.add_job(_safe(name, fn), "interval", id=name, **trigger)
+        if "cron" in trigger:
+            _scheduler.add_job(_safe(name, fn), "cron", id=name, **trigger["cron"])
+        else:
+            _scheduler.add_job(_safe(name, fn), "interval", id=name, **trigger)
     _scheduler.start()
     return _scheduler
 

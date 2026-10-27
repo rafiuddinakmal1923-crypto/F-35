@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import Response
 
 from voltguard import db
 from voltguard.api.deps import connection, not_found, require
 from voltguard.db import Caller
-from voltguard.service import jobs, learning
+from voltguard.service import digest, jobs, learning, notify
 
 router = APIRouter(tags=["models"])
 
@@ -36,3 +37,27 @@ def acknowledge(alert_id: int, c: Caller = Depends(require("data_scientist", "ad
         raise not_found("No such alert")
     db.audit(conn, c.user_id, "alert.acknowledge", f"alert:{alert_id}", None)
     return row
+
+
+@router.get("/weekly")
+def weekly(c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
+    """Weekly summary of the caller's region: zone-level energy, cases, outcomes and hit rates."""
+    d = digest.build(conn, c)
+    db.audit(conn, c.user_id, "digest.view", f"region:{c.region}", None)
+    return d
+
+
+@router.get("/weekly/pdf")
+def weekly_pdf(c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
+    d = digest.build(conn, c)
+    db.audit(conn, c.user_id, "digest.download", f"region:{c.region}", None)
+    name = f"voltguard-weekly-{c.region}-{d.get('work_window', {}).get('to', 'empty')}.pdf"
+    return Response(digest.pdf_bytes(d), media_type="application/pdf",
+                    headers={"Content-Disposition": f'attachment; filename="{name}"', "Cache-Control": "no-store"})
+
+
+@router.post("/weekly/send")
+def weekly_send(c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
+    """Send this week's summary line to the caller now (Telegram if linked, and the in-app chat)."""
+    d = digest.build(conn, c)
+    return notify.send(conn, "weekly", None, c.region, c.user_id, digest.headline(d), buttons=[])

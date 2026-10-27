@@ -26,7 +26,7 @@ log = logging.getLogger("voltguard.notify")
 LABELS = {"assignment": "New inspection assigned", "reminder": "Reminder: inspection still open",
           "escalation": "Escalation: inspection overdue", "no_access": "No access recorded; revisit needed",
           "suggestion": "Dispatch suggestion waiting for approval", "report": "Report waiting for approval",
-          "declined": "Team cannot attend; please reassign"}
+          "declined": "Team cannot attend; please reassign", "weekly": "Weekly summary"}
 # Buttons per message kind: the team answers field messages, the supervisor answers suggestions.
 BUTTONS = {
     "assignment": [{"action": "accept", "label": "Accept"}, {"action": "enroute", "label": "On my way"},
@@ -44,7 +44,9 @@ def case_link(case_id: str) -> str:
     return f"{config.public_base_url()}/#/cases/{case_id}"
 
 
-def compose(kind: str, case_id: str, extra: str = "") -> str:
+def compose(kind: str, case_id: str | None, extra: str = "") -> str:
+    if case_id is None:      # region-level messages (the weekly summary) link to their page
+        return f"VoltGuard {LABELS.get(kind, kind)}: {extra}".strip() + f"\nOpen: {config.public_base_url()}/#/{kind}"
     text = f"VoltGuard {LABELS.get(kind, kind)}: case {case_id}. {extra}".strip()
     return f"{text}\nOpen: {case_link(case_id)}"
 
@@ -92,7 +94,7 @@ def telegram_call(method: str, payload: dict, timeout: float = 8) -> dict:
     return r.json()
 
 
-def send(conn: psycopg.Connection, kind: str, case_id: str, region: str, recipient: str, extra: str = "",
+def send(conn: psycopg.Connection, kind: str, case_id: str | None, region: str, recipient: str, extra: str = "",
          buttons: list[dict] | None = None) -> dict:
     """Record one message (shown in the in-app chat) and send it to Telegram when a bot is configured.
 
@@ -109,7 +111,7 @@ def send(conn: psycopg.Connection, kind: str, case_id: str, region: str, recipie
     chats = recipient_chats(conn, recipient) if token() else []
     if chats:
         channel = "telegram"
-        markup = keyboard(nid, buttons, case_link(case_id))
+        markup = keyboard(nid, buttons, case_link(case_id) if case_id else None)
         for chat in chats:
             try:
                 msg = telegram_call("sendMessage", {"chat_id": chat, "text": text, **({"reply_markup": markup} if markup else {})})

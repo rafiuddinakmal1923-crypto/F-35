@@ -154,43 +154,43 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.sh)
 
-- Generated: 2026-10-27T17:08
-- Branch: `claude/practical-clarke-t5uwrc`; last commit: `c811d92 Fix an API deadlock; review report, UI/UX design brief, end-to-end script`
-- Tests collected: 94 tests
+- Generated: 2026-10-27T17:12
+- Branch: `claude/practical-clarke-t5uwrc`; last commit: `93671eb Route planner for inspection visits`
+- Tests collected: 97 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
   query with `graphify query "<question>"` or `graphify explain "<name>"`)
 
 ### Graph summary
 
-- 2097 nodes · 4903 edges · 142 communities (127 shown, 15 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 275 edges (avg confidence: 0.93)
+- 2126 nodes · 5011 edges · 135 communities (121 shown, 14 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 280 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
-1. `Caller` - 118 edges
+1. `Caller` - 124 edges
 2. `Requirements` - 70 edges
-3. `login()` - 50 edges
-4. `audit()` - 40 edges
-5. `admin_connection()` - 37 edges
-6. `t()` - 37 edges
+3. `login()` - 53 edges
+4. `audit()` - 43 edges
+5. `t()` - 39 edges
+6. `admin_connection()` - 38 edges
 7. `shot()` - 33 edges
-8. `run_detection()` - 29 edges
-9. `get()` - 29 edges
-10. `simulate_zone()` - 28 edges
+8. `get()` - 31 edges
+9. `run_detection()` - 29 edges
+10. `request()` - 29 edges
 
 ### File tree
 
 - `./`: .dockerignore, .env.example, .gitignore, DEMO.md, DEVIATIONS.md, HANDOFF.md, MODELS.md, Makefile, PLAN.md, README.md, TRACEABILITY.md, VoltGuard AI Software Design Document (SDD).pdf, ... (+6)
 - `backend/`: Dockerfile, pytest.ini, requirements.txt
-- `backend/tests/`: conftest.py, local_stack.py, pg_server.py, test_agents.py, test_api_security.py, test_cases.py, test_data_layer.py, test_detection.py, test_learning.py, test_reporting.py, test_route.py, test_telegram.py
+- `backend/tests/`: conftest.py, local_stack.py, pg_server.py, test_agents.py, test_api_security.py, test_cases.py, test_data_layer.py, test_detection.py, test_digest.py, test_learning.py, test_reporting.py, test_route.py, ... (+1)
 - `backend/tests/e2e/`: __init__.py, test_demo_rehearsal.py, test_web_flow.py
 - `backend/voltguard/`: __init__.py, __main__.py, audit.py, auth.py, cli.py, config.py, db.py, evaluation.py, network.py, pdf.py, storage.py
 - `backend/voltguard/agents/`: __init__.py, chatbot.py, dispatch.py, embed.py, guardrails.py, llm.py, rag.py, report.py, route.py, scrubber.py
 - `backend/voltguard/api/`: __init__.py, deps.py, main.py, routes_admin.py, routes_agents.py, routes_auth.py, routes_cases.py, routes_models.py, routes_telegram.py, routes_zones.py
 - `backend/voltguard/data/`: __init__.py, adapters/__init__.py, adapters/datagovmy.py, adapters/london.py, adapters/sgcc.py, canonical.py, fakes.py, ingest.py, profiles.py, simulator.py, sources.py, validation.py
 - `backend/voltguard/detection/`: __init__.py, anomaly.py, balance.py, engine.py, features.py, pattern.py, scoring.py, voltage.py, zone_input.py
-- `backend/voltguard/service/`: __init__.py, cases.py, commands.py, demo.py, jobs.py, learning.py, monitoring.py, notify.py, pipeline.py, scheduler.py, seed.py, settings.py, ... (+2)
+- `backend/voltguard/service/`: __init__.py, cases.py, commands.py, demo.py, digest.py, jobs.py, learning.py, monitoring.py, notify.py, pipeline.py, scheduler.py, seed.py, ... (+3)
 - `backend/voltguard/sql/`: 001_core.sql, 002_security.sql, 003_cases.sql, 004_reporting.sql, 005_telegram.sql
 - `config/`: data_sources.yaml, demo.yaml, thresholds.yaml, tuned_weights.yaml
 - `data/docs_rag/`: README.md, field_evidence_checklist.md, report_template.md, sources.yaml, voltguard_guide.md
@@ -210,5 +210,5 @@ Most connected (core abstractions):
 - `web/src/`: App.jsx, api.js, i18n.js, main.jsx, styles.css
 - `web/src/components/`: Charts.jsx, Common.jsx, RouteMap.jsx, TelegramChat.jsx, ZoneMap.jsx
 - `web/src/field/`: FieldApp.jsx, secureStore.js
-- `web/src/pages/`: Assistant.jsx, Audit.jsx, Case.jsx, Cases.jsx, DataManager.jsx, Dispatch.jsx, Login.jsx, Models.jsx, Overview.jsx, Premise.jsx, Settings.jsx, Zone.jsx, ... (+1)
+- `web/src/pages/`: Assistant.jsx, Audit.jsx, Case.jsx, Cases.jsx, DataManager.jsx, Dispatch.jsx, Login.jsx, Models.jsx, Overview.jsx, Premise.jsx, Settings.jsx, Weekly.jsx, ... (+2)
 <!-- auto:end -->
