@@ -17,9 +17,12 @@ that anyone stole electricity, and people decide after inspection.
 
    ```
    [wsl2]
-   memory=12GB   # on a 16 GB laptop; leave ~4 GB for Windows
+   # 16 GB laptop: leave about 4 GB for Windows (8 GB laptop: memory=6GB)
+   memory=12GB
    swap=8GB
    ```
+
+   Keep comments on their own line, and check the file is not saved as `.wslconfig.txt`.
 
    then run `wsl --shutdown` and restart Docker Desktop. With 8 GB RAM use the small model
    (`LLM_MODEL=phi3.5`) or `LLM_MODE=mock`.
