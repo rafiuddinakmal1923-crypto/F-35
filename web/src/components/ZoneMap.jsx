@@ -13,8 +13,10 @@ export default function ZoneMap({ zones, onSelect }) {
   return (
     <div className="map">
       <MapContainer center={[lat, lon]} zoom={zoom} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false}>
-        {/* Tiles need internet; without it the circles still show on a blank map. */}
-        <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
+        {/* Tiles need internet; without it the circles still show on a blank map. OpenStreetMap refuses
+            tiles without a Referer, and the site sends none (Caddyfile), so tiles alone send the origin. */}
+        <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors"
+          referrerPolicy="strict-origin" />
         {placed.map((z) => (
           <CircleMarker key={z.transformer_id} center={[z.lat, z.lon]}
             radius={6 + Math.min(Math.max((z.gap_pct_recent || 0) * 100, 0), 25)}
