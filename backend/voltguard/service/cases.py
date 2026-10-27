@@ -76,6 +76,12 @@ def _insert_case(conn, caller: Caller, premise: dict, origin: str, score: int | 
     suggestion = dispatch.suggest(conn, case_id)
     if suggestion:
         _event(conn, case, "agent:dispatch", "dispatch_suggested", suggestion)
+        # The supervisor approves or rejects from the message (Telegram or the in-app chat).
+        joint = "; joint operation with police" if suggestion["joint_operation"] else ""
+        for sup in conn.execute("SELECT user_id FROM app_user WHERE role = 'supervisor' AND region = %s AND active",
+                                (case["region"],)).fetchall():
+            notify.send(conn, "suggestion", case_id, case["region"], sup["user_id"],
+                        f"Nearest on-duty team {suggestion['suggested_team']}, {suggestion['distance_km']} km{joint}.")
     return case
 
 

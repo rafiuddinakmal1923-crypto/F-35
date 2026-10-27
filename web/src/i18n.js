@@ -5,7 +5,7 @@ const LABELS = {
   en: {
     signIn: "Sign in", signOut: "Sign out", username: "Username", password: "Password",
     overview: "Network overview", cases: "Cases", dataManager: "Data manager", settings: "Settings", audit: "Audit log",
-    models: "Models", assistant: "Assistant", field: "Inspector app",
+    models: "Models", assistant: "Assistant", field: "Inspector app", dispatch: "Dispatch", messages: "Messages",
     flaggedZones: "Leaking zones", gapPerDay: "Unexplained energy (kWh/day)", noBalance: "Zones without balance",
     openCases: "Open cases", zone: "Zone", district: "District", allDistricts: "All districts", date: "Date",
     gap: "Gap", uncertainty: "Uncertainty", flatness: "Flatness (CV)", gapStart: "Gap started", sinceStart: "since data start",
@@ -23,7 +23,7 @@ const LABELS = {
   ms: {
     signIn: "Log masuk", signOut: "Log keluar", username: "Nama pengguna", password: "Kata laluan",
     overview: "Gambaran rangkaian", cases: "Kes", dataManager: "Pengurus data", settings: "Tetapan", audit: "Log audit",
-    models: "Model", assistant: "Pembantu", field: "Aplikasi pemeriksa",
+    models: "Model", assistant: "Pembantu", field: "Aplikasi pemeriksa", dispatch: "Penghantaran", messages: "Mesej",
     flaggedZones: "Zon bocor", gapPerDay: "Tenaga tidak dijelaskan (kWj/hari)", noBalance: "Zon tanpa imbangan",
     openCases: "Kes terbuka", zone: "Zon", district: "Daerah", allDistricts: "Semua daerah", date: "Tarikh",
     gap: "Jurang", uncertainty: "Ketidakpastian", flatness: "Kerataan (CV)", gapStart: "Jurang bermula", sinceStart: "sejak data bermula",

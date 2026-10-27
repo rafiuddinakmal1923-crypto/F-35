@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, request } from "../api.js";
 import { setLang, t, useLang } from "../i18n.js";
+import TelegramChat from "../components/TelegramChat.jsx";
 import * as store from "./secureStore.js";
 
 const OUTCOMES = ["confirmed_theft", "false_alarm", "inconclusive", "no_access"];
@@ -120,6 +121,7 @@ export default function FieldApp() {
   const [online, setOnline] = useState(navigator.onLine);
   const [message, setMessage] = useState(null);
   const [notice, setNotice] = useState(null);
+  const [tab, setTab] = useState("cases");
   const syncing = useRef(false);
 
   const loadLocal = useCallback(async () => {
@@ -219,7 +221,16 @@ export default function FieldApp() {
         {message ? <small>{message}</small> : null}
         <button onClick={async () => { await store.wipeAll(); loadLocal(); }}>{t("signOut")}</button>
       </div>
-      {item ? (
+      {!item ? (
+        <div className="tabs">
+          <button className={tab === "cases" ? "active" : ""} onClick={() => setTab("cases")}>{t("myCases")}</button>
+          <button className={tab === "messages" ? "active" : ""} onClick={() => setTab("messages")}>{t("messages")}</button>
+        </div>
+      ) : null}
+      {!item && tab === "messages" ? (
+        online ? <TelegramChat token={session.token} compact links={false} title="VoltGuard Dispatch Bot" />
+          : <p className="muted">Messages need a connection.</p>
+      ) : item ? (
         <div className="stack">
           <button onClick={() => setOpen(null)}>← {t("myCases")}</button>
           <div className="card">

@@ -196,6 +196,9 @@ def test_sign_in_rejects_wrong_password_and_throttles(api):
     for _ in range(5):
         assert api.post("/auth/token", json={"username": "manager.nor", "password": "wrong"}).status_code == 401
     assert api.post("/auth/token", json={"username": "manager.nor", "password": "wrong"}).status_code == 429
+    from voltguard import auth
+
+    auth._failures.pop("manager.nor", None)       # the throttle lasts five minutes; later tests sign in as this user
 
 
 def test_health_and_metrics(api):
