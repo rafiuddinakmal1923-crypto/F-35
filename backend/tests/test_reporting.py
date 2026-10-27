@@ -10,8 +10,10 @@ from voltguard.service.commands import REPORT_VIEWS
 
 
 def test_FR_UI_01_powerbi_role_reads_rpt_views_only(api, pg):
+    import os
+
     owner, app = pg
-    bi = app.replace("voltguard_app", "voltguard_powerbi")
+    bi = os.environ.get("TEST_POWERBI_DATABASE_URL") or app.replace("voltguard_app", "voltguard_powerbi")
     with psycopg.connect(bi) as conn:
         for view in REPORT_VIEWS:
             conn.execute(f"SELECT * FROM {view} LIMIT 1")

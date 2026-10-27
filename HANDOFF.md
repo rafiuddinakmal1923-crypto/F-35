@@ -92,15 +92,17 @@ graphify graph in `graphify-out/` and `TRACEABILITY.md`).
 
 ## Docker check (this session)
 
-- `web` image: built with the repository's own `web/Dockerfile` (Node 20 build, nginx).
+- `web` image: built with the repository's own `web/Dockerfile`.
 - `api` image: built from a sandbox copy of `backend/Dockerfile` that only adds this cloud
   session's proxy certificate; every requirement installed on Python 3.12. The sandbox network
   blocks the Chromium download for PDFs (Playwright) and the Debian mirrors, which a normal network
   allows; PDF export falls back to fpdf2 when no browser is present.
-- In that image: 34 database-free tests pass; against PostgreSQL the container migrated on start,
-  served /health, and `python -m voltguard demo` ran end to end (models trained on first run).
-- Not pulled here (Docker Hub rate limit): `timescale/timescaledb-ha:pg16`, so TimescaleDB and
-  pgvector were not exercised; the schema detects them and falls back to plain tables.
+- `docker compose up db api web proxy` with the real `timescale/timescaledb-ha:pg16` image: the API
+  migrated on start (TimescaleDB hypertables on both reading tables, pgvector `embedding` column),
+  `python -m voltguard demo` ran in 16 s, the proxy routed `/api`, blocked `/api/metrics` and the
+  API docs, served the web app and set the security headers, and a browser signed in on desktop
+  and on the phone app through it. All 73 database tests also passed against that server.
+- Not run here: Ollama (no model download), Cloudflare tunnels, the full profile.
 
 ## Known issues
 
@@ -120,8 +122,8 @@ graphify graph in `graphify-out/` and `TRACEABILITY.md`).
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.sh)
 
-- Generated: 2026-10-27T08:42
-- Branch: `claude/practical-clarke-t5uwrc`; last commit: `a3f9abc M9: demo command, demo script, back-test and final documents`
+- Generated: 2026-10-27T08:50
+- Branch: `claude/practical-clarke-t5uwrc`; last commit: `0363865 Verify the images: CPU-only XGBoost, models trained on first run, three reasons always`
 - Tests collected: 73 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
@@ -129,7 +131,7 @@ graphify graph in `graphify-out/` and `TRACEABILITY.md`).
 
 ### Graph summary
 
-- 1893 nodes · 4378 edges · 108 communities (97 shown, 11 thin omitted)
+- 1894 nodes · 4379 edges · 120 communities (109 shown, 11 thin omitted)
 - Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 250 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 

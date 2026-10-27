@@ -19,7 +19,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _env(name: str, default: str = "") -> str:
-    return os.environ.get(name, default)
+    """An empty value (e.g. `DATA_ROOT=` in .env) counts as unset, never as the current folder."""
+    return os.environ.get(name) or default
 
 
 def config_dir() -> Path:
