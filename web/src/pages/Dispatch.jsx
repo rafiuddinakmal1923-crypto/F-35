@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { get, post, session } from "../api.js";
 import { ErrorBox, useLoad } from "../components/Common.jsx";
+import RouteMap from "../components/RouteMap.jsx";
 import TelegramChat, { useChats } from "../components/TelegramChat.jsx";
 
 function LinkTelegram() {
@@ -76,6 +77,40 @@ function Devices() {
   );
 }
 
+function TeamRoutes() {
+  const teams = useLoad(() => get("/teams"), []);
+  const [team, setTeam] = useState("");
+  const chosen = team || teams.data?.[0]?.team_id || "";
+  const route = useLoad(() => (chosen ? get(`/route?team=${chosen}`) : Promise.resolve(null)), [chosen], 30000);
+  const r = route.data;
+  return (
+    <div className="card stack">
+      <div className="row" style={{ justifyContent: "space-between" }}>
+        <h2>Team routes today</h2>
+        <select value={chosen} onChange={(e) => setTeam(e.target.value)} aria-label="Team">
+          {(teams.data || []).map((tm) => <option key={tm.team_id} value={tm.team_id}>{tm.name} ({tm.team_id})</option>)}
+        </select>
+      </div>
+      <ErrorBox error={teams.error || route.error} />
+      {r ? (
+        <>
+          <small>{r.stops.length} stop(s) · {r.total_km} km · about {Math.floor(r.total_minutes / 60)} h {r.total_minutes % 60} min</small>
+          {r.stops.length ? <RouteMap route={r} /> : <p className="muted">No assigned case waiting for a visit.</p>}
+          {r.stops.length ? (
+            <table><tbody>
+              {r.stops.map((s) => (
+                <tr key={s.case_id}><td><span className="stop-no">{s.stop}</span></td><td>{s.case_id}{s.joint_operation ? <span className="chip risk">joint op</span> : null}<br />
+                  <small>{s.address}</small></td><td className="num" style={{ whiteSpace: "nowrap" }}><small>+{s.leg_km} km<br />~{s.arrive_after_min} min</small></td></tr>
+              ))}
+            </tbody></table>
+          ) : null}
+          <small className="muted">{r.assumptions}</small>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 export default function Dispatch() {
   const { user } = session();
   const isSupervisor = user?.role === "supervisor";
@@ -109,6 +144,7 @@ export default function Dispatch() {
           </>
         ) : null}
         <div className="stack">
+          {isSupervisor ? <TeamRoutes /> : null}
           {isSupervisor ? <LinkTelegram /> : null}
           <Devices />
         </div>

@@ -162,6 +162,13 @@ def claim(conn, caller: Caller, case_id: str) -> dict:
 
 # --------------------------------------------------------------------------- assignment (supervisor only)
 
+def _close_buttons(conn, case_id: str, kinds: tuple[str, ...], actor: str, action: str) -> None:
+    """A decision taken anywhere (case page, phone, Telegram) closes the matching chat messages' buttons."""
+    conn.execute("UPDATE notification SET answered_by = %s, answered_action = %s, answered_at = now() "
+                 "WHERE case_id = %s AND kind = ANY(%s) AND answered_by IS NULL AND buttons IS NOT NULL",
+                 (actor, action, case_id, list(kinds)))
+
+
 def _assign(conn, caller: Caller, case: dict, team: str, via: str) -> dict:
     team_row = conn.execute("SELECT team_id, region FROM team WHERE team_id = %s", (team,)).fetchone()
     if not team_row or team_row["region"] != case["region"]:
@@ -173,6 +180,8 @@ def _assign(conn, caller: Caller, case: dict, team: str, via: str) -> dict:
                            escalated_at = NULL, joint_operation = %s WHERE case_id = %s RETURNING *""",
                         (team, bool(joint and joint["joint_operation"]), case["case_id"])).fetchone()
     _event(conn, case, caller.user_id, "assigned", {"team": team, "via": via})
+    if via == "direct":   # a direct assignment settles a pending suggestion's message too
+        _close_buttons(conn, case["case_id"], ("suggestion",), caller.user_id, "assigned")
     db.audit(conn, caller.user_id, "case.assign", f"case:{case['case_id']}", {"team": team, "via": via})
     notify.send(conn, "assignment", case["case_id"], case["region"], team,
                 "Joint operation with police." if case["joint_operation"] else "")
@@ -192,6 +201,7 @@ def decide_suggestion(conn, caller: Caller, case_id: str, approve: bool, team: s
                  ("approved" if approve else "rejected", caller.user_id, case_id))
     db.audit(conn, caller.user_id, "dispatch.approve" if approve else "dispatch.reject", f"case:{case_id}",
              {"suggested_team": suggestion["suggested_team"], "assigned_team": team})
+    _close_buttons(conn, case_id, ("suggestion",), caller.user_id, "approve" if approve else "reject")
     if approve:
         return _assign(conn, caller, case, team or suggestion["suggested_team"], "dispatch_suggestion")
     _event(conn, case, caller.user_id, "dispatch_rejected", None)
@@ -251,6 +261,7 @@ def record_outcome(conn, caller: Caller, case_id: str, outcome: str, notes: str 
                                                     recorded_by, client_ref) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                  (case_id, visit, case["region"], outcome, reason_tag, notes, redacted.text if redacted else None, keys, caller.user_id, client_ref))
     conn.execute("UPDATE inspection_case SET status = 'visited' WHERE case_id = %s", (case_id,))
+    _close_buttons(conn, case_id, ("assignment", "reminder"), caller.user_id, "visited")
     _event(conn, case, caller.user_id, "visited", {"visit_no": visit})
     new_status = {"confirmed_theft": "reporting", "false_alarm": "closed", "inconclusive": "closed", "no_access": "assigned"}[outcome]
     case = conn.execute("UPDATE inspection_case SET status = %s, closed_at = CASE WHEN %s = 'closed' THEN now() END, "

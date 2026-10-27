@@ -6,7 +6,8 @@ import { request } from "../api.js";
 
 const TITLES = { assignment: "New inspection", reminder: "Reminder", escalation: "Escalation", suggestion: "Dispatch suggestion",
   no_access: "No access", declined: "Cannot attend", report: "Report" };
-const DONE = { accept: "Accepted", enroute: "On the way", decline: "Cannot attend", approve: "Approved", reject: "Rejected" };
+const DONE = { accept: "Accepted", enroute: "On the way", decline: "Cannot attend", approve: "Approved", reject: "Rejected",
+  assigned: "Assigned directly", visited: "Visited" };
 
 // The header already names the kind and case: show the rest of the text.
 const body_ = (text) => text.replace(/^VoltGuard [^:]+: case [^.]+\.\s*/, "");

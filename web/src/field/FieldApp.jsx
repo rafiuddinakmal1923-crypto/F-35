@@ -91,6 +91,48 @@ function LinkTelegram({ token }) {
   );
 }
 
+// Navigation opens the inspector's map app with coordinates only (no name or address is sent).
+function Navigate({ lat, lon }) {
+  const ll = `${lat.toFixed(6)},${lon.toFixed(6)}`;
+  return (
+    <div className="row">
+      <a className="button primary" href={`https://www.google.com/maps/dir/?api=1&destination=${ll}&travelmode=driving`} target="_blank" rel="noreferrer">{t("navigate")} · Google Maps</a>
+      <a className="button" href={`https://waze.com/ul?ll=${ll}&navigate=yes`} target="_blank" rel="noreferrer">Waze</a>
+    </div>
+  );
+}
+
+const stopOf = (route, caseId) => route?.stops?.find((s) => s.case_id === caseId)?.stop;
+
+function inRouteOrder(cases, route) {
+  return [...cases].sort((a, b) => (stopOf(route, a.case_id) ?? 999) - (stopOf(route, b.case_id) ?? 999));
+}
+
+function RouteCard({ route, cases, queuedFor }) {
+  const open = new Set(cases.map((c) => c.case_id));
+  const stops = (route?.stops || []).filter((s) => open.has(s.case_id) && !queuedFor(s.case_id));
+  if (!stops.length) return null;
+  const h = Math.floor(route.total_minutes / 60);
+  const m = route.total_minutes % 60;
+  return (
+    <div className="card stack route-card">
+      <div className="row" style={{ justifyContent: "space-between" }}>
+        <b>{t("todaysRoute")}</b>
+        <small>{stops.length} {t("stops")} · {route.total_km} km · ~{h ? `${h} h ` : ""}{m} min</small>
+      </div>
+      <ol className="route-stops">
+        {stops.map((s) => (
+          <li key={s.case_id}><span className="stop-no">{s.stop}</span>
+            <span>{s.label === "Routine meter check" ? t("routine") : s.case_id}{s.joint_operation ? " · joint operation" : ""}<br />
+              <small>+{s.leg_km} km · arrive ~{s.arrive_after_min} min</small></span></li>
+        ))}
+      </ol>
+      {route.full_route_url ? <a className="button" href={route.full_route_url} target="_blank" rel="noreferrer">{t("openRoute")}</a> : null}
+      <small className="muted">{route.assumptions}</small>
+    </div>
+  );
+}
+
 function OutcomeForm({ item, onSaved }) {
   const [outcome, setOutcome] = useState(null);
   const [notes, setNotes] = useState("");
@@ -137,6 +179,7 @@ export default function FieldApp() {
   useLang();
   const [session, setSession] = useState(undefined);
   const [cases, setCases] = useState([]);
+  const [route, setRoute] = useState(null);
   const [queue, setQueue] = useState([]);
   const [open, setOpen] = useState(null);
   const [online, setOnline] = useState(navigator.onLine);
@@ -150,6 +193,7 @@ export default function FieldApp() {
     const s = await store.get("session").catch(() => null);
     setSession(s && s.expiresAt > Date.now() ? s : null);
     setCases((await store.get("cases").catch(() => null)) || []);
+    setRoute(await store.get("route").catch(() => null));
     setQueue((await store.get("queue").catch(() => null)) || []);
   }, []);
 
@@ -158,6 +202,7 @@ export default function FieldApp() {
       await store.wipeAll();
       setSession(null);
       setCases([]);
+      setRoute(null);
       setQueue([]);
       setNotice(err.code === "signed_out" ? "This phone was signed out remotely. All case data on it has been wiped." : "Please sign in again.");
       return true;
@@ -192,6 +237,8 @@ export default function FieldApp() {
       // Fresh list of assigned cases; synced cases drop off the phone.
       const list = (await call(s.token, "/cases")).cases;
       await store.put("cases", list);
+      // Today's visiting order, kept encrypted with the cases so it works offline.
+      await store.put("route", await call(s.token, "/route").catch(() => null));
       await store.put("meta", { downloadedAt: Date.now() });
       setMessage(`Synced at ${new Date().toLocaleTimeString()}`);
     } catch (err) {
@@ -264,6 +311,7 @@ export default function FieldApp() {
             {item.joint_operation ? <div className="notice error" style={{ marginTop: 8 }}>Joint operation with police: do not visit alone.</div> : null}
             <h3 style={{ marginTop: 10 }}>{t("address")}</h3>
             {item.contact ? <p>{item.contact.address}<br /><small>{item.contact.holder_name} · {item.contact.contact}</small></p> : <p className="muted">Not available</p>}
+            {item.contact?.lat != null ? <Navigate lat={item.contact.lat} lon={item.contact.lon} /> : null}
             {item.reasons?.length ? (
               <><h3>{t("reasons")}</h3><ol>{item.reasons.map((r, i) => <li key={i}>{r.reason_text}</li>)}</ol></>
             ) : null}
@@ -275,11 +323,13 @@ export default function FieldApp() {
         </div>
       ) : (
         <div>
+          <RouteCard route={route} cases={cases} queuedFor={queuedFor} />
           <h2>{t("myCases")}</h2>
-          {cases.length ? cases.map((c) => (
+          {cases.length ? inRouteOrder(cases, route).map((c) => (
             <a key={c.case_id} className="card case-card" href="#/field" onClick={(e) => { e.preventDefault(); setOpen(c.case_id); }}>
               <div className="row" style={{ justifyContent: "space-between" }}>
-                <b>{c.label === "Routine meter check" ? t("routine") : c.case_id}</b>
+                <b>{stopOf(route, c.case_id) ? <span className="stop-no">{stopOf(route, c.case_id)}</span> : null}
+                  {c.label === "Routine meter check" ? t("routine") : c.case_id}</b>
                 {queuedFor(c.case_id) ? <span className="chip warn">{t("pending")}</span> : <span className="chip info">{c.status}</span>}
               </div>
               <small>{c.contact?.address || c.premise_id}</small>

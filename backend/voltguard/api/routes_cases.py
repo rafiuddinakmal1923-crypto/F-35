@@ -145,3 +145,22 @@ def case_version(case_id: str, c: Caller = Depends(require("supervisor", "analys
     if not row:
         raise ApiError(404, "not_found", "Case not found in your region")
     return row
+
+
+@router.get("/route")
+def my_route(team: str | None = None, c: Caller = Depends(require("inspector", "supervisor")), conn=Depends(connection)):
+    """Today's visiting order: an inspector gets their own team's route; a supervisor names a team in their region."""
+    from voltguard.agents import route
+
+    if c.role == "inspector":
+        if team and team != c.team:
+            raise forbidden("Inspectors see their own team's route")
+        team = c.team
+    if not team:
+        raise ApiError(400, "bad_request", "Name a team")
+    try:
+        result = route.plan(conn, c, team)
+    except LookupError as exc:
+        raise not_found(str(exc)) from exc
+    db.audit(conn, c.user_id, "route.plan", f"team:{team}", {"stops": len(result["stops"])})
+    return result

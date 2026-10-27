@@ -29,7 +29,8 @@ from voltguard.service import cases, notify
 
 log = logging.getLogger("voltguard.telegram")
 CODE_TTL = timedelta(minutes=15)
-DONE = {"accept": "accepted", "enroute": "on the way", "decline": "cannot attend", "approve": "approved", "reject": "rejected"}
+DONE = {"accept": "accepted", "enroute": "on the way", "decline": "cannot attend", "approve": "approved", "reject": "rejected",
+        "assigned": "assigned directly", "visited": "visited"}
 HELP = ("VoltGuard dispatch bot. Messages hold a case ID and a link, never customer details.\n"
         "/mycases - your open cases\n/whoami - the account linked to this chat\n/unlink - stop messages to this chat\n"
         "To link: in the VoltGuard web app open Dispatch chat -> Link Telegram, then send /start CODE here.")

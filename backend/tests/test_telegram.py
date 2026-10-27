@@ -97,3 +97,14 @@ def test_FR_AG_02_real_bot_links_a_chat_and_answers_a_button(api, pg, monkeypatc
 @pytest.mark.parametrize("user", ["analyst.nor", "manager.nor", "auditor"])
 def test_FR_AD_01_chat_is_for_supervisors_and_inspectors(api, user):
     assert api.get("/telegram/chats", headers=login(api, user)).status_code == 403
+
+
+def test_FR_AG_02_decision_on_the_case_page_closes_the_chat_buttons(api, pg):
+    cid = new_case(api, "P-NOR-002-001")
+    sup = login(api, "supervisor.nor")
+    assert api.post(f"/cases/{cid}/dispatch-suggestion/approve", json={"approve": True}, headers=sup).status_code == 200
+    m = message(api, "supervisor.nor", cid, "suggestion")
+    assert m["answered_by"] == "supervisor.nor" and m["answered_action"] == "approve" and not m["can_answer"]
+    r = api.post(f"/cases/{cid}/outcome", json={"outcome": "false_alarm"}, headers=login(api, "inspector.c"))
+    assert r.status_code == 200
+    assert message(api, "inspector.c", cid, "assignment")["answered_action"] == "visited"
