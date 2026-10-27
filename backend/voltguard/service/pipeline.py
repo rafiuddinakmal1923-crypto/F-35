@@ -302,6 +302,9 @@ def run_detection(actor: str = "pipeline", progress: Progress = print) -> dict:
         cfg = settings.thresholds(conn)
         progress("Running detection (zone balance, voltage locator, features, scoring)...")
         run = engine.run_tables(canonical, start, days, cfg)
+        active = conn.execute("SELECT version_id FROM model_version WHERE active ORDER BY trained_at DESC LIMIT 1").fetchone()
+        # R0 scores are the additive sum; the pattern model is one input; an active label model is recorded alongside.
+        run.model_version = f"r0-additive/{run.model_version}" + (f"/{active['version_id']}" if active else "")
         with conn.transaction():
             summary = write_results(conn, run, run_id)
             summary.update({"run_id": run_id, "loaded": counts, "warnings": sum(i.level == "warning" for i in report.issues)})
@@ -311,8 +314,10 @@ def run_detection(actor: str = "pipeline", progress: Progress = print) -> dict:
     try:
         from voltguard.service import monitoring
 
-        monitoring.after_detection(run, summary)
-    except ImportError:
-        pass
+        summary["alerts"] = monitoring.after_detection(run, summary)
+    except Exception as exc:  # monitoring must never fail the detection run; the failure is logged
+        import logging
+
+        logging.getLogger("voltguard.pipeline").exception("monitoring after detection failed: %s", exc)
     progress(f"Done: {len(summary['flagged_zones'])} flagged zone(s), {summary['premises_scored']} premises scored.")
     return summary

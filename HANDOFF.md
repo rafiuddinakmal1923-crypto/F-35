@@ -66,8 +66,14 @@ graphify graph in `graphify-out/` and `TRACEABILITY.md`).
   region refusal, POST /query), `service/seed.py` (20 closed cases with planted fake details, index,
   pre-drafted assessment), `api/routes_agents.py`, web Assistant page and field "Ask" box.
   Tests: `tests/test_agents.py` (agent safety, SDD 10.1). CLI: `seed`, `index-docs`, `fetch-models`.
-- [ ] **M7 Learning and monitoring**: retrain with versions and both hit rates, alerts, settings.
-- [ ] **M8 Dashboards**: `rpt_` views, Power BI role, `powerbi/POWERBI.md`, CSV snapshot.
+- [x] **M7 Learning and monitoring**: `service/learning.py` (label model on outcomes, weighted
+  for how cases were chosen; versions in `model_version` + MLflow file store; hit rate and
+  precision for model-ranked vs random-sample), `service/monitoring.py` (data-quality, PSI drift,
+  unusual-access alerts), `api/routes_models.py` (/models, /models/retrain, /alerts), web Models
+  page; settings (FR-AD-03) were done in M4. Tests: `tests/test_learning.py`.
+- [x] **M8 Dashboards**: `sql/004_reporting.sql` (six zone-level `rpt_` views; only
+  `voltguard_powerbi` may read them), `snapshot` CLI, `powerbi/POWERBI.md` (page-by-page layout,
+  connection), `powerbi/snapshot/*.csv` from the demo data. Tests: `tests/test_reporting.py`.
 - [ ] **M9 Demo**: `make demo`, `DEMO.md`, `scripts/backtest.py`, final simulation report, summary.
 
 ## Decisions to keep
@@ -90,44 +96,44 @@ graphify graph in `graphify-out/` and `TRACEABILITY.md`).
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.sh)
 
-- Generated: 2026-10-27T08:13
-- Branch: `claude/practical-clarke-t5uwrc`; last commit: `fff3b58 M5: case workflow, dispatch agent, web case pages and inspector PWA`
-- Tests collected: 67 tests
+- Generated: 2026-10-27T08:18
+- Branch: `claude/practical-clarke-t5uwrc`; last commit: `1c67c0e M6: agents, RAG, report approvals, chatbot and guardrails`
+- Tests collected: 73 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
   query with `graphify query "<question>"` or `graphify explain "<name>"`)
 
 ### Graph summary
 
-- 1801 nodes · 4077 edges · 121 communities (109 shown, 12 thin omitted)
-- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 224 edges (avg confidence: 0.93)
+- 1851 nodes · 4254 edges · 124 communities (112 shown, 12 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 240 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
-1. `Caller` - 96 edges
-2. `Requirements` - 45 edges
-3. `login()` - 33 edges
-4. `audit()` - 32 edges
-5. `t()` - 31 edges
+1. `Caller` - 101 edges
+2. `Requirements` - 55 edges
+3. `login()` - 37 edges
+4. `audit()` - 35 edges
+5. `t()` - 33 edges
 6. `simulate_zone()` - 28 edges
 7. `ingest()` - 27 edges
-8. `ZoneInput` - 26 edges
-9. `run_detection()` - 25 edges
-10. `build_features()` - 24 edges
+8. `admin_connection()` - 27 edges
+9. `ZoneInput` - 26 edges
+10. `run_detection()` - 26 edges
 
 ### File tree
 
 - `./`: .env.example, .gitignore, DEVIATIONS.md, HANDOFF.md, Makefile, PLAN.md, README.md, TRACEABILITY.md, VoltGuard AI Software Design Document (SDD).pdf, VoltGuard AI Software Requirements Specification (SRS).pdf, VoltGuard_ClaudeCode_Prompt.md, VoltGuard_SDD.md, ... (+3)
 - `backend/`: Dockerfile, pytest.ini, requirements.txt
-- `backend/tests/`: conftest.py, local_stack.py, pg_server.py, test_agents.py, test_api_security.py, test_cases.py, test_data_layer.py, test_detection.py
+- `backend/tests/`: conftest.py, local_stack.py, pg_server.py, test_agents.py, test_api_security.py, test_cases.py, test_data_layer.py, test_detection.py, test_learning.py, test_reporting.py
 - `backend/tests/e2e/`: __init__.py, test_web_flow.py
 - `backend/voltguard/`: __init__.py, __main__.py, audit.py, auth.py, cli.py, config.py, db.py, evaluation.py, network.py, pdf.py, storage.py
 - `backend/voltguard/agents/`: __init__.py, chatbot.py, dispatch.py, embed.py, guardrails.py, llm.py, rag.py, report.py, scrubber.py
-- `backend/voltguard/api/`: __init__.py, deps.py, main.py, routes_admin.py, routes_agents.py, routes_auth.py, routes_cases.py, routes_zones.py
+- `backend/voltguard/api/`: __init__.py, deps.py, main.py, routes_admin.py, routes_agents.py, routes_auth.py, routes_cases.py, routes_models.py, routes_zones.py
 - `backend/voltguard/data/`: __init__.py, adapters/__init__.py, adapters/datagovmy.py, adapters/london.py, adapters/sgcc.py, canonical.py, fakes.py, ingest.py, profiles.py, simulator.py, sources.py, validation.py
 - `backend/voltguard/detection/`: __init__.py, anomaly.py, balance.py, engine.py, features.py, pattern.py, scoring.py, voltage.py, zone_input.py
-- `backend/voltguard/service/`: __init__.py, cases.py, commands.py, jobs.py, notify.py, pipeline.py, scheduler.py, seed.py, settings.py, users.py
-- `backend/voltguard/sql/`: 001_core.sql, 002_security.sql, 003_cases.sql
+- `backend/voltguard/service/`: __init__.py, cases.py, commands.py, jobs.py, learning.py, monitoring.py, notify.py, pipeline.py, scheduler.py, seed.py, settings.py, users.py
+- `backend/voltguard/sql/`: 001_core.sql, 002_security.sql, 003_cases.sql, 004_reporting.sql
 - `config/`: data_sources.yaml, demo.yaml, thresholds.yaml, tuned_weights.yaml
 - `data/docs_rag/`: README.md, field_evidence_checklist.md, report_template.md, sources.yaml, voltguard_guide.md
 - `data/uploads/`: README.md, column_map.example.yaml, schema.yaml
@@ -136,6 +142,8 @@ Most connected (core abstractions):
 - `deploy/caddy/`: Caddyfile
 - `deploy/cloudflared/`: config.example.yml
 - `deploy/prometheus/`: prometheus.yml
+- `powerbi/`: POWERBI.md
+- `powerbi/snapshot/`: rpt_case_counts.csv, rpt_flag_rates.csv, rpt_network_kpis.csv, rpt_outcomes.csv, rpt_zone_daily.csv, rpt_zone_latest.csv
 - `reports/`: simulation_report.md
 - `scripts/`: fetch_datasets.py, fetch_docs.py, handoff.sh, setup_env.py, traceability.py, tunnel.sh
 - `web/`: .gitignore, Dockerfile, index.html, nginx.conf, package-lock.json, package.json, vite.config.js
@@ -143,5 +151,5 @@ Most connected (core abstractions):
 - `web/src/`: App.jsx, api.js, i18n.js, main.jsx, styles.css
 - `web/src/components/`: Charts.jsx, Common.jsx, ZoneMap.jsx
 - `web/src/field/`: FieldApp.jsx, secureStore.js
-- `web/src/pages/`: Assistant.jsx, Audit.jsx, Case.jsx, Cases.jsx, DataManager.jsx, Login.jsx, Overview.jsx, Premise.jsx, Settings.jsx, Zone.jsx, extra.js
+- `web/src/pages/`: Assistant.jsx, Audit.jsx, Case.jsx, Cases.jsx, DataManager.jsx, Login.jsx, Models.jsx, Overview.jsx, Premise.jsx, Settings.jsx, Zone.jsx, extra.js
 <!-- auto:end -->

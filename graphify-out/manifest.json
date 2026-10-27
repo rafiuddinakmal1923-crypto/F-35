@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1793088781.4186926,
-    "seen": 1793088783.6132894,
-    "ast_hash": "1ac1837366b536cfcab0c53833521af1",
+    "mtime": 1793089094.5102394,
+    "seen": 1793089096.9195065,
+    "ast_hash": "27a7dd41d62775d22708eeb2d8f10af4",
     "semantic_hash": ""
   },
   "README.md": {
@@ -270,9 +270,9 @@
     "semantic_hash": ""
   },
   "TRACEABILITY.md": {
-    "mtime": 1793087963.4556918,
-    "seen": 1793088783.6133215,
-    "ast_hash": "f46f906c1a9db37160dfc05e9f1b80fe",
+    "mtime": 1793088783.8053994,
+    "seen": 1793089096.9195402,
+    "ast_hash": "7787f51fa5a99f324187ca3bf900e462",
     "semantic_hash": ""
   },
   "docker-compose.yml": {
@@ -390,9 +390,9 @@
     "semantic_hash": ""
   },
   "backend/voltguard/api/main.py": {
-    "mtime": 1793086913.809666,
-    "seen": 1793087963.2869248,
-    "ast_hash": "eace009e40098a2be0f3ab2b57718384",
+    "mtime": 1793088870.4367697,
+    "seen": 1793089096.9178967,
+    "ast_hash": "3c8086af0a2f8a7c98de0f112df068a5",
     "semantic_hash": ""
   },
   "backend/voltguard/api/routes_admin.py": {
@@ -438,9 +438,9 @@
     "semantic_hash": ""
   },
   "backend/voltguard/service/commands.py": {
-    "mtime": 1793088363.342137,
-    "seen": 1793088783.6124368,
-    "ast_hash": "d6bf110da270616159fff788a4aee91a",
+    "mtime": 1793089008.2620957,
+    "seen": 1793089096.9186122,
+    "ast_hash": "aea25d4354a6630dc37bf8b3b7b3c42a",
     "semantic_hash": ""
   },
   "backend/voltguard/service/jobs.py": {
@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "backend/voltguard/service/pipeline.py": {
-    "mtime": 1793086281.4580114,
-    "seen": 1793086721.0225165,
-    "ast_hash": "33a183ec3e70ac51a6aa18d2832ebb7a",
+    "mtime": 1793088870.4075618,
+    "seen": 1793089096.9186554,
+    "ast_hash": "07664b35c92608762082944df7aacaee",
     "semantic_hash": ""
   },
   "backend/voltguard/service/scheduler.py": {
@@ -648,9 +648,9 @@
     "semantic_hash": ""
   },
   "web/src/pages/extra.js": {
-    "mtime": 1793088738.4781504,
-    "seen": 1793088783.6132712,
-    "ast_hash": "c2c3074c5de7f7581534043c37ff525e",
+    "mtime": 1793088888.102156,
+    "seen": 1793089096.9194517,
+    "ast_hash": "ab792be3619c1a1af4101740d807e3d3",
     "semantic_hash": ""
   },
   "web/vite.config.js": {
@@ -771,6 +771,48 @@
     "mtime": 1793088082.900001,
     "seen": 1793088783.6133747,
     "ast_hash": "7ea6f453c35d653a299e5643aa67497d",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_learning.py": {
+    "mtime": 1793088898.1541562,
+    "seen": 1793089096.9176366,
+    "ast_hash": "1cca03a690bdc14dd7b709148e0899f0",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_reporting.py": {
+    "mtime": 1793088967.6257086,
+    "seen": 1793089096.9176393,
+    "ast_hash": "a98918a6b7219b119b3591975e2cb192",
+    "semantic_hash": ""
+  },
+  "backend/voltguard/api/routes_models.py": {
+    "mtime": 1793088870.4139347,
+    "seen": 1793089096.9179761,
+    "ast_hash": "092cde87e087050ae41ca7652dcca7fd",
+    "semantic_hash": ""
+  },
+  "backend/voltguard/service/learning.py": {
+    "mtime": 1793088831.594154,
+    "seen": 1793089096.918632,
+    "ast_hash": "18628966245b43176bc6a9301a922f63",
+    "semantic_hash": ""
+  },
+  "backend/voltguard/service/monitoring.py": {
+    "mtime": 1793088848.1541543,
+    "seen": 1793089096.9186335,
+    "ast_hash": "aabffede657b4446aa11d0d9da1db1d0",
+    "semantic_hash": ""
+  },
+  "web/src/pages/Models.jsx": {
+    "mtime": 1793088886.4061558,
+    "seen": 1793089096.9193742,
+    "ast_hash": "ae9d7498423fe2d34d4013d184321059",
+    "semantic_hash": ""
+  },
+  "powerbi/POWERBI.md": {
+    "mtime": 1793089037.3741612,
+    "seen": 1793089096.9196978,
+    "ast_hash": "673c943f6651f6d8b45d64028deaab08",
     "semantic_hash": ""
   },
   "web/package-lock.json": {

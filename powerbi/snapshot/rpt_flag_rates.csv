@@ -1,0 +1,5 @@
+region,district,zones,flagged_zones,zone_flag_rate_pct,model_cases_opened,random_sample_cases
+CEN,Klang,2,0,0.0,8,2
+CEN,Petaling,2,2,100.0,3,2
+NOR,Seberang Perai,2,1,50.0,6,2
+NOR,Timur Laut,1,0,0.0,3,1

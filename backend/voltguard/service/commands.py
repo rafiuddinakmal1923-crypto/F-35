@@ -79,3 +79,36 @@ def cmd_fetch_models(args) -> int:
     except Exception as exc:  # offline: the hashing fallback keeps RAG working
         print(f"Could not download the embedding model ({exc.__class__.__name__}); the hashing fallback stays in use.")
     return 0
+
+
+@command("retrain", "Retrain the label model on inspection outcomes and record a new version")
+def cmd_retrain(args) -> int:
+    from voltguard.service import learning
+
+    print(json.dumps(learning.retrain("data_scientist"), indent=2, default=str))
+    return 0
+
+
+REPORT_VIEWS = ("rpt_network_kpis", "rpt_zone_latest", "rpt_zone_daily", "rpt_case_counts", "rpt_outcomes", "rpt_flag_rates")
+
+
+@command("snapshot", "Export the zone-level rpt_ views to CSV for Power BI (default powerbi/snapshot/)",
+         lambda p: p.add_argument("--out", default=None))
+def cmd_snapshot(args) -> int:
+    from pathlib import Path
+
+    from voltguard import config
+
+    out = Path(args.out) if args.out else config.REPO_ROOT / "powerbi" / "snapshot"
+    out.mkdir(parents=True, exist_ok=True)
+    with db.admin_connection() as conn:
+        for view in REPORT_VIEWS:
+            # Booleans as true/false (COPY writes t/f), which Power BI reads as logical values.
+            cols = conn.execute("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = %s ORDER BY ordinal_position",
+                                (view,)).fetchall()
+            select = ", ".join(f"{c['column_name']}::text AS {c['column_name']}" if c["data_type"] == "boolean" else c["column_name"] for c in cols)
+            with (out / f"{view}.csv").open("wb") as fh, conn.cursor().copy(f"COPY (SELECT {select} FROM {view}) TO STDOUT WITH (FORMAT csv, HEADER true)") as cp:
+                for block in cp:
+                    fh.write(block)
+            print(f"  {view:20s} -> {out / (view + '.csv')}")
+    return 0

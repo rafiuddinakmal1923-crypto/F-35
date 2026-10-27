@@ -31,7 +31,10 @@ _latency: Counter = Counter()
 async def lifespan(app: FastAPI):
     from voltguard.agents import dispatch
 
+    from voltguard.service import monitoring
+
     scheduler.register("dispatch_reminders", dispatch.run_reminders, minutes=1)
+    scheduler.register("unusual_access", monitoring.check_unusual_access, minutes=15)
     scheduler.start()
     yield
     scheduler.stop()

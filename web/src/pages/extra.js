@@ -1,6 +1,8 @@
 // Pages added by later milestones (agents, models). Each entry: { to, key, roles, nav, Component }.
 import Assistant from "./Assistant.jsx";
+import Models from "./Models.jsx";
 
 export const EXTRA_PAGES = [
   { to: "/assistant", key: "assistant", roles: ["manager", "analyst", "supervisor"], nav: true, Component: Assistant },
+  { to: "/models", key: "models", roles: ["manager", "data_scientist"], nav: true, Component: Models },
 ];
