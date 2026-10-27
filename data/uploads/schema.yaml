@@ -1,0 +1,341 @@
+# Canonical schema for uploads. Generated from backend/voltguard/data/canonical.py; do not edit by hand.
+timezone: Asia/Kuala_Lumpur
+timestamp_format: ISO 8601, e.g. 2026-08-01T00:30:00+08:00
+tables:
+  transformer:
+    key:
+    - transformer_id
+    description: ''
+    columns:
+      transformer_id:
+        type: string
+        required: true
+        description: Distribution transformer ID
+      region:
+        type: string
+        required: true
+        description: Region code used for access limits
+      district:
+        type: string
+        required: true
+      capacity_kva:
+        type: float
+        required: true
+        unit: kVA
+        min: 10
+        max: 5000
+      has_dtm:
+        type: bool
+        required: true
+        description: Has a distribution transformer meter (AS-2)
+      dtm_accuracy_class:
+        type: float
+        required: false
+        unit: '%'
+        min: 0.1
+        max: 5
+        description: Transformer meter accuracy class, e.g. 0.5
+      loss_params:
+        type: json
+        required: false
+        description: Cable and transformer parameters for the loss model (AS-8)
+      lat:
+        type: float
+        required: false
+        min: -90
+        max: 90
+      lon:
+        type: float
+        required: false
+        min: -180
+        max: 180
+  premise:
+    key:
+    - premise_id
+    description: ''
+    columns:
+      premise_id:
+        type: string
+        required: true
+        description: Pseudonymised premise ID
+      transformer_id:
+        type: string
+        required: true
+      feeder_branch:
+        type: string
+        required: false
+        description: LV branch from the transformer (AS-7)
+      phase:
+        type: string
+        required: false
+        allowed:
+        - A
+        - B
+        - C
+        description: Phase the premise is connected to (AS-7)
+      distance_m:
+        type: float
+        required: false
+        unit: m
+        min: 0
+        max: 3000
+        description: Cable distance from the transformer
+      street_seq:
+        type: int
+        required: true
+        description: Order along the street
+      lat:
+        type: float
+        required: false
+        min: -90
+        max: 90
+      lon:
+        type: float
+        required: false
+        min: -180
+        max: 180
+      premise_type:
+        type: string
+        required: true
+        allowed:
+        - terrace
+        - semi_d
+        - bungalow
+        - apartment
+        - shop
+      tariff:
+        type: string
+        required: true
+        allowed:
+        - domestic
+        - commercial
+  meter:
+    key:
+    - meter_id
+    description: ''
+    columns:
+      meter_id:
+        type: string
+        required: true
+        description: Meter ID (format MTR- plus digits)
+      premise_id:
+        type: string
+        required: true
+      meter_type:
+        type: string
+        required: true
+        allowed:
+        - smart
+        - conventional
+      read_frequency:
+        type: string
+        required: true
+        allowed:
+        - 30min
+        - monthly
+      installed_on:
+        type: date
+        required: true
+  meter_reading:
+    key:
+    - meter_id
+    - ts
+    description: ''
+    columns:
+      meter_id:
+        type: string
+        required: true
+      ts:
+        type: timestamp
+        required: true
+        description: Start of the 30-minute interval, ISO 8601 with +08:00
+      kwh:
+        type: float
+        required: true
+        unit: kWh
+        min: -10
+        max: 50
+        description: Energy in the interval (negative = export)
+      voltage_v:
+        type: float
+        required: false
+        unit: V
+        min: 150
+        max: 280
+      quality_flag:
+        type: int
+        required: false
+        allowed:
+        - 0
+        - 1
+        - 2
+        description: 0 ok, 1 estimated, 2 suspect
+  meter_monthly_reading:
+    key:
+    - meter_id
+    - month
+    description: ''
+    columns:
+      meter_id:
+        type: string
+        required: true
+      month:
+        type: date
+        required: true
+        description: First day of the month
+      kwh:
+        type: float
+        required: true
+        unit: kWh
+        min: 0
+        max: 50000
+  transformer_reading:
+    key:
+    - transformer_id
+    - ts
+    description: ''
+    columns:
+      transformer_id:
+        type: string
+        required: true
+      ts:
+        type: timestamp
+        required: true
+        description: Start of the 30-minute interval
+      kwh_supplied:
+        type: float
+        required: true
+        unit: kWh
+        min: 0
+        max: 5000
+      voltage_v:
+        type: float
+        required: false
+        unit: V
+        min: 180
+        max: 270
+  account_event:
+    key:
+    - event_id
+    description: ''
+    columns:
+      event_id:
+        type: string
+        required: true
+      premise_id:
+        type: string
+        required: true
+      event_type:
+        type: string
+        required: true
+        allowed:
+        - holder_change
+        - change_of_tenancy
+        - solar_registration
+        description: solar_registration = rooftop solar under net metering or a self-consumption
+          scheme (AS-9)
+      event_date:
+        type: date
+        required: true
+  district_weather:
+    key:
+    - district
+    - date
+    description: Optional daily weather per district (FR-DI-07); sunshine helps tell
+      rooftop solar from theft (FR-PS-10).
+    columns:
+      district:
+        type: string
+        required: true
+      date:
+        type: date
+        required: true
+      temperature_c:
+        type: float
+        required: false
+        unit: °C
+        min: 10
+        max: 45
+      sunshine_hours:
+        type: float
+        required: false
+        unit: h
+        min: 0
+        max: 14
+  duty_roster:
+    key:
+    - team_id
+    - shift_date
+    description: ''
+    columns:
+      team_id:
+        type: string
+        required: true
+      shift_date:
+        type: date
+        required: true
+      base_lat:
+        type: float
+        required: true
+        min: -90
+        max: 90
+      base_lon:
+        type: float
+        required: true
+        min: -180
+        max: 180
+      on_duty:
+        type: bool
+        required: true
+  customer_pii:
+    key:
+    - premise_id
+    description: Restricted. Fake data only in R0.
+    columns:
+      premise_id:
+        type: string
+        required: true
+      holder_name:
+        type: string
+        required: true
+      address:
+        type: string
+        required: true
+      contact:
+        type: string
+        required: false
+  inspection_outcome:
+    key:
+    - case_id
+    description: Optional historic outcomes (labels).
+    columns:
+      case_id:
+        type: string
+        required: true
+      premise_id:
+        type: string
+        required: true
+      outcome:
+        type: string
+        required: true
+        allowed:
+        - confirmed_theft
+        - false_alarm
+        - inconclusive
+        - no_access
+      reason_tag:
+        type: string
+        required: false
+      notes:
+        type: string
+        required: false
+      recorded_at:
+        type: timestamp
+        required: true
+      origin:
+        type: string
+        required: false
+        allowed:
+        - model
+        - random_sample
+        - manual

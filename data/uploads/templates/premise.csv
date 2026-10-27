@@ -1,0 +1,3 @@
+premise_id,transformer_id,feeder_branch,phase,distance_m,street_seq,lat,lon,premise_type,tariff
+P-CEN-001-001,TX-CEN-001,B1,A,35.0,1,3.1075,101.6069,terrace,domestic
+P-CEN-001-002,TX-CEN-001,B1,B,35.0,2,3.1076,101.607,terrace,domestic

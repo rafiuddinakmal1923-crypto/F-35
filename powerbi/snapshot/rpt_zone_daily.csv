@@ -1,0 +1,428 @@
+zone,region,district,date,supplied_kwh,metered_and_estimated_kwh,technical_loss_kwh,gap_kwh,uncertainty_kwh,gap_pct,over_threshold,balance_available
+TX-CEN-001,CEN,Petaling,2026-08-01,1194.1,1061.3,10.3,122.5,11.2,10.26,true,true
+TX-CEN-001,CEN,Petaling,2026-08-02,1210.1,1077.9,10.6,121.5,11.5,10.04,true,true
+TX-CEN-001,CEN,Petaling,2026-08-03,1045.3,920.5,7.7,117.2,9.7,11.21,true,true
+TX-CEN-001,CEN,Petaling,2026-08-04,1167.7,1034.8,9.5,123.4,11.0,10.56,true,true
+TX-CEN-001,CEN,Petaling,2026-08-05,1119.0,990.9,8.9,119.1,10.5,10.65,true,true
+TX-CEN-001,CEN,Petaling,2026-08-06,1169.6,1039.6,10.1,119.9,11.0,10.25,true,true
+TX-CEN-001,CEN,Petaling,2026-08-07,1139.3,1012.2,9.6,117.6,10.8,10.32,true,true
+TX-CEN-001,CEN,Petaling,2026-08-08,1219.7,1089.1,10.5,120.0,11.7,9.84,true,true
+TX-CEN-001,CEN,Petaling,2026-08-09,1206.9,1070.2,10.5,126.2,11.3,10.45,true,true
+TX-CEN-001,CEN,Petaling,2026-08-10,1147.1,1016.5,9.5,121.0,10.8,10.55,true,true
+TX-CEN-001,CEN,Petaling,2026-08-11,1171.5,1041.4,10.1,119.9,11.0,10.24,true,true
+TX-CEN-001,CEN,Petaling,2026-08-12,1148.0,1017.2,9.5,121.3,10.8,10.57,true,true
+TX-CEN-001,CEN,Petaling,2026-08-13,1161.1,1032.5,9.7,119.0,10.9,10.25,true,true
+TX-CEN-001,CEN,Petaling,2026-08-14,1143.2,1015.7,9.5,118.0,10.8,10.32,true,true
+TX-CEN-001,CEN,Petaling,2026-08-15,1209.7,1082.7,10.7,116.2,11.4,9.61,true,true
+TX-CEN-001,CEN,Petaling,2026-08-16,1222.2,1093.4,10.7,118.0,11.6,9.66,true,true
+TX-CEN-001,CEN,Petaling,2026-08-17,1138.8,1004.1,9.2,125.4,10.7,11.01,true,true
+TX-CEN-001,CEN,Petaling,2026-08-18,1096.8,971.0,8.7,117.2,10.4,10.68,true,true
+TX-CEN-001,CEN,Petaling,2026-08-19,1137.9,1011.4,8.9,117.5,10.7,10.33,true,true
+TX-CEN-001,CEN,Petaling,2026-08-20,1062.0,937.2,8.2,116.6,10.0,10.98,true,true
+TX-CEN-001,CEN,Petaling,2026-08-21,1173.5,1045.9,10.1,117.4,11.0,10.00,true,true
+TX-CEN-001,CEN,Petaling,2026-08-22,1119.8,993.5,9.1,117.1,10.6,10.46,true,true
+TX-CEN-001,CEN,Petaling,2026-08-23,1139.2,1010.5,9.2,119.5,10.9,10.49,true,true
+TX-CEN-001,CEN,Petaling,2026-08-24,1104.1,980.8,8.7,114.6,10.4,10.38,true,true
+TX-CEN-001,CEN,Petaling,2026-08-25,1117.1,992.8,9.2,115.0,10.5,10.30,true,true
+TX-CEN-001,CEN,Petaling,2026-08-26,1060.5,939.5,8.4,112.6,10.0,10.62,true,true
+TX-CEN-001,CEN,Petaling,2026-08-27,1064.9,937.1,8.2,119.7,10.0,11.24,true,true
+TX-CEN-001,CEN,Petaling,2026-08-28,1049.6,922.0,8.2,119.3,9.8,11.37,true,true
+TX-CEN-001,CEN,Petaling,2026-08-29,1124.0,1001.3,9.5,113.3,10.6,10.08,true,true
+TX-CEN-001,CEN,Petaling,2026-08-30,1116.8,988.3,8.9,119.6,10.6,10.71,true,true
+TX-CEN-001,CEN,Petaling,2026-08-31,1050.4,923.9,8.0,118.5,9.8,11.28,true,true
+TX-CEN-001,CEN,Petaling,2026-09-01,1056.8,926.0,7.8,123.0,10.0,11.64,true,true
+TX-CEN-001,CEN,Petaling,2026-09-02,1084.3,954.2,8.5,121.6,10.4,11.22,true,true
+TX-CEN-001,CEN,Petaling,2026-09-03,1023.8,892.6,7.3,123.9,9.7,12.10,true,true
+TX-CEN-001,CEN,Petaling,2026-09-04,1063.7,941.8,8.4,113.5,10.3,10.67,true,true
+TX-CEN-001,CEN,Petaling,2026-09-05,1190.9,1062.3,10.6,118.0,11.6,9.91,true,true
+TX-CEN-001,CEN,Petaling,2026-09-06,1174.1,1046.6,10.2,117.3,11.4,9.99,true,true
+TX-CEN-001,CEN,Petaling,2026-09-07,1135.8,1007.9,9.2,118.7,11.0,10.45,true,true
+TX-CEN-001,CEN,Petaling,2026-09-08,1086.7,955.6,8.6,122.5,10.6,11.27,true,true
+TX-CEN-001,CEN,Petaling,2026-09-09,1058.7,923.4,8.2,127.2,10.2,12.01,true,true
+TX-CEN-001,CEN,Petaling,2026-09-10,1145.9,1008.6,9.4,127.9,11.1,11.16,true,true
+TX-CEN-001,CEN,Petaling,2026-09-11,1075.8,943.8,8.9,123.0,10.3,11.44,true,true
+TX-CEN-001,CEN,Petaling,2026-09-12,1140.7,1000.8,9.8,130.1,11.0,11.40,true,true
+TX-CEN-001,CEN,Petaling,2026-09-13,1169.6,1027.6,10.6,131.5,11.3,11.24,true,true
+TX-CEN-001,CEN,Petaling,2026-09-14,1071.8,935.6,8.9,127.4,10.3,11.88,true,true
+TX-CEN-001,CEN,Petaling,2026-09-15,1108.2,967.9,9.2,131.1,10.7,11.83,true,true
+TX-CEN-001,CEN,Petaling,2026-09-16,1107.8,970.2,8.9,128.8,10.7,11.62,true,true
+TX-CEN-001,CEN,Petaling,2026-09-17,1129.5,995.7,9.4,124.3,11.0,11.01,true,true
+TX-CEN-001,CEN,Petaling,2026-09-18,1069.0,930.5,9.7,128.9,10.2,12.06,true,true
+TX-CEN-001,CEN,Petaling,2026-09-19,1132.3,989.6,9.9,132.8,10.9,11.73,true,true
+TX-CEN-001,CEN,Petaling,2026-09-20,1208.9,1064.5,11.3,133.1,11.7,11.01,true,true
+TX-CEN-001,CEN,Petaling,2026-09-21,1098.2,958.7,9.7,129.8,10.5,11.82,true,true
+TX-CEN-001,CEN,Petaling,2026-09-22,1096.4,963.4,9.5,123.6,10.6,11.27,true,true
+TX-CEN-001,CEN,Petaling,2026-09-23,1083.4,939.7,8.9,134.8,10.3,12.44,true,true
+TX-CEN-001,CEN,Petaling,2026-09-24,1089.5,950.6,8.5,130.4,10.4,11.97,true,true
+TX-CEN-001,CEN,Petaling,2026-09-25,1098.6,966.2,9.7,122.8,10.5,11.17,true,true
+TX-CEN-001,CEN,Petaling,2026-09-26,1104.1,967.2,9.9,127.0,10.6,11.51,true,true
+TX-CEN-001,CEN,Petaling,2026-09-27,1115.6,974.3,9.8,131.5,10.6,11.78,true,true
+TX-CEN-001,CEN,Petaling,2026-09-28,1023.8,886.9,8.6,128.4,9.8,12.54,true,true
+TX-CEN-001,CEN,Petaling,2026-09-29,1088.2,953.7,8.9,125.6,10.5,11.54,true,true
+TX-CEN-001,CEN,Petaling,2026-09-30,1069.9,931.2,8.6,130.0,10.3,12.15,true,true
+TX-CEN-002,CEN,Petaling,2026-08-01,1178.9,1163.3,9.6,6.0,8.8,0.51,false,true
+TX-CEN-002,CEN,Petaling,2026-08-02,1180.1,1166.5,9.9,3.7,8.8,0.32,false,true
+TX-CEN-002,CEN,Petaling,2026-08-03,1037.5,1030.0,7.8,-0.3,7.7,-0.03,false,true
+TX-CEN-002,CEN,Petaling,2026-08-04,1141.0,1130.1,8.9,2.0,8.5,0.18,false,true
+TX-CEN-002,CEN,Petaling,2026-08-05,1069.4,1055.1,7.6,6.7,8.0,0.62,false,true
+TX-CEN-002,CEN,Petaling,2026-08-06,1127.8,1115.9,9.1,2.8,8.4,0.25,false,true
+TX-CEN-002,CEN,Petaling,2026-08-07,1074.7,1062.8,8.1,3.7,8.1,0.35,false,true
+TX-CEN-002,CEN,Petaling,2026-08-08,1222.6,1208.2,10.6,3.8,9.2,0.31,false,true
+TX-CEN-002,CEN,Petaling,2026-08-09,1193.2,1175.6,10.0,7.7,8.9,0.64,false,true
+TX-CEN-002,CEN,Petaling,2026-08-10,1101.3,1086.7,8.6,6.1,8.2,0.55,false,true
+TX-CEN-002,CEN,Petaling,2026-08-11,1107.6,1097.6,8.8,1.2,8.3,0.11,false,true
+TX-CEN-002,CEN,Petaling,2026-08-12,1082.8,1068.5,8.3,6.1,8.1,0.56,false,true
+TX-CEN-002,CEN,Petaling,2026-08-13,1121.3,1106.5,8.7,6.0,8.4,0.54,false,true
+TX-CEN-002,CEN,Petaling,2026-08-14,1116.4,1104.5,8.8,3.0,8.3,0.27,false,true
+TX-CEN-002,CEN,Petaling,2026-08-15,1194.6,1173.9,10.5,10.2,8.9,0.85,false,true
+TX-CEN-002,CEN,Petaling,2026-08-16,1217.5,1208.1,10.6,-1.3,9.2,-0.10,false,true
+TX-CEN-002,CEN,Petaling,2026-08-17,1109.8,1096.1,8.6,5.1,8.3,0.46,false,true
+TX-CEN-002,CEN,Petaling,2026-08-18,1061.1,1049.3,8.3,3.5,7.9,0.33,false,true
+TX-CEN-002,CEN,Petaling,2026-08-19,1119.0,1110.9,8.9,-0.7,8.4,-0.06,false,true
+TX-CEN-002,CEN,Petaling,2026-08-20,1033.3,1022.5,7.6,3.2,7.7,0.31,false,true
+TX-CEN-002,CEN,Petaling,2026-08-21,1147.3,1133.6,9.2,4.6,8.6,0.40,false,true
+TX-CEN-002,CEN,Petaling,2026-08-22,1070.5,1057.5,8.2,4.7,8.0,0.44,false,true
+TX-CEN-002,CEN,Petaling,2026-08-23,1124.0,1114.6,8.9,0.6,8.4,0.05,false,true
+TX-CEN-002,CEN,Petaling,2026-08-24,1051.1,1036.9,7.8,6.5,7.8,0.62,false,true
+TX-CEN-002,CEN,Petaling,2026-08-25,1047.3,1034.0,7.7,5.6,7.7,0.53,false,true
+TX-CEN-002,CEN,Petaling,2026-08-26,1001.9,993.7,7.2,1.0,7.4,0.10,false,true
+TX-CEN-002,CEN,Petaling,2026-08-27,1013.0,1006.2,7.2,-0.5,7.5,-0.05,false,true
+TX-CEN-002,CEN,Petaling,2026-08-28,1008.3,998.7,7.1,2.6,7.5,0.25,false,true
+TX-CEN-002,CEN,Petaling,2026-08-29,1052.8,1038.8,7.7,6.3,7.9,0.59,false,true
+TX-CEN-002,CEN,Petaling,2026-08-30,1109.5,1098.8,8.8,1.9,8.3,0.17,false,true
+TX-CEN-002,CEN,Petaling,2026-08-31,1150.3,983.0,7.2,160.1,7.9,13.92,true,true
+TX-CEN-002,CEN,Petaling,2026-09-01,1178.7,1015.8,7.6,155.3,8.1,13.18,true,true
+TX-CEN-002,CEN,Petaling,2026-09-02,1200.9,1037.1,8.0,155.8,8.3,12.98,true,true
+TX-CEN-002,CEN,Petaling,2026-09-03,1164.3,1000.6,7.3,156.4,8.0,13.43,true,true
+TX-CEN-002,CEN,Petaling,2026-09-04,1179.7,1017.6,7.3,154.9,8.1,13.13,true,true
+TX-CEN-002,CEN,Petaling,2026-09-05,1311.2,1143.8,9.7,157.8,9.1,12.03,true,true
+TX-CEN-002,CEN,Petaling,2026-09-06,1288.4,1122.9,9.0,156.5,9.0,12.14,true,true
+TX-CEN-002,CEN,Petaling,2026-09-07,1267.2,1101.2,8.7,157.2,8.8,12.41,true,true
+TX-CEN-002,CEN,Petaling,2026-09-08,1203.1,1039.3,7.8,156.0,8.3,12.97,true,true
+TX-CEN-002,CEN,Petaling,2026-09-09,1162.1,1000.2,7.3,154.6,8.0,13.30,true,true
+TX-CEN-002,CEN,Petaling,2026-09-10,1257.8,1090.7,8.7,158.4,8.7,12.59,true,true
+TX-CEN-002,CEN,Petaling,2026-09-11,1208.0,1044.8,7.8,155.4,8.4,12.86,true,true
+TX-CEN-002,CEN,Petaling,2026-09-12,1243.1,1079.1,8.3,155.6,8.6,12.52,true,true
+TX-CEN-002,CEN,Petaling,2026-09-13,1329.5,1160.3,10.0,159.2,9.2,11.97,true,true
+TX-CEN-002,CEN,Petaling,2026-09-14,1200.0,1035.8,7.7,156.4,8.3,13.04,true,true
+TX-CEN-002,CEN,Petaling,2026-09-15,1255.9,1091.5,8.6,155.8,8.7,12.41,true,true
+TX-CEN-002,CEN,Petaling,2026-09-16,1272.7,1106.2,9.0,157.5,8.8,12.37,true,true
+TX-CEN-002,CEN,Petaling,2026-09-17,1269.0,1104.0,8.7,156.3,8.8,12.32,true,true
+TX-CEN-002,CEN,Petaling,2026-09-18,1199.8,1037.1,7.8,154.9,8.3,12.91,true,true
+TX-CEN-002,CEN,Petaling,2026-09-19,1272.2,1104.6,8.8,158.8,8.9,12.48,true,true
+TX-CEN-002,CEN,Petaling,2026-09-20,1376.3,1202.3,10.8,163.2,9.6,11.86,true,true
+TX-CEN-002,CEN,Petaling,2026-09-21,1222.1,1058.8,8.2,155.1,8.5,12.69,true,true
+TX-CEN-002,CEN,Petaling,2026-09-22,1241.3,1075.1,8.4,157.7,8.6,12.71,true,true
+TX-CEN-002,CEN,Petaling,2026-09-23,1235.0,1071.7,8.6,154.7,8.5,12.53,true,true
+TX-CEN-002,CEN,Petaling,2026-09-24,1253.8,1086.7,8.9,158.2,8.7,12.62,true,true
+TX-CEN-002,CEN,Petaling,2026-09-25,1237.3,1071.8,8.4,157.1,8.6,12.70,true,true
+TX-CEN-002,CEN,Petaling,2026-09-26,1252.5,1088.0,8.4,156.2,8.7,12.47,true,true
+TX-CEN-002,CEN,Petaling,2026-09-27,1268.9,1105.7,9.0,154.3,8.8,12.16,true,true
+TX-CEN-002,CEN,Petaling,2026-09-28,1130.6,969.0,6.7,154.9,7.8,13.70,true,true
+TX-CEN-002,CEN,Petaling,2026-09-29,1207.2,1043.9,8.0,155.3,8.3,12.86,true,true
+TX-CEN-002,CEN,Petaling,2026-09-30,1192.8,1028.5,7.7,156.6,8.3,13.13,true,true
+TX-CEN-003,CEN,Klang,2026-08-01,777.3,779.2,5.6,-7.5,21.7,-0.96,false,true
+TX-CEN-003,CEN,Klang,2026-08-02,818.4,816.9,5.7,-4.2,21.9,-0.52,false,true
+TX-CEN-003,CEN,Klang,2026-08-03,792.7,772.3,5.2,15.2,20.2,1.92,false,true
+TX-CEN-003,CEN,Klang,2026-08-04,824.5,828.4,6.0,-9.8,22.0,-1.19,false,true
+TX-CEN-003,CEN,Klang,2026-08-05,830.4,817.3,5.7,7.4,21.0,0.90,false,true
+TX-CEN-003,CEN,Klang,2026-08-06,846.0,839.9,6.0,0.1,21.6,0.01,false,true
+TX-CEN-003,CEN,Klang,2026-08-07,781.0,775.4,5.3,0.3,20.7,0.04,false,true
+TX-CEN-003,CEN,Klang,2026-08-08,892.3,895.5,6.9,-10.2,24.1,-1.14,false,true
+TX-CEN-003,CEN,Klang,2026-08-09,907.7,889.1,6.9,11.7,23.7,1.29,false,true
+TX-CEN-003,CEN,Klang,2026-08-10,813.6,819.3,5.8,-11.5,21.7,-1.41,false,true
+TX-CEN-003,CEN,Klang,2026-08-11,823.2,827.4,6.1,-10.3,22.0,-1.25,false,true
+TX-CEN-003,CEN,Klang,2026-08-12,847.5,854.7,6.4,-13.6,23.1,-1.61,false,true
+TX-CEN-003,CEN,Klang,2026-08-13,830.8,829.8,6.0,-5.0,22.2,-0.60,false,true
+TX-CEN-003,CEN,Klang,2026-08-14,834.9,824.5,6.0,4.4,21.6,0.53,false,true
+TX-CEN-003,CEN,Klang,2026-08-15,890.2,877.1,6.6,6.6,23.4,0.74,false,true
+TX-CEN-003,CEN,Klang,2026-08-16,837.2,833.3,6.1,-2.1,22.8,-0.26,false,true
+TX-CEN-003,CEN,Klang,2026-08-17,838.7,835.6,6.0,-2.9,21.9,-0.35,false,true
+TX-CEN-003,CEN,Klang,2026-08-18,787.5,785.1,5.3,-2.9,20.2,-0.37,false,true
+TX-CEN-003,CEN,Klang,2026-08-19,820.3,827.9,6.1,-13.7,22.2,-1.67,false,true
+TX-CEN-003,CEN,Klang,2026-08-20,834.6,839.2,6.0,-10.7,21.8,-1.28,false,true
+TX-CEN-003,CEN,Klang,2026-08-21,756.0,750.5,4.9,0.7,19.6,0.09,false,true
+TX-CEN-003,CEN,Klang,2026-08-22,828.6,802.4,5.3,20.9,20.9,2.52,false,true
+TX-CEN-003,CEN,Klang,2026-08-23,795.1,794.1,5.4,-4.4,21.3,-0.56,false,true
+TX-CEN-003,CEN,Klang,2026-08-24,772.4,766.6,5.0,0.8,20.3,0.10,false,true
+TX-CEN-003,CEN,Klang,2026-08-25,758.4,762.9,5.1,-9.6,20.2,-1.27,false,true
+TX-CEN-003,CEN,Klang,2026-08-26,739.1,731.8,4.6,2.7,18.9,0.36,false,true
+TX-CEN-003,CEN,Klang,2026-08-27,700.2,694.2,4.3,1.8,18.7,0.25,false,true
+TX-CEN-003,CEN,Klang,2026-08-28,775.0,781.3,5.4,-11.8,20.7,-1.52,false,true
+TX-CEN-003,CEN,Klang,2026-08-29,779.6,776.5,5.2,-2.1,20.6,-0.26,false,true
+TX-CEN-003,CEN,Klang,2026-08-30,812.9,788.5,5.4,18.9,21.3,2.33,false,true
+TX-CEN-003,CEN,Klang,2026-08-31,716.4,724.4,4.7,-12.7,19.3,-1.77,false,true
+TX-CEN-003,CEN,Klang,2026-09-01,755.8,758.4,5.2,-7.8,20.3,-1.03,false,true
+TX-CEN-003,CEN,Klang,2026-09-02,780.6,773.9,5.1,1.5,20.1,0.20,false,true
+TX-CEN-003,CEN,Klang,2026-09-03,746.0,751.9,4.9,-10.9,19.9,-1.46,false,true
+TX-CEN-003,CEN,Klang,2026-09-04,790.9,787.5,5.3,-1.9,20.9,-0.24,false,true
+TX-CEN-003,CEN,Klang,2026-09-05,792.4,791.6,5.5,-4.7,21.3,-0.59,false,true
+TX-CEN-003,CEN,Klang,2026-09-06,814.0,827.6,6.2,-19.9,22.7,-2.44,false,true
+TX-CEN-003,CEN,Klang,2026-09-07,806.2,805.7,5.7,-5.1,21.3,-0.63,false,true
+TX-CEN-003,CEN,Klang,2026-09-08,795.2,793.5,5.4,-3.7,20.5,-0.47,false,true
+TX-CEN-003,CEN,Klang,2026-09-09,793.1,798.8,5.7,-11.4,21.0,-1.44,false,true
+TX-CEN-003,CEN,Klang,2026-09-10,816.1,825.4,6.0,-15.3,21.9,-1.87,false,true
+TX-CEN-003,CEN,Klang,2026-09-11,789.4,780.0,5.2,4.2,20.6,0.54,false,true
+TX-CEN-003,CEN,Klang,2026-09-12,873.3,871.9,6.7,-5.3,23.7,-0.61,false,true
+TX-CEN-003,CEN,Klang,2026-09-13,880.1,891.9,6.9,-18.7,24.3,-2.13,false,true
+TX-CEN-003,CEN,Klang,2026-09-14,794.7,789.6,5.4,-0.3,20.8,-0.03,false,true
+TX-CEN-003,CEN,Klang,2026-09-15,867.6,852.6,6.6,8.4,22.8,0.97,false,true
+TX-CEN-003,CEN,Klang,2026-09-16,886.7,886.3,7.0,-6.6,23.8,-0.74,false,true
+TX-CEN-003,CEN,Klang,2026-09-17,841.9,833.3,6.1,2.6,22.3,0.30,false,true
+TX-CEN-003,CEN,Klang,2026-09-18,825.7,803.1,5.5,17.1,20.8,2.07,false,true
+TX-CEN-003,CEN,Klang,2026-09-19,946.9,921.0,7.3,18.6,24.8,1.96,false,true
+TX-CEN-003,CEN,Klang,2026-09-20,858.1,843.3,6.2,8.5,22.6,1.00,false,true
+TX-CEN-003,CEN,Klang,2026-09-21,822.9,818.8,5.9,-1.7,21.7,-0.21,false,true
+TX-CEN-003,CEN,Klang,2026-09-22,805.3,802.5,5.5,-2.7,20.6,-0.33,false,true
+TX-CEN-003,CEN,Klang,2026-09-23,811.1,809.2,5.8,-3.8,21.5,-0.47,false,true
+TX-CEN-003,CEN,Klang,2026-09-24,813.1,807.0,5.6,0.5,21.2,0.06,false,true
+TX-CEN-003,CEN,Klang,2026-09-25,787.7,785.3,5.1,-2.7,20.1,-0.34,false,true
+TX-CEN-003,CEN,Klang,2026-09-26,856.7,841.1,6.1,9.5,22.3,1.11,false,true
+TX-CEN-003,CEN,Klang,2026-09-27,824.4,814.8,5.8,3.8,21.9,0.46,false,true
+TX-CEN-003,CEN,Klang,2026-09-28,808.0,797.8,5.6,4.6,21.3,0.57,false,true
+TX-CEN-003,CEN,Klang,2026-09-29,776.6,773.1,5.2,-1.7,20.0,-0.23,false,true
+TX-CEN-003,CEN,Klang,2026-09-30,770.3,772.0,5.3,-7.0,20.6,-0.91,false,true
+TX-CEN-004,CEN,Klang,2026-08-01,,722.1,5.6,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-02,,737.9,5.7,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-03,,688.4,4.8,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-04,,721.2,5.4,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-05,,732.6,5.5,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-06,,751.8,6.0,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-07,,668.6,4.6,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-08,,789.8,6.5,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-09,,806.7,6.9,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-10,,721.2,5.5,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-11,,711.1,5.2,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-12,,738.5,5.7,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-13,,747.2,5.9,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-14,,725.3,5.6,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-15,,781.4,6.2,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-16,,745.2,5.8,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-17,,722.6,5.4,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-18,,704.6,5.2,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-19,,721.6,5.5,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-20,,718.1,5.4,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-21,,655.8,4.4,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-22,,714.8,5.2,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-23,,691.1,4.7,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-24,,648.9,4.3,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-25,,662.0,4.5,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-26,,640.6,4.1,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-27,,603.2,3.7,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-28,,636.0,4.0,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-29,,696.2,5.0,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-30,,683.5,4.8,,,,,false
+TX-CEN-004,CEN,Klang,2026-08-31,,593.3,3.6,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-01,,650.3,4.2,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-02,,652.4,4.2,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-03,,645.6,4.3,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-04,,681.2,4.8,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-05,,681.8,4.7,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-06,,693.8,4.9,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-07,,669.9,4.6,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-08,,673.4,4.6,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-09,,690.8,4.9,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-10,,690.3,4.9,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-11,,683.5,4.7,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-12,,767.9,5.9,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-13,,780.3,6.3,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-14,,669.5,4.6,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-15,,747.8,5.7,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-16,,757.9,5.9,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-17,,700.6,5.1,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-18,,692.7,4.8,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-19,,784.7,6.1,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-20,,755.6,5.9,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-21,,722.3,5.2,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-22,,683.6,4.8,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-23,,692.2,4.9,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-24,,692.6,4.8,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-25,,675.7,4.6,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-26,,734.4,5.5,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-27,,706.0,5.1,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-28,,674.4,4.6,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-29,,651.3,4.4,,,,,false
+TX-CEN-004,CEN,Klang,2026-09-30,,667.9,4.6,,,,,false
+TX-NOR-001,NOR,Timur Laut,2026-08-01,659.8,655.1,3.3,1.4,10.5,0.22,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-02,691.7,693.5,3.7,-5.4,11.6,-0.78,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-03,669.2,665.3,3.4,0.5,10.8,0.08,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-04,685.1,682.3,3.6,-0.8,11.3,-0.11,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-05,660.8,661.9,3.3,-4.4,10.6,-0.67,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-06,662.4,659.4,3.3,-0.3,10.6,-0.05,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-07,706.2,698.6,3.7,4.0,11.1,0.56,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-08,706.9,706.1,3.8,-3.0,11.6,-0.43,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-09,762.4,757.8,4.4,0.2,12.2,0.03,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-10,646.8,648.5,3.2,-4.9,10.6,-0.75,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-11,689.9,681.5,3.5,4.9,10.7,0.72,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-12,661.6,665.9,3.4,-7.7,10.8,-1.16,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-13,690.0,684.1,3.6,2.4,11.0,0.34,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-14,651.0,642.4,3.1,5.6,9.8,0.86,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-15,702.3,698.2,3.7,0.3,11.1,0.04,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-16,666.3,667.2,3.3,-4.2,10.8,-0.63,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-17,658.7,650.9,3.2,4.6,10.5,0.70,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-18,633.4,626.9,3.0,3.5,10.2,0.56,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-19,667.8,668.4,3.4,-4.0,11.1,-0.60,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-20,669.7,670.6,3.5,-4.4,10.8,-0.66,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-21,671.6,668.8,3.4,-0.6,10.9,-0.09,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-22,724.8,730.9,4.1,-10.2,12.4,-1.41,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-23,720.1,721.2,3.9,-5.0,11.5,-0.70,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-24,637.1,633.1,2.9,1.1,10.1,0.17,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-25,607.3,608.8,2.8,-4.3,10.1,-0.71,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-26,575.1,554.7,2.3,18.1,9.0,3.15,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-27,605.4,595.6,2.6,7.1,9.5,1.17,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-28,617.1,607.4,2.8,6.9,10.3,1.12,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-29,700.3,680.3,3.5,16.5,11.3,2.36,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-30,665.7,652.2,3.2,10.3,10.6,1.55,false,true
+TX-NOR-001,NOR,Timur Laut,2026-08-31,609.4,596.9,2.7,9.8,9.9,1.60,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-01,638.3,628.4,3.0,7.0,10.1,1.09,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-02,589.1,576.2,2.5,10.5,9.2,1.78,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-03,640.4,622.0,2.9,15.5,9.8,2.42,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-04,607.4,591.2,2.6,13.6,9.5,2.23,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-05,667.7,648.1,3.1,16.6,10.3,2.49,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-06,732.2,714.4,3.9,13.9,11.5,1.90,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-07,623.3,608.5,2.8,12.0,10.0,1.92,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-08,637.6,627.1,3.0,7.5,10.2,1.18,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-09,650.1,639.4,3.1,7.6,10.1,1.17,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-10,683.5,670.0,3.4,10.0,11.1,1.47,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-11,674.4,660.0,3.3,11.1,10.7,1.64,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-12,715.6,706.7,3.8,5.1,11.1,0.71,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-13,714.5,695.4,3.7,15.4,11.4,2.16,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-14,677.4,656.9,3.3,17.2,10.8,2.54,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-15,724.0,715.6,3.9,4.5,11.8,0.63,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-16,680.3,662.9,3.3,14.1,10.6,2.07,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-17,688.0,667.4,3.4,17.3,10.7,2.51,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-18,675.7,656.7,3.3,15.7,10.6,2.33,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-19,758.9,745.1,4.3,9.5,12.2,1.25,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-20,699.5,688.8,3.6,7.2,11.4,1.03,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-21,688.9,670.1,3.4,15.4,10.9,2.24,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-22,687.2,670.0,3.4,13.7,10.7,1.99,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-23,664.5,651.5,3.1,9.8,10.2,1.48,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-24,676.2,662.2,3.4,10.6,11.0,1.57,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-25,616.9,603.6,2.7,10.6,9.8,1.72,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-26,665.5,648.4,3.2,13.9,10.8,2.09,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-27,718.3,695.3,3.7,19.3,11.3,2.69,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-28,649.9,635.8,3.1,11.0,10.5,1.69,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-29,653.6,641.6,3.1,8.9,10.6,1.37,false,true
+TX-NOR-001,NOR,Timur Laut,2026-09-30,667.2,653.3,3.2,10.7,10.7,1.60,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-01,772.3,767.5,4.2,0.7,6.0,0.09,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-02,889.9,885.3,5.5,-0.8,6.9,-0.09,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-03,759.5,755.8,4.0,-0.3,5.9,-0.04,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-04,775.7,770.9,4.1,0.6,6.1,0.08,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-05,774.9,770.5,4.2,0.3,6.0,0.03,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-06,775.4,769.5,4.2,1.8,6.1,0.23,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-07,786.0,777.6,4.2,4.2,6.1,0.53,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-08,879.6,873.1,5.2,1.3,6.9,0.14,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-09,893.9,888.1,5.5,0.3,7.0,0.04,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-10,777.5,771.0,4.1,2.3,6.0,0.30,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-11,826.5,822.1,4.8,-0.4,6.4,-0.04,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-12,825.1,822.1,4.7,-1.7,6.4,-0.20,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-13,792.9,789.5,4.4,-1.1,6.2,-0.13,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-14,843.0,836.0,5.0,2.0,6.5,0.23,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-15,885.4,878.2,5.3,2.0,6.9,0.22,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-16,834.9,830.2,4.8,-0.1,6.5,-0.02,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-17,774.9,770.0,4.1,0.7,6.1,0.10,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-18,746.7,739.5,3.8,3.4,5.8,0.45,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-19,752.7,747.8,3.9,1.0,5.8,0.13,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-20,782.6,776.8,4.2,1.6,6.1,0.21,false,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-21,847.5,747.1,4.1,96.3,6.1,11.36,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-22,887.6,784.9,4.4,98.3,6.5,11.08,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-23,935.7,833.4,5.0,97.3,6.8,10.40,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-24,827.4,731.2,3.9,92.4,6.0,11.16,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-25,831.1,735.2,3.8,92.1,6.0,11.08,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-26,859.1,759.9,4.1,95.2,6.2,11.08,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-27,777.3,677.5,3.2,96.6,5.6,12.42,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-28,792.2,694.2,3.4,94.7,5.7,11.95,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-29,884.9,784.5,4.4,96.0,6.4,10.84,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-30,861.5,758.4,4.1,99.1,6.2,11.50,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-08-31,846.2,747.1,3.9,95.1,6.1,11.24,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-01,863.2,763.1,4.2,95.9,6.3,11.11,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-02,826.7,726.5,3.8,96.4,6.0,11.66,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-03,865.2,763.8,4.1,97.3,6.3,11.24,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-04,830.3,730.8,3.9,95.6,6.0,11.52,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-05,889.1,787.8,4.4,96.8,6.5,10.89,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-06,924.5,822.4,4.9,97.2,6.7,10.51,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-07,843.4,743.9,4.0,95.5,6.1,11.32,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-08,814.4,713.9,3.7,96.8,5.9,11.89,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-09,882.4,783.0,4.4,95.0,6.4,10.76,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-10,890.9,788.0,4.5,98.5,6.4,11.05,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-11,917.7,816.5,4.8,96.4,6.7,10.50,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-12,997.1,893.3,5.7,98.2,7.3,9.85,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-13,1009.8,906.7,6.0,97.1,7.4,9.62,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-14,917.1,814.6,4.7,97.8,6.7,10.67,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-15,872.0,774.5,4.3,93.2,6.3,10.69,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-16,902.8,802.4,4.6,95.8,6.6,10.61,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-17,881.4,780.6,4.3,96.5,6.4,10.95,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-18,881.3,778.2,4.3,98.7,6.4,11.20,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-19,994.2,889.8,5.7,98.7,7.3,9.92,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-20,953.1,848.3,5.1,99.7,7.0,10.46,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-21,893.5,791.0,4.6,97.9,6.5,10.96,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-22,926.4,824.5,4.8,97.1,6.8,10.48,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-23,877.4,776.1,4.4,96.9,6.3,11.04,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-24,908.6,806.8,4.6,97.2,6.6,10.69,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-25,863.1,763.3,4.1,95.7,6.3,11.09,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-26,935.1,833.8,5.0,96.3,6.8,10.30,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-27,959.2,858.5,5.3,95.4,7.0,9.94,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-28,851.1,751.8,4.0,95.3,6.2,11.19,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-29,871.5,771.3,4.3,95.8,6.3,11.00,true,true
+TX-NOR-002,NOR,Seberang Perai,2026-09-30,839.3,739.8,3.8,95.7,6.1,11.40,true,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-01,778.5,775.2,4.2,-0.9,8.7,-0.11,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-02,862.9,854.2,5.0,3.7,9.6,0.42,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-03,739.3,738.4,3.7,-2.8,8.2,-0.38,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-04,763.9,760.3,4.0,-0.5,8.6,-0.06,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-05,734.7,727.1,3.6,4.0,8.1,0.54,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-06,741.6,734.3,3.6,3.6,8.3,0.49,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-07,761.1,761.1,4.1,-4.0,8.6,-0.53,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-08,857.1,852.5,5.1,-0.5,9.6,-0.06,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-09,850.3,849.5,4.8,-4.1,9.4,-0.48,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-10,742.5,735.9,3.6,3.0,8.1,0.41,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-11,800.1,794.6,4.4,1.1,9.0,0.14,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-12,805.1,793.6,4.2,7.2,8.9,0.90,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-13,756.2,750.9,3.9,1.4,8.4,0.18,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-14,792.5,791.9,4.2,-3.6,8.8,-0.45,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-15,870.5,862.3,5.2,3.0,9.6,0.35,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-16,825.5,826.4,4.8,-5.6,9.3,-0.68,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-17,753.6,750.0,3.9,-0.4,8.3,-0.05,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-18,711.4,706.7,3.3,1.3,7.9,0.18,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-19,706.9,698.4,3.3,5.2,7.7,0.73,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-20,755.8,759.7,4.0,-7.9,8.6,-1.05,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-21,738.8,739.5,3.9,-4.5,8.3,-0.61,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-22,780.7,778.9,4.2,-2.4,8.9,-0.30,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-23,806.7,807.1,4.4,-4.9,9.1,-0.60,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-24,714.2,708.0,3.4,2.7,7.9,0.38,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-25,710.3,707.0,3.4,-0.1,7.9,-0.02,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-26,746.6,745.2,3.9,-2.5,8.4,-0.34,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-27,681.4,680.4,3.2,-2.3,7.7,-0.33,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-28,692.3,689.8,3.3,-0.7,7.6,-0.10,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-29,766.1,762.6,4.1,-0.7,8.5,-0.09,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-30,773.0,770.1,4.1,-1.2,8.5,-0.16,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-08-31,739.6,738.8,3.8,-3.0,8.3,-0.40,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-01,753.8,751.5,3.8,-1.6,8.3,-0.21,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-02,722.6,719.8,3.6,-0.9,8.0,-0.12,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-03,755.0,750.7,3.8,0.4,8.4,0.06,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-04,734.7,732.9,3.8,-2.0,8.3,-0.28,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-05,763.6,764.8,3.8,-5.0,8.5,-0.66,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-06,828.2,825.7,4.6,-2.1,9.3,-0.26,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-07,725.8,721.0,3.5,1.2,8.0,0.17,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-08,713.6,712.0,3.5,-2.0,7.9,-0.28,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-09,770.0,765.9,4.0,0.1,8.6,0.01,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-10,780.2,776.8,4.2,-0.8,8.6,-0.10,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-11,780.1,770.0,4.0,6.1,8.6,0.78,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-12,877.6,873.3,5.3,-1.0,9.8,-0.11,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-13,861.9,855.6,5.2,1.1,9.6,0.13,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-14,793.5,789.8,4.2,-0.6,8.8,-0.07,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-15,756.9,752.3,3.8,0.8,8.2,0.10,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-16,791.4,787.9,4.2,-0.7,8.8,-0.09,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-17,791.4,790.7,4.4,-3.7,8.9,-0.47,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-18,775.8,773.3,4.1,-1.5,8.5,-0.20,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-19,871.3,865.1,5.3,1.0,9.7,0.11,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-20,836.7,832.0,4.7,0.0,9.3,0.00,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-21,765.0,762.9,4.0,-1.9,8.4,-0.24,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-22,796.4,790.7,4.3,1.5,8.8,0.18,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-23,785.7,783.4,4.2,-1.9,8.7,-0.24,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-24,792.4,791.1,4.4,-3.1,9.0,-0.39,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-25,745.7,742.0,3.6,0.1,8.2,0.01,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-26,803.0,799.2,4.3,-0.5,8.9,-0.06,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-27,849.7,848.8,5.0,-4.1,9.5,-0.49,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-28,757.3,754.0,3.9,-0.7,8.4,-0.09,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-29,763.5,758.2,3.9,1.5,8.6,0.20,false,true
+TX-NOR-003,NOR,Seberang Perai,2026-09-30,734.4,730.4,3.6,0.3,8.1,0.05,false,true

@@ -1,5 +1,8 @@
 # Active source per canonical table (prompt 3.4).
-# Values: simulated | upload:<dataset_name>
+# Values: simulated | london | upload:<dataset_name> | upload:<dataset_name>@v<N>
+#   simulated  the simulation run named under `simulation.run`
+#   london     London households from the London adapter (no voltage, phase or transformer meter)
+#   upload:... a dataset loaded with `make.ps1 ingest -Dataset <name>` or the Data manager page
 # Switching a source is a config change plus `make.ps1 pipeline`.
 tables:
   transformer: simulated
@@ -9,6 +12,7 @@ tables:
   meter_monthly_reading: simulated
   transformer_reading: simulated
   account_event: simulated
+  district_weather: simulated
   duty_roster: simulated
   customer_pii: simulated
   inspection_outcome: simulated
@@ -17,11 +21,18 @@ tables:
 profiles: synthetic
 london:
   households: 300              # default subset; set 0 for the full set
-# Scale profiles to Malaysian domestic consumption: none | datagovmy
+  zone_size: 60                # households grouped into one pseudo transformer zone (no real links in the data)
+  region: CEN                  # region code the converted London zones are filed under
+# Scale profiles to Malaysian monthly consumption seasonality: none | datagovmy
 rescale: none
 # Pattern model training data: synthetic | sgcc
 pattern_training: synthetic
 
-# Simulation run used by `make.ps1 pipeline` and `make.ps1 demo`
+# Simulation run used when a table's source is `simulated`
 simulation:
   run: demo
+
+# Kaggle dataset slugs used by scripts/fetch_datasets.py (change here if a dataset moves)
+downloads:
+  london: jeanmidev/smart-meters-in-london
+  sgcc: bensalem14/sgcc-dataset   # unverified slug: if it fails, follow the printed manual steps

@@ -1,0 +1,8 @@
+zone,region,district,run_date,flagged,priority,balance_available,gap_pct,gap_kwh_per_day,uncertainty_kwh_per_day,flatness_cv,flat_24_7,gap_start,gap_since_start,n_premises,zone_lat,zone_lon,open_cases
+TX-CEN-001,CEN,Petaling,2026-09-30,true,normal,true,11.81,128.0,10.4,0.160,true,,true,72,3.111,101.613,3
+TX-CEN-002,CEN,Petaling,2026-09-30,true,normal,true,12.81,156.1,8.4,0.053,true,2026-08-31,false,80,3.122,101.626,2
+TX-CEN-003,CEN,Klang,2026-09-30,false,normal,true,0.10,1.0,21.1,,,,false,60,3.133,101.639,0
+TX-CEN-004,CEN,Klang,2026-09-30,false,normal,false,,,,,,,false,55,3.144,101.652,0
+TX-NOR-001,NOR,Timur Laut,2026-09-30,false,normal,true,1.82,12.1,10.7,1.190,false,,false,50,5.391,100.313,0
+TX-NOR-002,NOR,Seberang Perai,2026-09-30,true,normal,true,10.80,95.9,6.5,0.040,true,2026-08-21,false,65,5.402,100.326,2
+TX-NOR-003,NOR,Seberang Perai,2026-09-30,false,normal,true,-0.11,-0.9,8.7,,,,false,58,5.413,100.339,0

@@ -1,0 +1,8 @@
+# Full profile only. The lite profile exposes the same /metrics endpoint plus logs.
+global:
+  scrape_interval: 30s
+scrape_configs:
+  - job_name: voltguard-api
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api:8000"]

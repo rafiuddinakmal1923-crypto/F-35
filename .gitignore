@@ -37,3 +37,7 @@ web/dist/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local runtime data when DATA_ROOT is not set, and graphify's cache
+.data/
+graphify-out/cache/

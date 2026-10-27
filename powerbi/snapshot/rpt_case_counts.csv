@@ -1,0 +1,17 @@
+region,district,zone,status,origin,week,cases
+NOR,Seberang Perai,TX-NOR-003,closed,model,2026-06-29,3
+NOR,Seberang Perai,TX-NOR-002,new,random_sample,2026-10-26,1
+CEN,Klang,TX-CEN-004,closed,random_sample,2026-06-15,1
+NOR,Seberang Perai,TX-NOR-003,closed,random_sample,2026-07-06,1
+NOR,Seberang Perai,TX-NOR-002,new,model,2026-10-26,1
+CEN,Petaling,TX-CEN-002,new,random_sample,2026-10-26,1
+CEN,Klang,TX-CEN-004,closed,model,2026-06-15,3
+CEN,Klang,TX-CEN-003,closed,model,2026-06-01,2
+NOR,Seberang Perai,TX-NOR-003,closed,model,2026-07-06,2
+CEN,Klang,TX-CEN-003,closed,model,2026-06-08,3
+CEN,Petaling,TX-CEN-002,new,model,2026-10-26,1
+CEN,Klang,TX-CEN-003,closed,random_sample,2026-06-01,1
+CEN,Petaling,TX-CEN-001,new,random_sample,2026-10-26,1
+CEN,Petaling,TX-CEN-001,new,model,2026-10-26,2
+NOR,Timur Laut,TX-NOR-001,closed,random_sample,2026-06-29,1
+NOR,Timur Laut,TX-NOR-001,closed,model,2026-06-22,3

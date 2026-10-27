@@ -19,7 +19,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _env(name: str, default: str = "") -> str:
-    return os.environ.get(name, default)
+    """An empty value (e.g. `DATA_ROOT=` in .env) counts as unset, never as the current folder."""
+    return os.environ.get(name) or default
 
 
 def config_dir() -> Path:
@@ -94,11 +95,16 @@ def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]
 def thresholds(overrides: dict[str, Any] | None = None) -> dict[str, Any]:
     """Thresholds file, then tuned weights (if `tune` has run), then admin overrides."""
     merged = load_yaml("thresholds.yaml")
-    tuned = data_root() / "tuned_weights.yaml"
+    tuned = tuned_weights_path()
     if tuned.exists():
         with tuned.open(encoding="utf-8") as handle:
             merged = deep_merge(merged, yaml.safe_load(handle) or {})
     return deep_merge(merged, overrides or {})
+
+
+def tuned_weights_path() -> Path:
+    """Output of `tune`, kept in the repository so the tuned weights travel with the code."""
+    return config_dir() / "tuned_weights.yaml"
 
 
 def data_sources() -> dict[str, Any]:

@@ -155,7 +155,8 @@ def model_path():
 
 def train_default(save: bool = True) -> tuple[PatternModel, dict]:
     """Train on SGCC if loaded, else the synthetic set; hold out 20% to report AUC."""
-    data = sgcc_training_set()
+    wanted = config.data_sources().get("pattern_training", "synthetic")
+    data = sgcc_training_set() if wanted == "sgcc" else None
     source = "sgcc"
     if data is None:
         data, source = synthetic_training_set(), "synthetic_sgcc_patterns"

@@ -1,0 +1,14 @@
+# Keep the build context small: the images need backend/, config/, data/ (upload kit, docs), reports/, scripts/.
+.git
+.venv
+.data
+.env
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+web
+graphify-out
+powerbi
+deploy
+*.pdf
+backend/tests/e2e

@@ -1,0 +1,29 @@
+# One entry point for the web app and the API (lite profile). Cloudflare Tunnel points here.
+:80 {
+	encode gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy no-referrer
+		Permissions-Policy "geolocation=(self), camera=(self)"
+		-Server
+	}
+
+	# `route` keeps the order below; internal endpoints never go through the tunnel
+	# (Prometheus scrapes api:8000/metrics directly in the full profile).
+	route {
+		@internal path /api/metrics /api/docs /api/redoc /api/openapi.json
+		respond @internal 404
+
+		handle_path /api/* {
+			reverse_proxy api:8000
+		}
+		handle /health {
+			reverse_proxy api:8000
+		}
+		handle {
+			reverse_proxy web:80
+		}
+	}
+}

@@ -3,6 +3,7 @@ fastapi==0.115.12
 uvicorn[standard]==0.34.2
 python-multipart==0.0.20
 psycopg[binary]==3.2.9
+psycopg-pool==3.2.6
 pyyaml==6.0.2
 httpx==0.28.1
 pyjwt[crypto]==2.10.1
@@ -13,7 +14,7 @@ numpy==2.2.6
 polars==1.30.0
 pyarrow==20.0.0
 scikit-learn==1.6.1
-xgboost==3.0.2
+xgboost-cpu==3.0.2          # CPU-only wheel: same `import xgboost`, without ~200 MB of GPU libraries
 
 # Agents, RAG, documents
 fpdf2==2.8.3
@@ -25,3 +26,7 @@ mlflow-skinny==2.22.0
 
 # Tests
 pytest==8.3.5
+playwright==1.52.0
+pypdf==5.4.0
+# Presidio's spaCy model, installed explicitly so nothing is downloaded at runtime
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl

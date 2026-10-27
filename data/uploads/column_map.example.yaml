@@ -1,0 +1,34 @@
+# Copy into DATA_ROOT/uploads/<dataset_name>/column_map.yaml when file or column names differ
+# from the canonical ones. Every key is optional.
+
+timezone: Asia/Kuala_Lumpur        # for timestamps without an offset
+
+files:
+  mdms_readings_2026_10.csv:
+    table: meter_reading
+    columns:                       # source column: canonical column
+      METER_NO: meter_id
+      READ_START: ts
+      KWH_IMPORT: kwh
+      VOLT_AVG: voltage_v
+    units:
+      kwh: Wh                      # source is in Wh; converted to kWh
+
+  dtm_supply.csv:
+    table: transformer_reading
+    columns:
+      SUBSTATION_TX: transformer_id
+      INTERVAL_START: ts
+      ENERGY_KWH: kwh_supplied
+
+  gis_premises.csv:
+    table: premise
+    columns:
+      PREMISE_REF: premise_id
+      TX_ID: transformer_id
+      LV_BRANCH: feeder_branch
+      PHASE: phase
+      CABLE_M: distance_m
+      SEQ: street_seq
+      TYPE: premise_type
+      TARIFF: tariff

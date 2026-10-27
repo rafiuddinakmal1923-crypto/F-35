@@ -1,0 +1,13 @@
+region,district,inspections,outcome,month,outcomes
+NOR,Timur Laut,model-ranked,false_alarm,2026-06-01,1
+NOR,Timur Laut,model-ranked,confirmed_theft,2026-06-01,1
+NOR,Timur Laut,model-ranked,inconclusive,2026-06-01,1
+NOR,Seberang Perai,model-ranked,inconclusive,2026-07-01,1
+NOR,Seberang Perai,model-ranked,confirmed_theft,2026-07-01,2
+NOR,Timur Laut,random sample,confirmed_theft,2026-06-01,1
+CEN,Klang,model-ranked,false_alarm,2026-06-01,3
+CEN,Klang,random sample,false_alarm,2026-06-01,2
+CEN,Klang,model-ranked,confirmed_theft,2026-06-01,4
+CEN,Klang,model-ranked,inconclusive,2026-06-01,1
+NOR,Seberang Perai,random sample,false_alarm,2026-07-01,1
+NOR,Seberang Perai,model-ranked,false_alarm,2026-07-01,2
