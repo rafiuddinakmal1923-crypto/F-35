@@ -108,8 +108,8 @@ with sync_playwright() as p:
     for u in PW:
         soft("AUTH", f"{u} signs in with the given password", lambda u=u: token(u) is not None)
     soft("AUTH", "wrong password refused", lambda: httpx.post(f"{url}/api/auth/token", json={"username": "admin", "password": "nope"}).status_code == 401)
-    homes = {"manager.cen": "/", "analyst.cen": "/", "supervisor.cen": "/", "datasci": "/models", "admin": "/data", "auditor": "/audit",
-             "manager.nor": "/", "analyst.nor": "/", "inspector.b": "/field"}
+    homes = {"manager.cen": "/", "analyst.cen": "/work", "supervisor.cen": "/work", "datasci": "/models", "admin": "/data", "auditor": "/audit",
+             "manager.nor": "/", "analyst.nor": "/work", "inspector.b": "/field"}
     for u, home in homes.items():
         def landing(u=u, home=home):
             page = browser.new_context(viewport={"width": 1400, "height": 900}).new_page()
@@ -316,6 +316,7 @@ with sync_playwright() as p:
         assert "Ahmad" not in notes and "800101" not in notes and "012-3456789" not in notes, notes
     soft("UC-04", "notes typed with personal details are stored redacted (NFR-15)", uc04_scrub)
     def uc04_assistant():
+        phone.click(".field-tabs button:has-text('Assistant')")
         phone.fill("input[placeholder*='photograph']", "What should I photograph at the meter board?")
         phone.click("button:has-text('Ask')")
         phone.wait_for_timeout(2500)

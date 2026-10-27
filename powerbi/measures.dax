@@ -1,0 +1,42 @@
+// VoltGuard manager dashboard measures (paste into Power BI: Modeling -> New measure, one at a time).
+// Tables are the rpt_ views (or the CSV snapshot files with the same names).
+
+Leaking zones = SUM ( rpt_network_kpis[flagged_zones] )
+
+Unexplained kWh per day = SUM ( rpt_network_kpis[flagged_gap_kwh_per_day] )
+
+Zones without balance = SUM ( rpt_network_kpis[zones_without_balance] )
+
+Open cases = SUM ( rpt_network_kpis[open_cases] )
+
+Unexplained kWh per month = [Unexplained kWh per day] * 30
+
+// Week-on-week change of the region's unexplained energy (needs rpt_zone_daily[date] as a date column).
+Gap this week =
+VAR last_day = MAX ( rpt_zone_daily[date] )
+RETURN CALCULATE ( AVERAGEX ( VALUES ( rpt_zone_daily[date] ), CALCULATE ( SUM ( rpt_zone_daily[gap_kwh] ) ) ),
+    rpt_zone_daily[date] > last_day - 7, rpt_zone_daily[balance_available] = TRUE () )
+
+Gap week before =
+VAR last_day = MAX ( rpt_zone_daily[date] )
+RETURN CALCULATE ( AVERAGEX ( VALUES ( rpt_zone_daily[date] ), CALCULATE ( SUM ( rpt_zone_daily[gap_kwh] ) ) ),
+    rpt_zone_daily[date] <= last_day - 7, rpt_zone_daily[date] > last_day - 14, rpt_zone_daily[balance_available] = TRUE () )
+
+Gap change % = DIVIDE ( [Gap this week] - [Gap week before], [Gap week before] )
+
+// Hit rates: random-sample inspections are the unbiased reference for model-ranked ones (FR-ML-02).
+Inspections labelled = SUM ( rpt_outcomes[outcomes] )
+
+Confirmed theft = CALCULATE ( SUM ( rpt_outcomes[outcomes] ), rpt_outcomes[outcome] = "confirmed_theft" )
+
+Hit rate = DIVIDE ( [Confirmed theft], [Inspections labelled] )
+
+Hit rate model-ranked = CALCULATE ( [Hit rate], rpt_outcomes[inspections] = "model-ranked" )
+
+Hit rate random sample = CALCULATE ( [Hit rate], rpt_outcomes[inspections] = "random sample" )
+
+Hit rate lift = [Hit rate model-ranked] - [Hit rate random sample]
+
+Cases = SUM ( rpt_case_counts[cases] )
+
+Zone flag rate = DIVIDE ( SUM ( rpt_flag_rates[flagged_zones] ), SUM ( rpt_flag_rates[zones] ) )

@@ -3,21 +3,9 @@
 import { useState } from "react";
 import { get, post, request } from "../api.js";
 import { CategoryBars, LineChart } from "../components/Charts.jsx";
-import { ErrorBox, useLoad } from "../components/Common.jsx";
+import { ErrorBox, Kpi, useLoad } from "../components/Common.jsx";
 import { t } from "../i18n.js";
 import { LinkTelegram } from "./Dispatch.jsx";
-
-function Kpi({ value, label, change, goodWhenDown = true }) {
-  const arrow = change == null ? null : change > 0 ? "▲" : change < 0 ? "▼" : "■";
-  const good = change == null || change === 0 ? "" : (change < 0) === goodWhenDown ? "ok" : "risk";
-  return (
-    <div className="card kpi">
-      <div className="value">{value ?? "–"}</div>
-      <div className="label">{label}</div>
-      {change != null ? <small className={`trend ${good}`}>{arrow} {Math.abs(change)}% vs the week before</small> : null}
-    </div>
-  );
-}
 
 export default function Weekly() {
   const weekly = useLoad(() => get("/weekly"), []);

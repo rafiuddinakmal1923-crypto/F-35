@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { get, post, session } from "../api.js";
 import { LineChart, VoltageStrip } from "../components/Charts.jsx";
-import { Confidence, ErrorBox, Masked, Reasons, Tags, useLoad } from "../components/Common.jsx";
+import { Confidence, ErrorBox, Masked, Reasons, ScoreRing, Tags, useLoad } from "../components/Common.jsx";
 import { t } from "../i18n.js";
 
 export default function Premise() {
@@ -44,7 +44,7 @@ export default function Premise() {
               <h2>{t("score")}</h2>
               {p.score ? (
                 <>
-                  <div className="row"><span className="score-big">{p.score.score}</span>
+                  <div className="row"><ScoreRing score={p.score.score} size={64} />
                     <span>rank {p.score.rank} in zone</span><Confidence value={p.score.confidence} /><Tags tags={p.score.tags} /></div>
                   <Reasons reasons={p.reasons} score={p.score.score} />
                 </>

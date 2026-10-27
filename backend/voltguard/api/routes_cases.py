@@ -9,9 +9,10 @@ from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from voltguard import db, storage
+from voltguard.agents import route
 from voltguard.api.deps import ApiError, connection, forbidden, not_found, require
 from voltguard.db import Caller
-from voltguard.service import cases, jobs
+from voltguard.service import cases, jobs, work
 
 router = APIRouter(tags=["cases"])
 
@@ -150,8 +151,6 @@ def case_version(case_id: str, c: Caller = Depends(require("supervisor", "analys
 @router.get("/route")
 def my_route(team: str | None = None, c: Caller = Depends(require("inspector", "supervisor")), conn=Depends(connection)):
     """Today's visiting order: an inspector gets their own team's route; a supervisor names a team in their region."""
-    from voltguard.agents import route
-
     if c.role == "inspector":
         if team and team != c.team:
             raise forbidden("Inspectors see their own team's route")
@@ -164,3 +163,9 @@ def my_route(team: str | None = None, c: Caller = Depends(require("inspector", "
         raise not_found(str(exc)) from exc
     db.audit(conn, c.user_id, "route.plan", f"team:{team}", {"stops": len(result["stops"])})
     return result
+
+
+@router.get("/work")
+def my_work(c: Caller = Depends(require("analyst", "supervisor", "manager")), conn=Depends(connection)):
+    """What this person should act on next (role home page and menu badges)."""
+    return work.for_caller(conn, c)

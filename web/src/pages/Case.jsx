@@ -1,9 +1,34 @@
 // Case page: status history, dispatch suggestion, assignment, outcomes, report and approvals.
+import { Camera, CircleCheck, CircleDot, CircleX, ClipboardList, Clock, FileCheck, FileText, Footprints, Hourglass, Navigation, Send,
+  Siren, TriangleAlert, UserCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { get, patch, post, request, session } from "../api.js";
 import { ErrorBox, Masked, useLoad } from "../components/Common.jsx";
 import { t } from "../i18n.js";
+
+const STEPS = ["new", "assigned", "visited", "reporting", "closed"];
+const EVENT_ICON = { created: ClipboardList, dispatch_suggested: Send, claimed: UserCheck, assigned: Navigation, accepted: CircleCheck,
+  en_route: Footprints, declined: CircleX, reminded: Hourglass, escalated: Siren, photo_added: Camera, visited: CircleDot,
+  report_drafted: FileText, note: FileText, dispatch_rejected: CircleX };
+const eventIcon = (type) => EVENT_ICON[type] || (type.startsWith("outcome:") ? FileCheck : type.startsWith("report") ? FileText : Clock);
+
+function ago(ts) {
+  const m = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m} min ago`;
+  if (m < 48 * 60) return `${Math.round(m / 60)} h ago`;
+  return new Date(ts).toLocaleDateString();
+}
+
+function Stepper({ status }) {
+  const at = STEPS.indexOf(status);
+  return (
+    <ol className="stepper" aria-label={`Status: ${status}`}>
+      {STEPS.map((s, i) => <li key={s} className={i < at ? "done" : i === at ? "current" : ""}><span>{i < at ? "✓" : i + 1}</span>{s}</li>)}
+    </ol>
+  );
+}
 
 function Photo({ caseId, photoKey }) {
   const [url, setUrl] = useState(null);
@@ -112,6 +137,8 @@ export default function Case() {
             </div>
             <span className="chip info" style={{ fontSize: "0.9rem" }}>{d.case.status}</span>
           </div>
+          <Stepper status={d.case.status} />
+          {d.case.joint_operation ? <div className="notice error"><TriangleAlert size={16} style={{ verticalAlign: -3 }} /> Joint operation with police: the team does not visit alone.</div> : null}
           <div className="grid two">
             <div className="card stack">
               <h2>People</h2>
@@ -152,10 +179,18 @@ export default function Case() {
           <div className="grid two">
             <div className="card">
               <h2>Status history</h2>
-              <ul className="timeline">
-                {d.events.map((e, i) => (
-                  <li key={i}><small>{new Date(e.ts).toLocaleString()}</small><span><b>{e.event_type.replace("outcome:", "outcome: ")}</b> · {e.actor}</span></li>
-                ))}
+              <ul className="timeline icons">
+                {d.events.map((e, i) => {
+                  const Icon = eventIcon(e.event_type);
+                  const via = e.detail?.via ? ` · via ${e.detail.via}` : "";
+                  return (
+                    <li key={i} className={`ev-${e.event_type.split(":")[0]}`}>
+                      <span className="ev-icon"><Icon size={15} aria-hidden="true" /></span>
+                      <span><b>{e.event_type.replace("outcome:", "outcome: ").replaceAll("_", " ")}</b> · {e.actor}{via}
+                        <br /><small title={new Date(e.ts).toLocaleString()}>{ago(e.ts)}</small></span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
             <div className="card">

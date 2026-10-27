@@ -1,5 +1,6 @@
 // Inspector app (FR-IW-02, NFR-13, NFR-16): assigned cases offline, outcome form with photos,
 // sync when the connection returns, then the local copy is wiped.
+import { Bot, ClipboardList, MessageCircle, RefreshCw, User, Wifi, WifiOff } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, request } from "../api.js";
 import { setLang, t, useLang } from "../i18n.js";
@@ -108,7 +109,7 @@ function inRouteOrder(cases, route) {
   return [...cases].sort((a, b) => (stopOf(route, a.case_id) ?? 999) - (stopOf(route, b.case_id) ?? 999));
 }
 
-function RouteCard({ route, cases, queuedFor }) {
+function RouteCard({ route, cases, queuedFor, onOpen }) {
   const open = new Set(cases.map((c) => c.case_id));
   const stops = (route?.stops || []).filter((s) => open.has(s.case_id) && !queuedFor(s.case_id));
   if (!stops.length) return null;
@@ -118,13 +119,17 @@ function RouteCard({ route, cases, queuedFor }) {
     <div className="card stack route-card">
       <div className="row" style={{ justifyContent: "space-between" }}>
         <b>{t("todaysRoute")}</b>
-        <small>{stops.length} {t("stops")} · {route.total_km} km · ~{h ? `${h} h ` : ""}{m} min</small>
+        <small>{stops.length} {stops.length === 1 ? t("stop") : t("stops")} · {route.total_km} km · ~{h ? `${h} h ` : ""}{m} min</small>
       </div>
       <ol className="route-stops">
         {stops.map((s) => (
-          <li key={s.case_id}><span className="stop-no">{s.stop}</span>
-            <span>{s.label === "Routine meter check" ? t("routine") : s.case_id}{s.joint_operation ? " · joint operation" : ""}<br />
-              <small>+{s.leg_km} km · arrive ~{s.arrive_after_min} min</small></span></li>
+          <li key={s.case_id}>
+            <button type="button" className="route-stop" onClick={() => onOpen(s.case_id)}>
+              <span className="stop-no">{s.stop}</span>
+              <span>{s.label === "Routine meter check" ? t("routine") : s.case_id}{s.joint_operation ? " · joint operation" : ""}<br />
+                <small>+{s.leg_km} km · arrive ~{s.arrive_after_min} min</small></span>
+            </button>
+          </li>
         ))}
       </ol>
       {route.full_route_url ? <a className="button" href={route.full_route_url} target="_blank" rel="noreferrer">{t("openRoute")}</a> : null}
@@ -275,25 +280,36 @@ export default function FieldApp() {
   const queuedFor = (id) => queue.filter((q) => q.caseId === id).length;
   const item = open && cases.find((c) => c.case_id === open);
 
+  const tabs = [
+    { key: "cases", label: t("myCases"), Icon: ClipboardList, badge: queue.length || null },
+    { key: "messages", label: t("messages"), Icon: MessageCircle },
+    { key: "assistant", label: t("assistant"), Icon: Bot },
+    { key: "me", label: t("me"), Icon: User },
+  ];
+
   return (
     <div className="field">
       <div className="status-line">
         <b>{session.user.user_id} · {session.user.team}</b>
-        <span className={`chip ${online ? "ok" : "warn"}`}>{online ? t("online") : t("offline")}</span>
-        <select value={localStorage.getItem("vg_lang") || "en"} onChange={(e) => setLang(e.target.value)}><option value="en">EN</option><option value="ms">BM</option></select>
+        <span className={`chip ${online ? "ok" : "warn"}`}>{online ? <Wifi size={12} /> : <WifiOff size={12} />} {online ? t("online") : t("offline")}</span>
+        <button className="icon-btn" onClick={sync} aria-label={t("sync")}><RefreshCw size={16} /> {t("sync")}</button>
       </div>
+      {!online ? <div className="offline-banner">{t("offlineBanner")}</div> : null}
       {notice ? <div className="notice warn">{notice}</div> : null}
-      <div className="row" style={{ marginBottom: 10 }}>
-        <button onClick={sync}>{t("sync")}</button>
-        {queue.length ? <span className="chip warn">{queue.length} {t("pending")}</span> : null}
-        {message ? <small>{message}</small> : null}
-        <button onClick={async () => { await store.wipeAll(); loadLocal(); }}>{t("signOut")}</button>
-      </div>
-      {!item ? (
-        <div className="tabs">
-          <button className={tab === "cases" ? "active" : ""} onClick={() => setTab("cases")}>{t("myCases")}</button>
-          <button className={tab === "messages" ? "active" : ""} onClick={() => setTab("messages")}>{t("messages")}</button>
+      {queue.length || message ? (
+        <div className="row" style={{ marginBottom: 10 }}>
+          {queue.length ? <span className="chip warn">{queue.length} {t("pending")}</span> : null}
+          {message ? <small>{message}</small> : null}
         </div>
+      ) : null}
+      {!item ? (
+        <nav className="tabs field-tabs" aria-label="Inspector app">
+          {tabs.map(({ key, label, Icon, badge }) => (
+            <button key={key} className={tab === key ? "active" : ""} onClick={() => setTab(key)} aria-current={tab === key ? "page" : undefined}>
+              <Icon size={20} aria-hidden="true" /><span>{label}</span>{badge ? <span className="nav-badge">{badge}</span> : null}
+            </button>
+          ))}
+        </nav>
       ) : null}
       {!item && tab === "messages" ? (
         online ? (
@@ -302,9 +318,21 @@ export default function FieldApp() {
             <LinkTelegram token={session.token} />
           </>
         ) : <p className="muted">Messages need a connection.</p>
+      ) : !item && tab === "assistant" ? (
+        <AskBox token={session.token} />
+      ) : !item && tab === "me" ? (
+        <div className="card stack">
+          <h2>{session.user.user_id}</h2>
+          <small>{session.user.role} · {session.user.team} · {session.user.region}</small>
+          <label>Language
+            <select value={localStorage.getItem("vg_lang") || "en"} onChange={(e) => setLang(e.target.value)}><option value="en">English</option><option value="ms">Bahasa Melayu</option></select>
+          </label>
+          <p><small>{t("wipeNotice")}</small></p>
+          <button className="danger" onClick={async () => { await store.wipeAll(); loadLocal(); }}>{t("signOut")}</button>
+        </div>
       ) : item ? (
         <div className="stack">
-          <button onClick={() => setOpen(null)}>← {t("myCases")}</button>
+          <button className="back" onClick={() => setOpen(null)}>← {t("myCases")}</button>
           <div className="card">
             <h2>{item.label === "Routine meter check" ? t("routine") : `${t("case")} ${item.case_id}`}</h2>
             <small>{item.case_id} · {item.premise_id}</small>
@@ -323,7 +351,7 @@ export default function FieldApp() {
         </div>
       ) : (
         <div>
-          <RouteCard route={route} cases={cases} queuedFor={queuedFor} />
+          <RouteCard route={route} cases={cases} queuedFor={queuedFor} onOpen={setOpen} />
           <h2>{t("myCases")}</h2>
           {cases.length ? inRouteOrder(cases, route).map((c) => (
             <a key={c.case_id} className="card case-card" href="#/field" onClick={(e) => { e.preventDefault(); setOpen(c.case_id); }}>
@@ -335,8 +363,6 @@ export default function FieldApp() {
               <small>{c.contact?.address || c.premise_id}</small>
             </a>
           )) : <p className="muted">No assigned cases on this phone.</p>}
-          <p><small>{t("wipeNotice")}</small></p>
-          <AskBox token={session.token} />
         </div>
       )}
     </div>

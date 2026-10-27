@@ -5,8 +5,9 @@ const LABELS = {
   en: {
     signIn: "Sign in", signOut: "Sign out", username: "Username", password: "Password",
     overview: "Network overview", cases: "Cases", dataManager: "Data manager", settings: "Settings", audit: "Audit log",
-    models: "Models", assistant: "Assistant", field: "Inspector app", dispatch: "Dispatch", messages: "Messages", weekly: "Weekly summary",
-    navigate: "Navigate", todaysRoute: "Today's route", stops: "stops", openRoute: "Open the whole route in Google Maps",
+    models: "Models", assistant: "Assistant", field: "Inspector app", dispatch: "Dispatch", messages: "Messages", weekly: "Weekly summary", work: "My work", me: "Me", offlineBanner: "Offline: outcomes are saved encrypted on this phone and sent when the connection returns.", search: "Search",
+    searchPlaceholder: "Go to zone, premise or case ID", searchMiss: "Not an ID you can open",
+    navigate: "Navigate", todaysRoute: "Today's route", stop: "stop", stops: "stops", openRoute: "Open the whole route in Google Maps",
     flaggedZones: "Leaking zones", gapPerDay: "Unexplained energy (kWh/day)", noBalance: "Zones without balance",
     openCases: "Open cases", zone: "Zone", district: "District", allDistricts: "All districts", date: "Date",
     gap: "Gap", uncertainty: "Uncertainty", flatness: "Flatness (CV)", gapStart: "Gap started", sinceStart: "since data start",
@@ -24,8 +25,9 @@ const LABELS = {
   ms: {
     signIn: "Log masuk", signOut: "Log keluar", username: "Nama pengguna", password: "Kata laluan",
     overview: "Gambaran rangkaian", cases: "Kes", dataManager: "Pengurus data", settings: "Tetapan", audit: "Log audit",
-    models: "Model", assistant: "Pembantu", field: "Aplikasi pemeriksa", dispatch: "Penghantaran", messages: "Mesej", weekly: "Ringkasan mingguan",
-    navigate: "Navigasi", todaysRoute: "Laluan hari ini", stops: "hentian", openRoute: "Buka seluruh laluan dalam Google Maps",
+    models: "Model", assistant: "Pembantu", field: "Aplikasi pemeriksa", dispatch: "Penghantaran", messages: "Mesej", weekly: "Ringkasan mingguan", work: "Kerja saya", me: "Saya", offlineBanner: "Luar talian: keputusan disimpan secara disulitkan di telefon ini dan dihantar apabila sambungan pulih.", search: "Cari",
+    searchPlaceholder: "Pergi ke ID zon, premis atau kes", searchMiss: "Bukan ID yang boleh anda buka",
+    navigate: "Navigasi", todaysRoute: "Laluan hari ini", stop: "hentian", stops: "hentian", openRoute: "Buka seluruh laluan dalam Google Maps",
     flaggedZones: "Zon bocor", gapPerDay: "Tenaga tidak dijelaskan (kWj/hari)", noBalance: "Zon tanpa imbangan",
     openCases: "Kes terbuka", zone: "Zon", district: "Daerah", allDistricts: "Semua daerah", date: "Tarikh",
     gap: "Jurang", uncertainty: "Ketidakpastian", flatness: "Kerataan (CV)", gapStart: "Jurang bermula", sinceStart: "sejak data bermula",

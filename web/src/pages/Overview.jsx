@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { get, session } from "../api.js";
-import { ErrorBox, fmt, JobButton, pct, useLoad } from "../components/Common.jsx";
+import { ErrorBox, fmt, Help, JobButton, Kpi, pct, useLoad } from "../components/Common.jsx";
 import ZoneMap from "../components/ZoneMap.jsx";
 import { t } from "../i18n.js";
 
@@ -40,10 +40,14 @@ export default function Overview() {
       {data ? (
         <>
           <div className="grid kpis">
-            <div className="card kpi"><div className="value">{data.totals?.flagged ?? 0}</div><div className="label">{t("flaggedZones")}</div></div>
-            <div className="card kpi"><div className="value">{fmt(data.totals?.gap_kwh_per_day, 0)}</div><div className="label">{t("gapPerDay")}</div></div>
-            <div className="card kpi"><div className="value">{data.totals?.no_balance ?? 0}</div><div className="label">{t("noBalance")}</div></div>
-            <div className="card kpi"><div className="value">{data.zones.reduce((s, z) => s + Number(z.open_cases || 0), 0)}</div><div className="label">{t("openCases")}</div></div>
+            <Kpi value={data.totals?.flagged ?? 0} label={t("flaggedZones")} trend={(data.trend || []).map((p) => p.flagged)}
+              help="Transformer zones whose unexplained energy stayed above the flag rule (share of supply, minimum kWh and uncertainty) for several days." />
+            <Kpi value={fmt(data.totals?.gap_kwh_per_day, 0)} label={t("gapPerDay")} trend={(data.trend || []).map((p) => p.gap_kwh)}
+              help="Energy supplied by the transformers that no meter, estimate or technical loss explains, per day, in the flagged zones. Trend: last 14 days." />
+            <Kpi value={data.totals?.no_balance ?? 0} label={t("noBalance")}
+              help="Zones without a transformer meter: their premises are ranked on usage patterns only, with low confidence." />
+            <Kpi value={data.zones.reduce((s, z) => s + Number(z.open_cases || 0), 0)} label={t("openCases")} onClick={() => navigate("/cases")}
+              help="Inspection cases not yet closed in these zones. Click to open the case list." />
           </div>
           <div className="grid two">
             <div className="card">
@@ -57,8 +61,9 @@ export default function Overview() {
             <div className="card table-wrap">
               <h2>{t("flaggedZones")}</h2>
               <table>
-                <thead><tr><th>{t("zone")}</th><th>{t("district")}</th><th className="num">{t("gap")}</th>
-                  <th className="num">kWh/day</th><th className="num">± u</th><th>{t("gapStart")}</th><th /></tr></thead>
+                <thead><tr><th>{t("zone")}</th><th>{t("district")}</th><th className="num">{t("gap")}<Help text="Unexplained energy as a share of what the transformer supplied, recent days." /></th>
+                  <th className="num">kWh/day</th><th className="num">± u<Help text="Uncertainty margin: meter, estimate and loss-model error. A gap inside it is not flagged." /></th>
+                  <th>{t("gapStart")}</th><th /></tr></thead>
                 <tbody>
                   {data.zones.map((z) => (
                     <tr key={z.transformer_id} className={z.flagged ? "flagged" : ""}>

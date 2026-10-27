@@ -46,7 +46,14 @@ def zones(date_: date | None = Query(None, alias="date"), district: str | None =
     totals = {"zones": len(rows), "flagged": sum(r["flagged"] for r in rows),
               "no_balance": sum(not r["balance_available"] for r in rows),
               "gap_kwh_per_day": round(sum(r["gap_kwh_recent"] or 0 for r in rows if r["flagged"]), 1)}
-    return {"run_date": run_date, "zones": rows, "districts": districts, "totals": totals}
+    # 14-day trend of the region's unexplained energy (flagged zones) for the overview's sparklines.
+    trend = conn.execute(
+        """SELECT b.date, round(sum(b.gap_kwh)::numeric, 1) AS gap_kwh, count(*) FILTER (WHERE b.flagged) AS flagged
+           FROM zone_daily_balance b JOIN transformer t USING (transformer_id)
+           WHERE b.balance_available AND b.date > %s::date - 14 AND b.date <= %s AND (%s::text IS NULL OR t.district = %s)
+           GROUP BY b.date ORDER BY b.date""", (run_date, run_date, district, district)).fetchall()
+    return {"run_date": run_date, "zones": rows, "districts": districts, "totals": totals,
+            "trend": [{"date": r["date"], "gap_kwh": float(r["gap_kwh"]), "flagged": r["flagged"]} for r in trend]}
 
 
 def _zone(conn, tx: str, run_date: date | None) -> dict:
