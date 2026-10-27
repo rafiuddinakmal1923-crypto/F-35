@@ -256,3 +256,14 @@ def test_FR_PS_10_solar_homes_not_top_thief_still_is(demo_run, demo_sim):
 def test_detection_creates_no_cases(demo_run):
     """POST /jobs/run-detection creates no cases: the engine returns scores only."""
     assert not hasattr(demo_run, "cases")
+
+
+def test_FR_DI_07_district_weather_loaded_and_used(demo_sim):
+    scn, tables, _ = demo_sim
+    weather = tables["district_weather"]
+    assert set(weather["district"].unique().to_list()) == {z.district for z in scn.zones}
+    assert weather.height == len({z.district for z in scn.zones}) * scn.days
+    from voltguard.detection.zone_input import build_zone_inputs
+
+    zone = build_zone_inputs(tables, scn.start_date, scn.days)["TX-CEN-001"]
+    assert zone.sunshine is not None and np.isfinite(zone.sunshine).all()    # the rooftop-solar check reads it (FR-PS-10)

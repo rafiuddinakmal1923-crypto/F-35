@@ -162,3 +162,30 @@ def test_demo_live_steps_1_to_7(stack):
     total = sum(timings.values())
     print("\nRehearsal timings (s): " + ", ".join(f"step {k}: {v:.1f}" for k, v in timings.items()) + f"; total {total:.1f}")
     assert total < 300, timings          # the live part must fit a 5-minute demo
+
+
+def test_NFR_02_NFR_13_pages_load_fast_and_phone_view_in_bahasa_melayu(stack):
+    """Zone and premise pages within 3 s (NFR-02); the inspector view on a phone screen in BM (NFR-13)."""
+    from playwright.sync_api import sync_playwright
+
+    url = stack.url
+    with sync_playwright() as p:
+        browser = p.chromium.launch(executable_path=chromium_path())
+        page = browser.new_page(viewport={"width": 1366, "height": 900})
+        sign_in(page, url, "analyst.cen")
+        for path, ready in (("/#/zones/TX-CEN-001", "td >> text=P-CEN-001-054"), ("/#/premises/P-CEN-001-054", "text=Lines add up to")):
+            started = time.time()
+            page.goto(url + path)
+            page.wait_for_selector(ready)
+            assert time.time() - started < 3.0, path
+        phone = browser.new_context(viewport={"width": 360, "height": 740}, is_mobile=True).new_page()
+        phone.goto(f"{url}/#/field")
+        phone.evaluate("localStorage.setItem('vg_lang', 'ms')")
+        phone.reload()
+        phone.wait_for_selector("text=Log masuk")
+        phone.fill("input[autocomplete=username]", "inspector.b")
+        phone.fill("input[type=password]", PASSWORD)
+        phone.click("button.primary")
+        phone.wait_for_selector("text=Kes saya")
+        assert phone.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1")   # no sideways scrolling
+        browser.close()

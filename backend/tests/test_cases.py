@@ -121,7 +121,7 @@ def test_FR_UI_03_details_only_for_case_roles(api, case_job, pg):
     assert item["contact"]["address"] and item["reasons"] and item["label"] == "Inspection"
 
 
-def test_FR_IW_02_03_04_outcomes_status_and_labels(api, case_job, pg):
+def test_FR_IW_02_FR_IW_03_FR_IW_04_outcomes_status_and_labels(api, case_job, pg):
     insp = login(api, "inspector.b")
     cid = find(api, "supervisor.cen", TOP_CEN)["case_id"]
     photo = api.post(f"/cases/{cid}/photos", files={"file": ("meter.jpg", b"\xff\xd8\xff fake jpeg", "image/jpeg")}, headers=insp)

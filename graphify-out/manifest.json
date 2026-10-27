@@ -180,9 +180,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_detection.py": {
-    "mtime": 1793085071.4940193,
-    "seen": 1793085328.1669748,
-    "ast_hash": "9b08fbfc088c98cad24b20a1cd8ff5ce",
+    "mtime": 1793091033.614076,
+    "seen": 1793091133.034206,
+    "ast_hash": "120144578dbbe2c8abb436be3580dcd4",
     "semantic_hash": ""
   },
   "backend/voltguard/__main__.py": {
@@ -258,21 +258,21 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1793090999.8414764,
-    "seen": 1793091002.2793536,
-    "ast_hash": "0f0abb2d5d23e0503843b9ed843b719e",
+    "mtime": 1793091130.6092916,
+    "seen": 1793091133.0364382,
+    "ast_hash": "f132ccac663feb766b90333b857d4c12",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1793089776.5501876,
-    "seen": 1793089905.0971518,
-    "ast_hash": "7dd528859d7ec5a3a84590afa67cf61d",
+    "mtime": 1793091130.6126955,
+    "seen": 1793091133.0364714,
+    "ast_hash": "79c6fb9e6b823b34a1ef8b9bf150397c",
     "semantic_hash": ""
   },
   "TRACEABILITY.md": {
-    "mtime": 1793090538.837306,
-    "seen": 1793091002.279403,
-    "ast_hash": "17d9951e08956f6ef82a7d7e9f42b4d6",
+    "mtime": 1793091077.3665042,
+    "seen": 1793091133.0364726,
+    "ast_hash": "793fc471995de5188e31d640448ef94a",
     "semantic_hash": ""
   },
   "docker-compose.yml": {
@@ -498,9 +498,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_cases.py": {
-    "mtime": 1793087473.0149162,
-    "seen": 1793087963.2867553,
-    "ast_hash": "2e2db687572a58bde522ce7fba55b495",
+    "mtime": 1793091033.614076,
+    "seen": 1793091133.0341842,
+    "ast_hash": "37dc87ea123f2523c56417eac268d50d",
     "semantic_hash": ""
   },
   "backend/voltguard/agents/dispatch.py": {
@@ -816,9 +816,9 @@
     "semantic_hash": ""
   },
   "backend/tests/e2e/test_demo_rehearsal.py": {
-    "mtime": 1793089489.7900887,
-    "seen": 1793089905.0949435,
-    "ast_hash": "66204818b1714cd3215ba7c93b448ae3",
+    "mtime": 1793091033.6457741,
+    "seen": 1793091133.0340824,
+    "ast_hash": "5bc414cbe4d55e471813d8d397fe6f27",
     "semantic_hash": ""
   },
   "backend/voltguard/service/demo.py": {

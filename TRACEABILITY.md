@@ -9,10 +9,10 @@ cited in code but no dedicated test yet; **open** = not implemented yet.
 
 | Priority | tested | code | open |
 | --- | --- | --- | --- |
-| Must | 25 | 1 | 0 |
+| Must | 26 | 0 | 0 |
 | Should | 15 | 0 | 0 |
-| Could | 3 | 1 | 0 |
-| NFR | 5 | 4 | 7 |
+| Could | 4 | 0 | 0 |
+| NFR | 7 | 3 | 6 |
 
 ## Requirements
 
@@ -24,7 +24,7 @@ cited in code but no dedicated test yet; **open** = not implemented yet.
 | FR-DI-04 | Must | Import the network map: meter to transformer, and each premise's street position | tested |  | `test_FR_DI_04_every_meter_linked_to_one_transformer` |
 | FR-DI-05 | Should | Import account events: account holder change and Change of Tenancy | tested |  | `test_FR_DI_05_tenancy_change_at_injected_thief` |
 | FR-DI-06 | Must | Check data quality (missing intervals, duplicates, clock errors) and flag affected meters | tested | `backend/voltguard/data/validation.py`<br>`backend/voltguard/detection/balance.py` | `test_FR_DI_06_upload_with_missing_intervals_flags_meter`<br>`test_FR_DI_06_missing_day_flags_meter` |
-| FR-DI-07 | Could | Import daily temperature per district | code | `backend/voltguard/data/canonical.py`<br>`backend/voltguard/detection/zone_input.py` |  |
+| FR-DI-07 | Could | Import daily temperature per district | tested | `backend/voltguard/data/canonical.py`<br>`backend/voltguard/detection/zone_input.py` | `test_FR_DI_07_district_weather_loaded_and_used` |
 | FR-ZD-01 | Must | Compute each transformer's daily energy gap: supplied minus metered minus technical los... | tested | `backend/voltguard/api/routes_zones.py`<br>`backend/voltguard/detection/balance.py`<br>`backend/voltguard/network.py` | `test_FR_ZD_01_gap_matches_injected_energy_including_day_one_tap` |
 | FR-ZD-02 | Must | Flag a zone when its excess loss exceeds both a set share of supply (default 5%) and a ... | tested | `backend/voltguard/api/routes_zones.py`<br>`backend/voltguard/detection/balance.py` | `test_FR_ZD_02_large_load_priority`<br>`test_FR_ZD_02_taps_flagged_clean_zones_not` |
 | FR-ZD-03 | Should | Estimate the date the gap started when a change is visible; otherwise report it as pres... | tested | `backend/voltguard/api/routes_zones.py`<br>`backend/voltguard/detection/balance.py` | `test_FR_ZD_03_gap_start_estimated_or_present_since_start` |
@@ -47,9 +47,9 @@ cited in code but no dedicated test yet; **open** = not implemented yet.
 | FR-UI-04 | Should | Filter all views by district and date range | tested | `backend/voltguard/api/routes_zones.py`<br>`web/src/pages/Overview.jsx` | `test_FR_UI_04_district_filter` |
 | FR-UI-05 | Should | Export an approved case report as PDF, with personal details added by the system at export | tested | `backend/voltguard/agents/report.py`<br>`backend/voltguard/pdf.py` | `test_FR_AG_01_FR_UI_05_two_approvals_then_pdf_with_details` |
 | FR-IW-01 | Must | Create cases automatically for premises above the case threshold (a separate job that r... | tested | `backend/voltguard/api/routes_cases.py`<br>`backend/voltguard/service/cases.py` | `test_FR_IW_01_case_job_creates_threshold_cases`<br>`test_FR_IW_01_manual_cases_and_only_supervisor_assigns` |
-| FR-IW-02 | Must | Let an inspector record the outcome (Confirmed theft, False alarm, Inconclusive, No acc... | tested | `backend/voltguard/api/routes_cases.py`<br>`backend/voltguard/service/cases.py`<br>`web/src/field/FieldApp.jsx` | `test_FR_IW_02_03_04_outcomes_status_and_labels` |
-| FR-IW-03 | Must | Track case status: New, Assigned, Visited, Reporting, Closed. False alarm or Inconclusi... | code | `backend/voltguard/api/routes_cases.py`<br>`backend/voltguard/service/cases.py` |  |
-| FR-IW-04 | Must | Store each outcome (except No access) as a training label for the next model update | tested | `backend/voltguard/api/routes_cases.py`<br>`backend/voltguard/service/cases.py`<br>`backend/voltguard/service/learning.py` | `test_FR_IW_04_no_access_never_a_label` |
+| FR-IW-02 | Must | Let an inspector record the outcome (Confirmed theft, False alarm, Inconclusive, No acc... | tested | `backend/voltguard/api/routes_cases.py`<br>`backend/voltguard/service/cases.py`<br>`web/src/field/FieldApp.jsx` | `test_FR_IW_02_FR_IW_03_FR_IW_04_outcomes_status_and_labels` |
+| FR-IW-03 | Must | Track case status: New, Assigned, Visited, Reporting, Closed. False alarm or Inconclusi... | tested | `backend/voltguard/api/routes_cases.py`<br>`backend/voltguard/service/cases.py` | `test_FR_IW_02_FR_IW_03_FR_IW_04_outcomes_status_and_labels` |
+| FR-IW-04 | Must | Store each outcome (except No access) as a training label for the next model update | tested | `backend/voltguard/api/routes_cases.py`<br>`backend/voltguard/service/cases.py`<br>`backend/voltguard/service/learning.py` | `test_FR_IW_02_FR_IW_03_FR_IW_04_outcomes_status_and_labels`<br>`test_FR_IW_04_no_access_never_a_label` |
 | FR-IW-05 | Must | Create a small random sample of inspection cases, drawn from all premises in flagged zo... | tested | `backend/voltguard/api/routes_cases.py`<br>`backend/voltguard/service/cases.py` | `test_FR_IW_05_random_sample_from_flagged_zones_only`<br>`test_FR_IW_05_random_sample_presented_as_routine_check` |
 | FR-ML-01 | Should | Retrain the scoring model on new labels at least weekly, with each version recorded | tested | `backend/voltguard/api/routes_models.py`<br>`backend/voltguard/service/learning.py`<br>`web/src/pages/Models.jsx` | `test_FR_ML_01_FR_ML_02_retrain_records_version_with_both_hit_rates` |
 | FR-ML-02 | Must | Report hit rate and precision for each model version, separately for model-ranked and r... | tested | `backend/voltguard/api/routes_models.py`<br>`backend/voltguard/service/learning.py`<br>`web/src/pages/Models.jsx` | `test_FR_ML_01_FR_ML_02_retrain_records_version_with_both_hit_rates` |
@@ -64,7 +64,7 @@ cited in code but no dedicated test yet; **open** = not implemented yet.
 | FR-AD-02 | Must | Log every case view, assignment, outcome, export and agent action with user and time, i... | tested | `backend/voltguard/api/routes_admin.py`<br>`backend/voltguard/audit.py`<br>`backend/voltguard/db.py`<br>`web/src/pages/Audit.jsx` | `test_FR_AD_02_NFR_12_audit_logged_and_tampering_detected` |
 | FR-AD-03 | Should | Let admins change thresholds and weights without code changes | tested | `backend/voltguard/api/routes_admin.py`<br>`backend/voltguard/config.py`<br>`backend/voltguard/service/settings.py`<br>`web/src/pages/Settings.jsx` | `test_FR_AD_03_threshold_change_applies_on_rerun` |
 | NFR-01 | NFR | Performance: The nightly run finishes within 2 hours of meter data arriving, for the pi... | open |  |  |
-| NFR-02 | NFR | Performance: A zone or premise page loads within 3 seconds | open |  |  |
+| NFR-02 | NFR | Performance: A zone or premise page loads within 3 seconds | tested |  | `test_NFR_02_NFR_13_pages_load_fast_and_phone_view_in_bahasa_melayu` |
 | NFR-03 | NFR | Availability: Dashboard available 99% of business hours during the pilot | open |  |  |
 | NFR-04 | NFR | Isolation: A VoltGuard failure never affects metering, billing or the grid | open |  |  |
 | NFR-05 | NFR | Scalability: The design scales out by transformer zone towards national coverage | open |  |  |
@@ -75,7 +75,7 @@ cited in code but no dedicated test yet; **open** = not implemented yet.
 | NFR-10 | NFR | Effectiveness (R1): Hit rate of model-ranked inspections exceeds the pilot zone's curre... | code | `scripts/backtest.py` |  |
 | NFR-11 | NFR | Fairness: Flag rates are monitored by area and by housing tenure (owner or renter); no ... | code | `backend/voltguard/service/monitoring.py` |  |
 | NFR-12 | NFR | Auditability: Each audit row stores its own hash and the previous row's; the latest has... | tested | `backend/voltguard/api/routes_admin.py`<br>`backend/voltguard/audit.py`<br>`backend/voltguard/db.py`<br>`backend/voltguard/service/scheduler.py` (+1) | `test_FR_AD_02_NFR_12_audit_logged_and_tampering_detected` |
-| NFR-13 | NFR | Usability: The inspector view works on a phone screen; labels in English and Bahasa Melayu | code | `web/src/field/FieldApp.jsx`<br>`web/src/i18n.js` |  |
+| NFR-13 | NFR | Usability: The inspector view works on a phone screen; labels in English and Bahasa Melayu | tested | `web/src/field/FieldApp.jsx`<br>`web/src/i18n.js` | `test_NFR_02_NFR_13_pages_load_fast_and_phone_view_in_bahasa_melayu` |
 | NFR-14 | NFR | Maintainability: All services run in containers; models and data versions are recorded | open |  |  |
 | NFR-15 | NFR | AI safety: Agent answers come only from retrieved documents or database results, cite t... | tested | `backend/voltguard/agents/guardrails.py`<br>`backend/voltguard/agents/llm.py`<br>`backend/voltguard/agents/rag.py`<br>`backend/voltguard/agents/scrubber.py` | `test_NFR_15_every_planted_detail_scrubbed_from_seeded_notes`<br>`test_NFR_15_model_never_receives_personal_details`<br>`test_NFR_15_model_output_with_personal_details_is_blocked`<br>`test_NFR_15_planted_instruction_in_retrieved_text_is_data` |
 | NFR-16 | NFR | Device security: The inspector app keeps only assigned cases on the phone, encrypted; w... | tested | `backend/voltguard/api/deps.py`<br>`backend/voltguard/api/routes_auth.py`<br>`backend/voltguard/auth.py`<br>`web/src/field/FieldApp.jsx` (+1) | `test_NFR_16_remote_sign_out` |

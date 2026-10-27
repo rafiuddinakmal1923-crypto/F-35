@@ -122,22 +122,22 @@ graphify graph in `graphify-out/` and `TRACEABILITY.md`).
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.sh)
 
-- Generated: 2026-10-27T08:50
-- Branch: `claude/practical-clarke-t5uwrc`; last commit: `0363865 Verify the images: CPU-only XGBoost, models trained on first run, three reasons always`
-- Tests collected: 73 tests
+- Generated: 2026-10-27T08:52
+- Branch: `claude/practical-clarke-t5uwrc`; last commit: `0d4b295 Verify the compose stack on TimescaleDB and pgvector; fix empty settings and local paths`
+- Tests collected: 74 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
   query with `graphify query "<question>"` or `graphify explain "<name>"`)
 
 ### Graph summary
 
-- 1894 nodes · 4379 edges · 120 communities (109 shown, 11 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 250 edges (avg confidence: 0.93)
+- 1897 nodes · 4390 edges · 126 communities (113 shown, 13 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 252 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
 1. `Caller` - 102 edges
-2. `Requirements` - 60 edges
+2. `Requirements` - 62 edges
 3. `login()` - 37 edges
 4. `audit()` - 35 edges
 5. `t()` - 33 edges
