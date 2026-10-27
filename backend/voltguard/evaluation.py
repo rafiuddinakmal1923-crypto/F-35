@@ -173,7 +173,7 @@ def tune(seed: int = 1000, samples: int = 400, progress=print) -> dict:
     tuned = {"weights": best_cfg["weights"], "zone": {"loss_model_error_share": round(loss_error, 4)},
              "_tuning": {"seed": seed, "zones": len(scn.zones), "objective": round(float(best), 4),
                          "tuned_at": datetime.now().isoformat(timespec="seconds"), "split": "tuning"}}
-    path = config.data_root() / "tuned_weights.yaml"
+    path = config.tuned_weights_path()
     path.write_text(yaml.safe_dump(tuned, sort_keys=False), encoding="utf-8")
     progress(f"Tuned objective {best:.3f}; loss-model error share {loss_error:.3f}; saved {path}")
     return tuned

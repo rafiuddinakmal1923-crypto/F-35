@@ -1,0 +1,10 @@
+# Named tunnel for judging (stable hostname). Copy to config.yml (git-ignored) and fill in.
+# Create once:  cloudflared tunnel login
+#               cloudflared tunnel create voltguard
+#               cloudflared tunnel route dns voltguard <TUNNEL_HOSTNAME>
+tunnel: voltguard
+credentials-file: /etc/cloudflared/<TUNNEL_ID>.json     # keep the JSON out of git
+ingress:
+  - hostname: <TUNNEL_HOSTNAME>
+    service: http://localhost:8080                     # the proxy service only
+  - service: http_status:404
