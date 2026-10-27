@@ -33,7 +33,8 @@ that anyone stole electricity, and people decide after inspection.
    ```
 
    Open http://localhost:8080 and sign in with an account printed by `make.ps1 demo` (passwords
-   are generated into `.env`, which is never committed). `.\make.ps1 help` lists every target; the
+   are generated into `.env`, which is never committed). If another program already uses port 8080
+   (for example an Oracle database listener) or 15432, set `WEB_PORT` or `DB_HOST_PORT` in `.env`. `.\make.ps1 help` lists every target; the
    same targets exist in the `Makefile` for Git Bash, WSL or Linux.
 4. Optional language model: `.\make.ps1 models` pulls `LLM_MODEL` (Qwen2.5-7B-Instruct) into
    `D:\VoltGuard\models\ollama` and the embedding model into `D:\VoltGuard\models\hf`; then set
@@ -53,6 +54,31 @@ logs, the audit anchor, MLflow runs and models. PostgreSQL sits in a named Docke
 `docker compose --profile full up -d` adds Airflow, Keycloak, MinIO, Celery/Redis, MLflow and
 Prometheus/Grafana to show the R1 architecture; the app keeps using the lite implementations
 (`DEVIATIONS.md`).
+
+## Telegram dispatch bot
+
+Dispatch runs through a Telegram bot (SRS 5.1–5.2):
+1. A new case sends the supervisor a **dispatch suggestion** with *Approve / Reject*.
+2. Approval sends the team the **assignment** with *Accept / On my way / Can't attend*.
+3. *Can't attend* tells the supervisors to reassign.
+4. Reminders and escalations arrive in the same chats.
+
+Rules:
+- Every press runs as the linked person, under their role and region.
+- Every press is written to the case history and the audit log.
+- Each message is answered once.
+- Messages carry a case ID and link only.
+
+- **Without a bot token** (default) the bot runs inside the app: **Dispatch** page for supervisors
+  (also remote sign-out of a lost inspector phone), **Messages** tab in the inspector app.
+- **With a real bot:**
+  1. Telegram → @BotFather → `/newbot` → copy the token.
+  2. Set `TELEGRAM_BOT_TOKEN=...` in `.env`, then run `docker compose up -d api`.
+  3. Each supervisor (**Dispatch → Link Telegram**) and inspector (phone app **Messages → Link Telegram**)
+     gets a code and sends `/start CODE` to the bot.
+
+  Other commands: `/mycases`, `/whoami`, `/unlink`, `/help`. Pressing a button in Telegram or in the app
+  gives the same result.
 
 ## Public link for judges (Cloudflare Tunnel)
 
@@ -90,8 +116,9 @@ shows that the voltage locator works on physics-consistent data, not on TNB mete
 python3 -m venv .venv && .venv/bin/pip install -r backend/requirements.txt
 cd backend
 ../.venv/bin/python -m voltguard train-models   # pattern model + autoencoder (under a minute)
-../.venv/bin/python -m pytest                    # 74 tests, named after SRS IDs; DB tests start a throwaway PostgreSQL
+../.venv/bin/python -m pytest                    # 91 tests, named after SRS IDs; DB tests start a throwaway PostgreSQL
 ../.venv/bin/python -m pytest -m e2e             # 3 browser tests: demo steps 1-7, page speed, the inspector app (needs Node, Chromium)
+../.venv/bin/python ../scripts/e2e_use_cases.py  # 68 browser checks: every use case from every account (docs/REVIEW_AND_TEST_REPORT.md)
 ../.venv/bin/python -m tests.local_stack --cases # whole stack without Docker: web on :4173 (Linux, PostgreSQL 16 binaries)
 ```
 
@@ -109,7 +136,8 @@ personal details only through the case service; sign-in, remote sign-out and aud
 with daily anchors; case job with random sample, claims, supervisor-only assignment, outcomes and
 status rules; dispatch suggestions, reminders and escalations; inspector PWA with an encrypted
 offline store that is wiped; report drafts with placeholders, two approvals and PDF export;
-region-limited chatbot; field assistant with citations or "not found"; similar cases; notes
+region-limited chatbot whose answers come with a chart, the table and the query used; Telegram
+dispatch bot with buttons (in-app simulator without a token); field assistant with citations or "not found"; similar cases; notes
 scrubber with Malaysian recognisers; agent guardrails; retraining with versions and both hit
 rates; monitoring alerts; zone-level Power BI views and CSV snapshot; the 7 live demo steps in a
 browser (about 20 s automated, mock mode).
@@ -118,13 +146,15 @@ browser (about 20 s automated, mock mode).
 - NFR-09 is met for ranked zones (18 of 18 held-out thefts in the top 5%) but not overall: 6 of 24
   held-out thefts are partial bypasses of about 1% of supply in zones with no other theft, inside
   the uncertainty margin, so their zones are not flagged (`reports/simulation_report.md`).
-- The live language model path (Ollama) and live Telegram delivery are implemented but were tested
-  here only through mock mode and the console notifier; Cloudflare tunnels were not run here.
+- The live language model path (Ollama) and the real Telegram bot are implemented but were tested
+  here only through mock mode, the in-app chat and a recorded Telegram API; Cloudflare tunnels were
+  not run here.
 - Public legal texts are not in the repository: `scripts/fetch_docs.py` needs a verified URL or a
   manual download; until then legal questions return "not found" and reports cite Section 37 of
   the Electricity Supply Act 1990 by name only.
-- NFR-01 (2-hour nightly run for 100,000 meters) is not measured; the demo scale (440 meters,
-  61 days, 1.1 million readings) loads and scores in about 9 seconds.
+- NFR-01 (2-hour nightly run for 100,000 meters): detection takes about 5 s per 1,000 homes
+  (about 8 min for 100,000), but the run holds every zone in memory (about 0.3 GB per 1,000
+  homes), so 100,000 meters needs zone batching first (`docs/REVIEW_AND_TEST_REPORT.md` 5).
 - The full profile's services are defined but not wired into the app; the `.pbix` is not built
   (layout in `powerbi/POWERBI.md`, data in `powerbi/snapshot/`).
 - Fairness by housing tenure (NFR-11) needs tenure data that R0 does not have; flag rates by area
@@ -144,6 +174,8 @@ browser (about 20 s automated, mock mode).
 
 ## Documents
 
+- `docs/REVIEW_AND_TEST_REPORT.md`: SRS/SDD review, end-to-end test of every use case, bugs fixed, suggestions
+- `docs/UI_UX_DESIGN_REQUIREMENTS.md`: redesign requirements, tokens, screens, prompts and plugins
 - `PLAN.md`: milestones and file tree
 - `HANDOFF.md`: status and how to continue in a new session (with the graphify code graph in `graphify-out/`)
 - `TRACEABILITY.md`: every SRS requirement mapped to code and tests (generated)

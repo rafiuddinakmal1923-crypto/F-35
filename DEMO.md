@@ -71,7 +71,7 @@ and never calls anyone a thief; people decide, and nothing leaves the system wit
 
 - Model slow or missing: the app falls back to mock mode by itself (badge in the header). Report
   drafting uses the pre-drafted or template draft by default.
-- Telegram not set or blocked: the console notifier logs the same message (`docker compose logs api`)
+- Telegram not set or blocked: the bot runs in the app (supervisor **Dispatch** page, inspector **Messages** tab) with the same buttons
   and **Notifications** (supervisor) lists it.
 - Tunnel down: demo on the laptop at http://localhost:8080; for the phone use the laptop's Wi-Fi
   address only for a backup clip (the PWA needs HTTPS for offline storage).

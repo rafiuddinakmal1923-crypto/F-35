@@ -98,8 +98,10 @@ def assign(case_id: str, body: Assignment, c: Caller = Depends(require("supervis
 
 
 @router.post("/cases/{case_id}/photos")
-async def upload_photo(case_id: str, file: UploadFile = File(...), c: Caller = Depends(require("inspector")), conn=Depends(connection)):
-    data = await file.read()
+def upload_photo(case_id: str, file: UploadFile = File(...), c: Caller = Depends(require("inspector")), conn=Depends(connection)):
+    # A plain def runs in the worker threads: an async endpoint that touches the database blocks the event
+    # loop, and while it waits for the audit lock no other request can commit and release it (deadlock).
+    data = file.file.read()
     key = _call(cases.add_photo, conn, c, case_id, data, file.content_type or "")
     return {"photo_key": key}
 

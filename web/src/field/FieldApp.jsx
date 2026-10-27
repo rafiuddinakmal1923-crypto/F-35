@@ -70,6 +70,27 @@ function AskBox({ token }) {
   );
 }
 
+function LinkTelegram({ token }) {
+  const [code, setCode] = useState(null);
+  const [error, setError] = useState(null);
+  async function get() {
+    setError(null);
+    try {
+      setCode(await call(token, "/telegram/link-code", { method: "POST" }));
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+  return (
+    <div className="card stack" style={{ marginTop: 10 }}>
+      <small>Get these messages in Telegram too: send the code to the VoltGuard bot.</small>
+      <button type="button" onClick={get}>Link Telegram</button>
+      {code ? <div className="notice">Send <code>/start {code.code}</code> to the bot within 15 minutes.</div> : null}
+      {error ? <div className="notice error">{error}</div> : null}
+    </div>
+  );
+}
+
 function OutcomeForm({ item, onSaved }) {
   const [outcome, setOutcome] = useState(null);
   const [notes, setNotes] = useState("");
@@ -228,8 +249,12 @@ export default function FieldApp() {
         </div>
       ) : null}
       {!item && tab === "messages" ? (
-        online ? <TelegramChat token={session.token} compact links={false} title="VoltGuard Dispatch Bot" />
-          : <p className="muted">Messages need a connection.</p>
+        online ? (
+          <>
+            <TelegramChat token={session.token} compact links={false} title="VoltGuard Dispatch Bot" />
+            <LinkTelegram token={session.token} />
+          </>
+        ) : <p className="muted">Messages need a connection.</p>
       ) : item ? (
         <div className="stack">
           <button onClick={() => setOpen(null)}>← {t("myCases")}</button>
