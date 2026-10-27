@@ -32,3 +32,6 @@ later change wires them in.
 | --- | --- | --- |
 | SGCC dataset trains the pattern model | Trained on SGCC when `processed/sgcc_windows.parquet` exists, otherwise on synthetic windows that follow the published SGCC theft patterns | Kaggle needs an API key; the demo must run offline. The model metadata and the simulation report say which source was used |
 | London profiles feed the simulator | Built-in synthetic tropical (aircon-heavy) profiles by default; London shapes when processed | Same reason |
+| Per-table sources `simulated`, `london`, `sgcc`, `datagovmy`, `upload:<name>` | Per-table values `simulated`, `london`, `upload:<name>[@vN]`; SGCC is chosen by `pattern_training: sgcc` and data.gov.my by `rescale: datagovmy` | SGCC has no meter-to-transformer links and data.gov.my holds national monthly totals, so neither can fill a canonical table on its own |
+| data.gov.my rescales profiles to Malaysian consumption levels | Monthly seasonality factors from domestic consumption; the household level stays the configurable `mean_kwh` placeholder | The dataset has no household count, so a per-household level would be an invented figure |
+| London data feeds the simulator | Also converted to canonical tables (pseudo zones of 60 homes, no voltage, phase or transformer meter) | Exercises the AS-1/AS-2/AS-3/AS-7 fallbacks on real household load |

@@ -1,0 +1,2 @@
+case_id,premise_id,outcome,reason_tag,notes,recorded_at,origin
+H-0001,P-CEN-002-010,confirmed_theft,meter_bypass,Bypass cable behind meter board.,2026-06-12T10:30:00+08:00,model

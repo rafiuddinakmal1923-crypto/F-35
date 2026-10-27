@@ -23,7 +23,7 @@ cited in code but no dedicated test yet; **open** = not implemented yet.
 | FR-DI-03 | Must | Import energy readings from each transformer meter | tested |  | `test_FR_DI_03_supply_equals_homes_plus_loss_plus_taps` |
 | FR-DI-04 | Must | Import the network map: meter to transformer, and each premise's street position | tested |  | `test_FR_DI_04_every_meter_linked_to_one_transformer` |
 | FR-DI-05 | Should | Import account events: account holder change and Change of Tenancy | tested |  | `test_FR_DI_05_tenancy_change_at_injected_thief` |
-| FR-DI-06 | Must | Check data quality (missing intervals, duplicates, clock errors) and flag affected meters | tested | `backend/voltguard/detection/balance.py` | `test_FR_DI_06_missing_day_flags_meter` |
+| FR-DI-06 | Must | Check data quality (missing intervals, duplicates, clock errors) and flag affected meters | tested | `backend/voltguard/data/validation.py`<br>`backend/voltguard/detection/balance.py` | `test_FR_DI_06_upload_with_missing_intervals_flags_meter`<br>`test_FR_DI_06_missing_day_flags_meter` |
 | FR-DI-07 | Could | Import daily temperature per district | code | `backend/voltguard/data/canonical.py`<br>`backend/voltguard/detection/zone_input.py` |  |
 | FR-ZD-01 | Must | Compute each transformer's daily energy gap: supplied minus metered minus technical los... | tested | `backend/voltguard/detection/balance.py`<br>`backend/voltguard/network.py` | `test_FR_ZD_01_gap_matches_injected_energy_including_day_one_tap` |
 | FR-ZD-02 | Must | Flag a zone when its excess loss exceeds both a set share of supply (default 5%) and a ... | tested | `backend/voltguard/detection/balance.py` | `test_FR_ZD_02_large_load_priority`<br>`test_FR_ZD_02_taps_flagged_clean_zones_not` |

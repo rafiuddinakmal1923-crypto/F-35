@@ -1,0 +1,3 @@
+meter_id,premise_id,meter_type,read_frequency,installed_on
+MTR-001001,P-CEN-001-001,smart,30min,2024-03-01
+MTR-001002,P-CEN-001-002,conventional,monthly,2015-07-12

@@ -223,6 +223,13 @@ def simulate_zone(scn: Scenario, zone: ZoneSpec) -> ZoneSim:
     levels = profiles.daily_levels(rng, n, zone.mean_kwh) * np.array([type_scale[t] for t in types])
     weather = district_weather(scn, zone.district)
     heat = 1.0 + 0.04 * (weather["temperature_c"] - 31.0)
+    if config.data_sources().get("rescale") == "datagovmy":
+        from voltguard.data.adapters import datagovmy
+
+        factors = datagovmy.month_factors()
+        if factors is not None:
+            months = np.array([(scn.start_date + timedelta(days=d)).month for d in range(days)])
+            heat = heat * factors[months]
     base_kw = profiles.household_load_kw(rng, shapes, levels, days, scn.start_date.weekday(), heat, zone.noise)
 
     true_kw = base_kw.copy()
