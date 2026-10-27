@@ -1,5 +1,6 @@
 # API, job scheduler, pipeline and CLI in one image (lite profile).
-FROM python:3.12-slim
+# Debian 12: Playwright 1.52 installs Chromium dependencies by Debian 12 package names (fails on Debian 13).
+FROM python:3.12-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
