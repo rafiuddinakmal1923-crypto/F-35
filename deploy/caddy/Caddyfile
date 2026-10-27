@@ -10,14 +10,20 @@
 		-Server
 	}
 
-	handle_path /api/* {
-		reverse_proxy api:8000
-	}
-	handle /health {
-		reverse_proxy api:8000
-	}
-	# /metrics stays internal: it is not routed here (Prometheus scrapes api:8000 directly).
-	handle {
-		reverse_proxy web:80
+	# `route` keeps the order below; internal endpoints never go through the tunnel
+	# (Prometheus scrapes api:8000/metrics directly in the full profile).
+	route {
+		@internal path /api/metrics /api/docs /api/redoc /api/openapi.json
+		respond @internal 404
+
+		handle_path /api/* {
+			reverse_proxy api:8000
+		}
+		handle /health {
+			reverse_proxy api:8000
+		}
+		handle {
+			reverse_proxy web:80
+		}
 	}
 }

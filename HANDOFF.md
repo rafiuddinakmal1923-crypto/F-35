@@ -36,8 +36,15 @@ graphify graph in `graphify-out/` and `TRACEABILITY.md`).
   `ingest`, `activate`, `sources`, `convert`, `upload-kit`. Still to do in M4/M5: the
   `pipeline` command (needs the database), `POST /admin/datasets` and the Data manager page,
   both calling `ingest.ingest()` / `ingest.activate_dataset()` / `ingest.preview()`.
-- [ ] **M4 API and security**: Postgres schema + RLS, pipeline into the database, FastAPI
-  endpoints (SDD 7), built-in sign-in, masking, hash-chained audit + daily anchor, file storage.
+- [x] **M4 API and security**: `sql/001_core.sql` (SDD 4 tables, audit chain function
+  `vg_audit`, personal details only via `vg_case_contact`/`vg_report_contact`),
+  `sql/002_security.sql` (roles, column grants, row-level security by region; re-applied on
+  every migrate), `db.py` (pools, `app_connection(caller)` sets `app.*`), `service/pipeline.py`
+  (sources -> DB -> read back -> engine -> results), `service/jobs.py` (one heavy job at a time),
+  `auth.py` (scrypt + JWT + remote sign-out), `audit.py` (independent verify + write-once anchors),
+  `storage.py` (Fernet-encrypted files), `api/` (auth, zones, premises, jobs, Data manager,
+  settings, audit), `agents/scrubber.py` (Malaysian recognisers; used by the pipeline already).
+  Tests: `tests/test_api_security.py` on a throwaway Postgres (`tests/pg_server.py`).
 - [ ] **M5 Cases and apps**: case job + random sample, claim, assignment, outcomes, React case
   pages, Data manager page, inspector PWA (offline, encrypted, auto-wipe, remote sign-out).
 - [ ] **M6 Agents and RAG**: report (placeholders, two approvals, PDF), dispatch + reminders,
@@ -66,39 +73,43 @@ graphify graph in `graphify-out/` and `TRACEABILITY.md`).
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.sh)
 
-- Generated: 2026-10-27T07:23
-- Branch: `claude/practical-clarke-t5uwrc`; last commit: `5e430be M1: scaffold, CLI, detection tests and session hand-off`
-- Tests collected: 34 tests
+- Generated: 2026-10-27T07:38
+- Branch: `claude/practical-clarke-t5uwrc`; last commit: `eca8213 M2: data layer adapters, upload area, validation and dataset versions`
+- Tests collected: 48 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
   query with `graphify query "<question>"` or `graphify explain "<name>"`)
 
 ### Graph summary
 
-- 1091 nodes · 1948 edges · 77 communities (73 shown, 4 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 115 edges (avg confidence: 0.91)
+- 1351 nodes · 2683 edges · 86 communities (80 shown, 6 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 151 edges (avg confidence: 0.92)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
-1. `simulate_zone()` - 28 edges
-2. `ingest()` - 26 edges
-3. `ZoneInput` - 26 edges
-4. `Requirements` - 26 edges
-5. `build_features()` - 24 edges
-6. `Scenario` - 19 edges
-7. `ValidationReport` - 19 edges
-8. `locate()` - 19 edges
-9. `simulation_report()` - 19 edges
-10. `run_zones()` - 18 edges
+1. `Caller` - 37 edges
+2. `simulate_zone()` - 28 edges
+3. `ingest()` - 27 edges
+4. `ZoneInput` - 26 edges
+5. `Requirements` - 26 edges
+6. `build_features()` - 24 edges
+7. `run_detection()` - 22 edges
+8. `ValidationReport` - 21 edges
+9. `command()` - 19 edges
+10. `data_root()` - 19 edges
 
 ### File tree
 
 - `./`: .env.example, .gitignore, DEVIATIONS.md, HANDOFF.md, Makefile, PLAN.md, README.md, TRACEABILITY.md, VoltGuard AI Software Design Document (SDD).pdf, VoltGuard AI Software Requirements Specification (SRS).pdf, VoltGuard_ClaudeCode_Prompt.md, VoltGuard_SDD.md, ... (+3)
 - `backend/`: Dockerfile, pytest.ini, requirements.txt
-- `backend/tests/`: conftest.py, test_data_layer.py, test_detection.py
-- `backend/voltguard/`: __init__.py, __main__.py, cli.py, config.py, evaluation.py, network.py
+- `backend/tests/`: conftest.py, pg_server.py, test_api_security.py, test_data_layer.py, test_detection.py
+- `backend/voltguard/`: __init__.py, __main__.py, audit.py, auth.py, cli.py, config.py, db.py, evaluation.py, network.py, storage.py
+- `backend/voltguard/agents/`: __init__.py, scrubber.py
+- `backend/voltguard/api/`: __init__.py, deps.py, main.py, routes_admin.py, routes_auth.py, routes_zones.py
 - `backend/voltguard/data/`: __init__.py, adapters/__init__.py, adapters/datagovmy.py, adapters/london.py, adapters/sgcc.py, canonical.py, fakes.py, ingest.py, profiles.py, simulator.py, sources.py, validation.py
 - `backend/voltguard/detection/`: __init__.py, anomaly.py, balance.py, engine.py, features.py, pattern.py, scoring.py, voltage.py, zone_input.py
+- `backend/voltguard/service/`: __init__.py, commands.py, jobs.py, pipeline.py, scheduler.py, settings.py, users.py
+- `backend/voltguard/sql/`: 001_core.sql, 002_security.sql
 - `config/`: data_sources.yaml, demo.yaml, thresholds.yaml, tuned_weights.yaml
 - `data/uploads/`: README.md, column_map.example.yaml, schema.yaml
 - `data/uploads/templates/`: account_event.csv, customer_pii.csv, district_weather.csv, duty_roster.csv, inspection_outcome.csv, meter.csv, meter_monthly_reading.csv, meter_reading.csv, premise.csv, transformer.csv, transformer_reading.csv
