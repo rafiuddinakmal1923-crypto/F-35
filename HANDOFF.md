@@ -45,8 +45,18 @@ graphify graph in `graphify-out/` and `TRACEABILITY.md`).
   `storage.py` (Fernet-encrypted files), `api/` (auth, zones, premises, jobs, Data manager,
   settings, audit), `agents/scrubber.py` (Malaysian recognisers; used by the pipeline already).
   Tests: `tests/test_api_security.py` on a throwaway Postgres (`tests/pg_server.py`).
-- [ ] **M5 Cases and apps**: case job + random sample, claim, assignment, outcomes, React case
-  pages, Data manager page, inspector PWA (offline, encrypted, auto-wipe, remote sign-out).
+- [x] **M5 Cases and apps**: `service/cases.py` (case job + random sample, manual cases, claim,
+  supervisor-only assignment, outcomes with scrubbed notes, status rules), `agents/dispatch.py`
+  (nearest on-duty team, joint operation, reminders/escalation on demo timers), `service/notify.py`
+  (Telegram or console, case link only, output check), `api/routes_cases.py`, `sql/003_cases.sql`
+  (sequences, `training_label` view). Web app in `web/` (React + Vite, hash routes): overview with
+  map, zone, premise, cases, case, Data manager, settings, audit; inspector PWA at `#/field`
+  (`web/src/field/`: AES-GCM store with a non-extractable key, offline queue, wipe after sync / 24 h /
+  remote sign-out, service worker `web/public/sw.js`). Browser test: `pytest -m e2e`
+  (`tests/e2e/test_web_flow.py`, uses `tests/local_stack.py`). Run the whole stack without Docker:
+  `cd backend && ../.venv/bin/python -m tests.local_stack --cases` (web on :4173, password demo-pass-1).
+  Fixed on the way: `vg_case_contact` leaked details on unclaimed cases (NULL comparison); a
+  regression test now covers it.
 - [ ] **M6 Agents and RAG**: report (placeholders, two approvals, PDF), dispatch + reminders,
   chatbot, field assistant, similar cases, notes scrubber, guardrails, safety tests.
 - [ ] **M7 Learning and monitoring**: retrain with versions and both hit rates, alerts, settings.
@@ -73,43 +83,44 @@ graphify graph in `graphify-out/` and `TRACEABILITY.md`).
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.sh)
 
-- Generated: 2026-10-27T07:38
-- Branch: `claude/practical-clarke-t5uwrc`; last commit: `eca8213 M2: data layer adapters, upload area, validation and dataset versions`
-- Tests collected: 48 tests
+- Generated: 2026-10-27T07:59
+- Branch: `claude/practical-clarke-t5uwrc`; last commit: `cb3c6f2 M4: database, pipeline, API, sign-in, row-level security, masking and audit`
+- Tests collected: 57 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
   query with `graphify query "<question>"` or `graphify explain "<name>"`)
 
 ### Graph summary
 
-- 1351 nodes · 2683 edges · 86 communities (80 shown, 6 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 151 edges (avg confidence: 0.92)
+- 1612 nodes · 3527 edges · 104 communities (95 shown, 9 thin omitted)
+- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 193 edges (avg confidence: 0.92)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
-1. `Caller` - 37 edges
-2. `simulate_zone()` - 28 edges
-3. `ingest()` - 27 edges
-4. `ZoneInput` - 26 edges
-5. `Requirements` - 26 edges
-6. `build_features()` - 24 edges
-7. `run_detection()` - 22 edges
-8. `ValidationReport` - 21 edges
-9. `command()` - 19 edges
-10. `data_root()` - 19 edges
+1. `Caller` - 71 edges
+2. `Requirements` - 36 edges
+3. `simulate_zone()` - 28 edges
+4. `ingest()` - 27 edges
+5. `t()` - 27 edges
+6. `ZoneInput` - 26 edges
+7. `audit()` - 24 edges
+8. `build_features()` - 24 edges
+9. `login()` - 23 edges
+10. `run_detection()` - 23 edges
 
 ### File tree
 
 - `./`: .env.example, .gitignore, DEVIATIONS.md, HANDOFF.md, Makefile, PLAN.md, README.md, TRACEABILITY.md, VoltGuard AI Software Design Document (SDD).pdf, VoltGuard AI Software Requirements Specification (SRS).pdf, VoltGuard_ClaudeCode_Prompt.md, VoltGuard_SDD.md, ... (+3)
 - `backend/`: Dockerfile, pytest.ini, requirements.txt
-- `backend/tests/`: conftest.py, pg_server.py, test_api_security.py, test_data_layer.py, test_detection.py
+- `backend/tests/`: conftest.py, local_stack.py, pg_server.py, test_api_security.py, test_cases.py, test_data_layer.py, test_detection.py
+- `backend/tests/e2e/`: __init__.py, test_web_flow.py
 - `backend/voltguard/`: __init__.py, __main__.py, audit.py, auth.py, cli.py, config.py, db.py, evaluation.py, network.py, storage.py
-- `backend/voltguard/agents/`: __init__.py, scrubber.py
-- `backend/voltguard/api/`: __init__.py, deps.py, main.py, routes_admin.py, routes_auth.py, routes_zones.py
+- `backend/voltguard/agents/`: __init__.py, dispatch.py, scrubber.py
+- `backend/voltguard/api/`: __init__.py, deps.py, main.py, routes_admin.py, routes_auth.py, routes_cases.py, routes_zones.py
 - `backend/voltguard/data/`: __init__.py, adapters/__init__.py, adapters/datagovmy.py, adapters/london.py, adapters/sgcc.py, canonical.py, fakes.py, ingest.py, profiles.py, simulator.py, sources.py, validation.py
 - `backend/voltguard/detection/`: __init__.py, anomaly.py, balance.py, engine.py, features.py, pattern.py, scoring.py, voltage.py, zone_input.py
-- `backend/voltguard/service/`: __init__.py, commands.py, jobs.py, pipeline.py, scheduler.py, settings.py, users.py
-- `backend/voltguard/sql/`: 001_core.sql, 002_security.sql
+- `backend/voltguard/service/`: __init__.py, cases.py, commands.py, jobs.py, notify.py, pipeline.py, scheduler.py, settings.py, users.py
+- `backend/voltguard/sql/`: 001_core.sql, 002_security.sql, 003_cases.sql
 - `config/`: data_sources.yaml, demo.yaml, thresholds.yaml, tuned_weights.yaml
 - `data/uploads/`: README.md, column_map.example.yaml, schema.yaml
 - `data/uploads/templates/`: account_event.csv, customer_pii.csv, district_weather.csv, duty_roster.csv, inspection_outcome.csv, meter.csv, meter_monthly_reading.csv, meter_reading.csv, premise.csv, transformer.csv, transformer_reading.csv
@@ -119,4 +130,10 @@ Most connected (core abstractions):
 - `deploy/prometheus/`: prometheus.yml
 - `reports/`: simulation_report.md
 - `scripts/`: fetch_datasets.py, handoff.sh, setup_env.py, traceability.py, tunnel.sh
+- `web/`: .gitignore, Dockerfile, index.html, nginx.conf, package-lock.json, package.json, vite.config.js
+- `web/public/`: icon.svg, manifest.webmanifest, sw.js
+- `web/src/`: App.jsx, api.js, i18n.js, main.jsx, styles.css
+- `web/src/components/`: Charts.jsx, Common.jsx, ZoneMap.jsx
+- `web/src/field/`: FieldApp.jsx, secureStore.js
+- `web/src/pages/`: Audit.jsx, Case.jsx, Cases.jsx, DataManager.jsx, Login.jsx, Overview.jsx, Premise.jsx, Settings.jsx, Zone.jsx, extra.js
 <!-- auto:end -->

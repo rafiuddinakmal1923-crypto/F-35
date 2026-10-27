@@ -18,7 +18,8 @@ _extra: list[tuple[str, Callable[[], None], dict]] = []
 
 
 def register(name: str, fn: Callable[[], None], **trigger) -> None:
-    """Modules add their periodic jobs here (e.g. register('reminders', fn, minutes=1))."""
+    """Modules add their periodic jobs here (e.g. register('reminders', fn, minutes=1)); one job per name."""
+    _extra[:] = [e for e in _extra if e[0] != name]
     _extra.append((name, fn, trigger))
 
 

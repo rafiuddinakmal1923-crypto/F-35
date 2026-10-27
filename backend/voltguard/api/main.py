@@ -29,6 +29,9 @@ _latency: Counter = Counter()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    from voltguard.agents import dispatch
+
+    scheduler.register("dispatch_reminders", dispatch.run_reminders, minutes=1)
     scheduler.start()
     yield
     scheduler.stop()

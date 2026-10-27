@@ -451,9 +451,10 @@ BEGIN
   IF NOT FOUND OR NOT vg_case_is_open(c.status) THEN
     RETURN;
   END IF;
-  v_ok := (v_role = 'analyst' AND c.assigned_analyst = v_user AND vg_region_ok(c.region))
-       OR (v_role = 'supervisor' AND vg_region_ok(c.region))
-       OR (v_role = 'inspector' AND c.assigned_team IS NOT NULL AND c.assigned_team = vg_setting('team') AND vg_region_ok(c.region));
+  -- coalesce: an unknown comparison (no analyst yet, no team, no session setting) is a refusal.
+  v_ok := coalesce((v_role = 'analyst' AND c.assigned_analyst = v_user AND vg_region_ok(c.region)), false)
+       OR coalesce((v_role = 'supervisor' AND vg_region_ok(c.region)), false)
+       OR coalesce((v_role = 'inspector' AND c.assigned_team = vg_setting('team') AND vg_region_ok(c.region)), false);
   IF NOT v_ok THEN
     RETURN;
   END IF;
@@ -480,7 +481,7 @@ BEGIN
     RETURN;
   END IF;
   SELECT * INTO c FROM inspection_case WHERE case_id = r.case_id;
-  IF NOT ((v_role = 'analyst' AND c.assigned_analyst = v_user) OR v_role = 'manager') OR NOT vg_region_ok(c.region) THEN
+  IF NOT coalesce(((v_role = 'analyst' AND c.assigned_analyst = v_user) OR v_role = 'manager') AND vg_region_ok(c.region), false) THEN
     RETURN;
   END IF;
   PERFORM vg_audit(v_user, 'pii.export', 'report:' || p_report, jsonb_build_object('role', v_role));
