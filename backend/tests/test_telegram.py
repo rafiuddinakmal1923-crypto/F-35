@@ -94,9 +94,10 @@ def test_FR_AG_02_real_bot_links_a_chat_and_answers_a_button(api, pg, monkeypatc
     assert not api.get("/telegram/status", headers=login(api, "supervisor.nor")).json()["linked"]
 
 
-@pytest.mark.parametrize("user", ["analyst.nor", "manager.nor", "auditor"])
-def test_FR_AD_01_chat_is_for_supervisors_and_inspectors(api, user):
+@pytest.mark.parametrize("user", ["analyst.nor", "auditor", "datasci"])
+def test_FR_AD_01_chat_is_for_supervisors_inspectors_and_managers(api, user):
     assert api.get("/telegram/chats", headers=login(api, user)).status_code == 403
+    assert api.get("/telegram/chats", headers=login(api, "manager.nor")).status_code == 200   # the weekly summary
 
 
 def test_FR_AG_02_decision_on_the_case_page_closes_the_chat_buttons(api, pg):

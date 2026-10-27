@@ -60,6 +60,10 @@ dispatch:
   demo_reminder_minutes: 2     # shortened timers when DEMO_MODE=1
   demo_escalation_minutes: 4
 
+pipeline:                      # nightly run in batches, so memory stays flat as the network grows (NFR-01)
+  meter_batch: 2000            # meters whose readings are read, validated and loaded at a time
+  zone_batch: 50               # transformer zones run through detection at a time
+
 route:                         # inspector visiting order (agents/route.py)
   road_factor: 1.3             # road distance / straight-line distance in urban Selangor and Penang
   speed_kmh: 30                # average driving speed between premises

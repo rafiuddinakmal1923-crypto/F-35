@@ -144,9 +144,9 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 
 ## Ideas for a next session
 
-- NFR-01 at 100,000 meters: detection time fits (about 5 s per 1,000 homes), but `pipeline.run_detection`
-  loads every zone at once (about 0.3 GB per 1,000 homes) and reloads all days nightly; process in
-  zone batches and append only the new day.
+- NFR-01: the nightly run now streams readings in meter batches and detects in zone batches.
+  It has been measured up to 13,088 homes (3.1 GB, 219 s, nearly flat memory). Still to do: load only
+  the new day each night once real AMI extracts arrive daily (today every source is reloaded in full).
 - UI redesign per `docs/UI_UX_DESIGN_REQUIREMENTS.md` (prompts in section 8).
 - Wire the full profile (Keycloak OIDC, MinIO, Celery) behind the existing interfaces.
 - Try narrowing u (e.g. per-zone loss-model calibration) and re-run the held-out report.
@@ -154,17 +154,17 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.sh)
 
-- Generated: 2026-10-27T17:28
-- Branch: `claude/practical-clarke-t5uwrc`; last commit: `2dc83a4 Weekly summary report for managers and supervisors`
-- Tests collected: 99 tests
+- Generated: 2026-10-27T17:54
+- Branch: `claude/practical-clarke-t5uwrc`; last commit: `7332098 UI redesign and usability: my-work home, search, badges, boards, timeline`
+- Tests collected: 100 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
   query with `graphify query "<question>"` or `graphify explain "<name>"`)
 
 ### Graph summary
 
-- 2170 nodes · 5126 edges · 127 communities (115 shown, 12 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 282 edges (avg confidence: 0.93)
+- 2190 nodes · 5177 edges · 134 communities (121 shown, 13 thin omitted)
+- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 283 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
@@ -176,14 +176,14 @@ Most connected (core abstractions):
 6. `admin_connection()` - 38 edges
 7. `get()` - 34 edges
 8. `shot()` - 33 edges
-9. `request()` - 30 edges
-10. `run_detection()` - 29 edges
+9. `run_detection()` - 30 edges
+10. `request()` - 30 edges
 
 ### File tree
 
 - `./`: .dockerignore, .env.example, .gitignore, DEMO.md, DEVIATIONS.md, HANDOFF.md, MODELS.md, Makefile, PLAN.md, README.md, TRACEABILITY.md, VoltGuard AI Software Design Document (SDD).pdf, ... (+6)
 - `backend/`: Dockerfile, pytest.ini, requirements.txt
-- `backend/tests/`: conftest.py, local_stack.py, pg_server.py, test_agents.py, test_api_security.py, test_cases.py, test_data_layer.py, test_detection.py, test_digest.py, test_learning.py, test_reporting.py, test_route.py, ... (+2)
+- `backend/tests/`: conftest.py, local_stack.py, pg_server.py, test_agents.py, test_api_security.py, test_cases.py, test_data_layer.py, test_detection.py, test_digest.py, test_learning.py, test_pipeline_batches.py, test_reporting.py, ... (+3)
 - `backend/tests/e2e/`: __init__.py, test_demo_rehearsal.py, test_web_flow.py
 - `backend/voltguard/`: __init__.py, __main__.py, audit.py, auth.py, cli.py, config.py, db.py, evaluation.py, network.py, pdf.py, storage.py
 - `backend/voltguard/agents/`: __init__.py, chatbot.py, dispatch.py, embed.py, guardrails.py, llm.py, rag.py, report.py, route.py, scrubber.py

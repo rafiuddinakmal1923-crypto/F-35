@@ -59,8 +59,14 @@ class DetectionRun:
         return pl.DataFrame(rows) if rows else pl.DataFrame(schema={"premise_id": pl.Utf8, "score": pl.Int64})
 
 
-def run_zones(zones: dict[str, ZoneInput], cfg: dict, score_all: bool = False) -> DetectionRun:
-    """score_all=True scores every zone (tuning and reports); the pipeline scores flagged and no-balance zones."""
+def run_zones(zones: dict[str, ZoneInput], cfg: dict, score_all: bool = False, fallback_loss_share: float | None = None,
+              loss_shares: list[float] | None = None) -> DetectionRun:
+    """score_all=True scores every zone (tuning and reports); the pipeline scores flagged and no-balance zones.
+
+    Zones without network parameters borrow the median technical-loss share of clean zones with
+    parameters (AS-8). The pipeline runs zones in batches: it passes the median found so far as
+    `fallback_loss_share`, and `loss_shares` collects this batch's shares for the next batches.
+    """
     from voltguard.detection import pattern
 
     prepared = {}
@@ -79,7 +85,12 @@ def run_zones(zones: dict[str, ZoneInput], cfg: dict, score_all: bool = False) -
             b = balances[tx]
             if b.balance_available and not b.flagged:
                 shares.append(float(np.nansum(b.tech_loss_kwh) / max(np.nansum(b.supplied_kwh), 1e-9)))
-    fallback = float(np.median(shares)) if shares else bal_mod.DEFAULT_LOSS_SHARE
+    if loss_shares is not None:
+        loss_shares.extend(shares)
+    if fallback_loss_share is not None:
+        fallback = fallback_loss_share
+    else:
+        fallback = float(np.median(shares)) if shares else bal_mod.DEFAULT_LOSS_SHARE
     for tx, z in zones.items():
         if tx not in balances:
             filled, _, conv_slots, _, u_conv = prepared[tx]
@@ -115,5 +126,5 @@ def run_zones(zones: dict[str, ZoneInput], cfg: dict, score_all: bool = False) -
     return DetectionRun(run_date, results, pattern.load().version)
 
 
-def run_tables(tables: dict[str, pl.DataFrame], start: date, days: int, cfg: dict, score_all: bool = False) -> DetectionRun:
-    return run_zones(build_zone_inputs(tables, start, days), cfg, score_all=score_all)
+def run_tables(tables: dict[str, pl.DataFrame], start: date, days: int, cfg: dict, score_all: bool = False, **kwargs) -> DetectionRun:
+    return run_zones(build_zone_inputs(tables, start, days), cfg, score_all=score_all, **kwargs)

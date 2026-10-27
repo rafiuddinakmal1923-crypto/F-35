@@ -87,11 +87,16 @@ def load_table(name: str, source: str) -> pl.DataFrame | None:
     return pl.read_parquet(path)
 
 
-def load_active_tables(sources: dict[str, str] | None = None) -> dict[str, pl.DataFrame]:
-    """Every canonical table from its active source (missing optional tables are left out)."""
+def load_active_tables(sources: dict[str, str] | None = None, skip: tuple[str, ...] = ()) -> dict[str, pl.DataFrame]:
+    """Every canonical table from its active source (missing optional tables are left out).
+
+    `skip` leaves big tables (the interval readings) to be streamed in batches by the pipeline.
+    """
     sources = sources or active_sources()
     tables = {}
     for name in TABLES:
+        if name in skip:
+            continue
         source = sources.get(name, "simulated")
         frame = load_table(name, source)
         if frame is not None:
@@ -108,6 +113,21 @@ def period(tables: dict[str, pl.DataFrame]) -> tuple[date, int]:
     """First full day and number of days covered by the interval readings."""
     ts = tables["meter_reading"]["ts"].dt.convert_time_zone(TIMEZONE)
     first, last = ts.min().date(), ts.max().date()
+    return first, (last - first).days + 1
+
+
+def scan_readings(source: str) -> pl.LazyFrame:
+    """The interval readings as a lazy scan: the pipeline reads them in meter batches, never all at once."""
+    path = table_path("meter_reading", source)
+    if not path.exists():
+        raise SourceError(f"Table meter_reading not found for source '{source}' ({path})")
+    return pl.scan_parquet(path)
+
+
+def scan_period(scan: pl.LazyFrame) -> tuple[date, int]:
+    bounds = scan.select(pl.col("ts").min().alias("lo"), pl.col("ts").max().alias("hi")).collect()
+    first = bounds["lo"].dt.convert_time_zone(TIMEZONE)[0].date()
+    last = bounds["hi"].dt.convert_time_zone(TIMEZONE)[0].date()
     return first, (last - first).days + 1
 
 

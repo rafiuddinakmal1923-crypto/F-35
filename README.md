@@ -152,9 +152,17 @@ browser (about 20 s automated, mock mode).
 - Public legal texts are not in the repository: `scripts/fetch_docs.py` needs a verified URL or a
   manual download; until then legal questions return "not found" and reports cite Section 37 of
   the Electricity Supply Act 1990 by name only.
-- NFR-01 (2-hour nightly run for 100,000 meters): detection takes about 5 s per 1,000 homes
-  (about 8 min for 100,000), but the run holds every zone in memory (about 0.3 GB per 1,000
-  homes), so 100,000 meters needs zone batching first (`docs/REVIEW_AND_TEST_REPORT.md` 5).
+- NFR-01 (2-hour nightly run for 100,000 meters) is measured up to 13,088 homes, not at 100,000.
+  The run streams readings in meter batches and detects in zone batches (config `pipeline`), and gives
+  the same results as one batch (`tests/test_pipeline_batches.py`). Measured on 4 cores, load and
+  detection together:
+
+  | Homes | Readings | Time | Peak memory |
+  | --- | --- | --- | --- |
+  | 6,458 | 17 million | 100 s | 2.8 GB (8.4 GB unbatched) |
+  | 13,088 | 35 million | 219 s | 3.1 GB |
+
+  At that rate 100,000 meters is about 30 minutes and 3–5 GB.
 - The full profile's services are defined but not wired into the app; the `.pbix` is not built
   (layout in `powerbi/POWERBI.md`, data in `powerbi/snapshot/`).
 - Fairness by housing tenure (NFR-11) needs tenure data that R0 does not have; flag rates by area

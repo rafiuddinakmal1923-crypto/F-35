@@ -12,7 +12,7 @@ cited in code but no dedicated test yet; **open** = not implemented yet.
 | Must | 26 | 0 | 0 |
 | Should | 15 | 0 | 0 |
 | Could | 4 | 0 | 0 |
-| NFR | 8 | 3 | 5 |
+| NFR | 9 | 3 | 4 |
 
 ## Requirements
 
@@ -60,10 +60,10 @@ cited in code but no dedicated test yet; **open** = not implemented yet.
 | FR-AG-04 | Could | Answer inspectors' procedure questions from approved documents, with the source cited | tested | `backend/voltguard/agents/rag.py`<br>`scripts/e2e_use_cases.py`<br>`web/src/pages/Assistant.jsx` | `test_FR_AG_04_field_assistant_cites_or_says_not_found` |
 | FR-AG-05 | Should | Show the three most similar past cases and their outcomes for each new case | tested | `backend/voltguard/agents/rag.py`<br>`scripts/e2e_use_cases.py` | `test_FR_AG_05_three_similar_closed_cases` |
 | FR-AG-06 | Must | Never disconnect supply, contact customers, or contact external agencies on its own | tested | `backend/voltguard/agents/dispatch.py`<br>`backend/voltguard/agents/guardrails.py`<br>`scripts/e2e_use_cases.py` | `test_FR_AG_06_no_tools_to_act_and_requests_refused` |
-| FR-AD-01 | Must | Restrict every view and action by role and region (see 2.2), enforced in the API; dashb... | tested | `backend/voltguard/api/deps.py`<br>`backend/voltguard/api/routes_auth.py`<br>`backend/voltguard/db.py`<br>`web/src/App.jsx` | `test_FR_AD_01_database_enforces_region_and_pii_rules`<br>`test_FR_AD_01_role_and_region_refusals`<br>`test_FR_AD_01_chat_is_for_supervisors_and_inspectors` |
+| FR-AD-01 | Must | Restrict every view and action by role and region (see 2.2), enforced in the API; dashb... | tested | `backend/voltguard/api/deps.py`<br>`backend/voltguard/api/routes_auth.py`<br>`backend/voltguard/db.py`<br>`web/src/App.jsx` | `test_FR_AD_01_database_enforces_region_and_pii_rules`<br>`test_FR_AD_01_role_and_region_refusals`<br>`test_FR_AD_01_chat_is_for_supervisors_inspectors_and_managers` |
 | FR-AD-02 | Must | Log every case view, assignment, outcome, export and agent action with user and time, i... | tested | `backend/voltguard/api/routes_admin.py`<br>`backend/voltguard/audit.py`<br>`backend/voltguard/db.py`<br>`scripts/e2e_use_cases.py` (+1) | `test_FR_AD_02_NFR_12_audit_logged_and_tampering_detected` |
 | FR-AD-03 | Should | Let admins change thresholds and weights without code changes | tested | `backend/voltguard/api/routes_admin.py`<br>`backend/voltguard/config.py`<br>`backend/voltguard/service/settings.py`<br>`scripts/e2e_use_cases.py` (+1) | `test_FR_AD_03_threshold_change_applies_on_rerun` |
-| NFR-01 | NFR | Performance: The nightly run finishes within 2 hours of meter data arriving, for the pi... | open |  |  |
+| NFR-01 | NFR | Performance: The nightly run finishes within 2 hours of meter data arriving, for the pi... | tested | `backend/voltguard/service/pipeline.py` | `test_NFR_01_small_batches_give_the_same_results` |
 | NFR-02 | NFR | Performance: A zone or premise page loads within 3 seconds | tested |  | `test_NFR_02_NFR_13_pages_load_fast_and_phone_view_in_bahasa_melayu` |
 | NFR-03 | NFR | Availability: Dashboard available 99% of business hours during the pilot | tested |  | `test_NFR_03_no_endpoint_blocks_the_event_loop` |
 | NFR-04 | NFR | Isolation: A VoltGuard failure never affects metering, billing or the grid | open |  |  |
