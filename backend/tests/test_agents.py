@@ -191,3 +191,23 @@ def test_FR_AG_01_manager_sees_evidence_photos_only_for_export_approval(api, pg)
     api.post(f"/reports/{r.json()['report_id']}/approve-content", headers=login(api, "analyst.nor"))
     assert api.get(f"/cases/{cid}/photos/{key}", headers=manager).content.startswith(b"\xff\xd8")
     assert api.get(f"/cases/{cid}/photos/{key}", headers=login(api, "manager.cen")).status_code in (403, 404)
+
+
+@pytest.mark.parametrize("question, template, chart", [
+    ("Which zones had a gap above 10% this week?", "zones_gap_above", "bar"),
+    ("Show the gap trend for TX-NOR-001 over 20 days", "zone_gap_trend", "line"),
+    ("Daily gap of all zones as a chart", "region_gap_trend", "line"),
+    ("Unexplained energy by district", "gap_by_district", "bar"),
+    ("Top 3 zones as a line chart", "top_zones", "line"),
+    ("Inspection outcomes so far", "outcomes_summary", None),
+])
+def test_FR_AG_03_answers_carry_a_chart_and_a_sentence_from_the_rows(api, question, template, chart):
+    r = api.post("/agents/chat", json={"agent": "analyst", "message": question}, headers=login(api, "manager.nor")).json()
+    q = r["query"]
+    assert q["template"] == template, r
+    assert "row(s)" not in r["answer"] and "TX-CEN" not in r["answer"]
+    if q["rows"]:
+        assert q["chart"]["type"] == (chart or q["chart"]["type"])
+        assert q["chart"]["x"] in q["rows"][0] and all(y in q["rows"][0] for y in q["chart"]["y"])
+    if template == "zone_gap_trend":
+        assert len(q["rows"]) == 20 and q["params"]["days"] == 20 and "TX-NOR-001" in r["answer"]

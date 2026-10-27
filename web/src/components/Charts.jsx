@@ -23,7 +23,7 @@ function niceTicks(min, max, count = 4) {
 }
 
 export function LineChart({ series, height = 220, xLabels, yLabel, markers = [] }) {
-  const pad = { l: 48, r: 12, t: 10, b: 26 };
+  const pad = { l: 48, r: 12, t: yLabel ? 22 : 10, b: 26 };
   const n = Math.max(...series.map((s) => s.values.length), 1);
   const all = series.flatMap((s) => [...s.values, ...(s.band ? s.band.flat() : [])]).filter((v) => v != null && isFinite(v));
   const lo = Math.min(0, ...all);
@@ -53,7 +53,7 @@ export function LineChart({ series, height = 220, xLabels, yLabel, markers = [] 
             </g>
           ))}
           {xLabels?.map((label, i) => (i % every === 0 ? <text key={i} x={x(i)} y={height - 8} textAnchor="middle">{label}</text> : null))}
-          {yLabel ? <text x={10} y={pad.t + 4} textAnchor="start">{yLabel}</text> : null}
+          {yLabel ? <text x={10} y={12} textAnchor="start">{yLabel}</text> : null}
         </g>
         {series.map((s) =>
           s.band ? (
@@ -150,4 +150,55 @@ export function VoltageStrip({ groups, highlight, minDropV = 0.4 }) {
       </div>
     </div>
   );
+}
+
+const PALETTE = ["var(--series-1)", "var(--series-4)", "var(--series-2)", "var(--series-3)"];
+
+// Horizontal bars for categories (zones, districts, statuses): long labels stay readable.
+export function CategoryBars({ labels, values, unit, color = "var(--series-1)" }) {
+  const rowH = 30;
+  const pad = { l: 150, r: 70 };
+  const height = labels.length * rowH + 8;
+  const hi = Math.max(...values.map((v) => Math.abs(v ?? 0)), 0.001);
+  const x = scale([0, hi], [pad.l, W - pad.r]);
+  return (
+    <div className="chart">
+      <svg viewBox={`0 0 ${W} ${height}`} role="img" aria-label={unit}>
+        {labels.map((label, i) => {
+          const v = values[i] ?? 0;
+          const top = 4 + i * rowH;
+          return (
+            <g key={label}>
+              <text x={pad.l - 8} y={top + rowH / 2 + 4} textAnchor="end" fontSize="12" fill="var(--text)">{label}</text>
+              <rect x={pad.l} y={top + 5} width={Math.max(x(Math.abs(v)) - pad.l, 1)} height={rowH - 10} rx="4" fill={color} />
+              <text x={x(Math.abs(v)) + 6} y={top + rowH / 2 + 4} fontSize="12" fill="var(--muted)">{v}</text>
+            </g>
+          );
+        })}
+      </svg>
+      {unit ? <div className="legend"><span style={{ "--c": color }}>{unit}</span></div> : null}
+    </div>
+  );
+}
+
+// Chart for a query-service answer: the API names the chart that suits the rows (FR-AG-03).
+export function QueryChart({ chart, rows }) {
+  if (!chart || !rows?.length) return null;
+  const label = (v) => String(v).slice(0, 24);
+  const tick = (v) => (/^\d{4}-\d{2}-\d{2}/.test(String(v)) ? String(v).slice(5, 10) : label(v));
+  if (chart.type === "line") {
+    if (chart.series) {
+      const xs = [...new Set(rows.map((r) => String(r[chart.x])))];
+      const groups = [...new Set(rows.map((r) => r[chart.series]))];
+      const series = groups.map((g, i) => {
+        const byX = new Map(rows.filter((r) => r[chart.series] === g).map((r) => [String(r[chart.x]), Number(r[chart.y[0]])]));
+        return { name: g, values: xs.map((xv) => byX.get(xv) ?? null), color: PALETTE[i % PALETTE.length] };
+      });
+      return <LineChart series={series} xLabels={xs.map(tick)} yLabel={chart.y_label} />;
+    }
+    const series = chart.y.map((col, i) => ({ name: col.replaceAll("_", " "), values: rows.map((r) => (r[col] == null ? null : Number(r[col]))),
+      color: PALETTE[i % PALETTE.length], dashed: i > 0 }));
+    return <LineChart series={series} xLabels={rows.map((r) => tick(r[chart.x]))} yLabel={chart.y_label} />;
+  }
+  return <CategoryBars labels={rows.map((r) => label(r[chart.x]))} values={rows.map((r) => Number(r[chart.y[0]]))} unit={chart.y_label} />;
 }
