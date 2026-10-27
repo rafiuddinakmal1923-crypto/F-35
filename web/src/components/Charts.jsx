@@ -30,7 +30,17 @@ export function LineChart({ series, height = 220, xLabels, yLabel, markers = [] 
   const hi = Math.max(...all, 1);
   const x = scale([0, n - 1], [pad.l, W - pad.r]);
   const y = scale([lo, hi], [height - pad.b, pad.t]);
-  const path = (vals) => vals.map((v, i) => (v == null ? null : `${x(i)},${y(v)}`)).filter(Boolean).join(" L");
+  // Gaps (null values) break the line into separate segments instead of bridging them.
+  const path = (vals) => {
+    let d = "";
+    let pen = "M";
+    vals.forEach((v, i) => {
+      if (v == null || !isFinite(v)) { pen = "M"; return; }
+      d += `${pen}${x(i)},${y(v)} `;
+      pen = "L";
+    });
+    return d.trim();
+  };
   const every = Math.max(1, Math.ceil(n / 7));
   return (
     <div className="chart">
@@ -57,8 +67,8 @@ export function LineChart({ series, height = 220, xLabels, yLabel, markers = [] 
             <text x={x(m.index) + 4} y={pad.t + 10} fontSize="10" fill="var(--muted)">{m.label}</text>
           </g>
         ))}
-        {series.map((s) => (
-          <path key={s.name} d={`M${path(s.values)}`} fill="none" stroke={s.color} strokeWidth={s.width || 2}
+        {series.map((s) => path(s.values) && (
+          <path key={s.name} d={path(s.values)} fill="none" stroke={s.color} strokeWidth={s.width || 2}
             strokeDasharray={s.dashed ? "5 4" : undefined} />
         ))}
       </svg>
@@ -97,7 +107,7 @@ export function BarChart({ values, labels, height = 160, color = "var(--series-4
 }
 
 // Unexplained voltage drop along each phase/branch; the fitted tap position is marked.
-export function VoltageStrip({ groups, highlight }) {
+export function VoltageStrip({ groups, highlight, minDropV = 0.4 }) {
   if (!groups?.length) return <p className="muted">No voltage result for this zone.</p>;
   const rowH = 54;
   const pad = { l: 70, r: 12 };
@@ -115,7 +125,10 @@ export function VoltageStrip({ groups, highlight }) {
             <g key={g.group}>
               <text x={4} y={top + 20} fontSize="11" fill="var(--muted)">{g.group}</text>
               <line x1={pad.l} x2={W - pad.r} y1={yv(0)} y2={yv(0)} stroke="var(--border)" />
-              <line x1={x(g.tap_position)} x2={x(g.tap_position)} y1={top + 2} y2={top + rowH - 4} stroke="var(--accent)" strokeDasharray="3 3" />
+              {/* A fitted position is only a located tap when its drop is above the noise level. */}
+              {g.fitted_drop_v >= minDropV ? (
+                <line x1={x(g.tap_position)} x2={x(g.tap_position)} y1={top + 2} y2={top + rowH - 4} stroke="var(--accent)" strokeDasharray="3 3" />
+              ) : null}
               {g.positions.map((p, i) => {
                 const pid = g.premises[i];
                 const hot = pid === highlight;

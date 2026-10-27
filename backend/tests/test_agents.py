@@ -176,3 +176,18 @@ def test_FR_UI_05_pdf_fallback_without_a_browser(monkeypatch):
     data = pdf._fpdf(html)
     text = "".join(page.extract_text() for page in PdfReader(io.BytesIO(data)).pages)
     assert data.startswith(b"%PDF") and "Third line." in text and "Siti" in text
+
+
+def test_FR_AG_01_manager_sees_evidence_photos_only_for_export_approval(api, pg):
+    """The manager reviews evidence photos for the second approval, and not before the content is approved."""
+    case = api.post("/cases", json={"premise_id": "P-NOR-001-003"}, headers=login(api, "analyst.nor")).json()
+    cid = case["case_id"]
+    api.patch(f"/cases/{cid}/assign", json={"team": "T-NOR-C"}, headers=login(api, "supervisor.nor"))
+    inspector = login(api, "inspector.c")
+    key = api.post(f"/cases/{cid}/photos", files={"file": ("m.jpg", b"\xff\xd8\xff fake jpeg", "image/jpeg")}, headers=inspector).json()["photo_key"]
+    r = api.post(f"/cases/{cid}/outcome", json={"outcome": "confirmed_theft", "photo_keys": [key]}, headers=inspector)
+    manager = login(api, "manager.nor")
+    assert api.get(f"/cases/{cid}/photos/{key}", headers=manager).status_code == 403
+    api.post(f"/reports/{r.json()['report_id']}/approve-content", headers=login(api, "analyst.nor"))
+    assert api.get(f"/cases/{cid}/photos/{key}", headers=manager).content.startswith(b"\xff\xd8")
+    assert api.get(f"/cases/{cid}/photos/{key}", headers=login(api, "manager.cen")).status_code in (403, 404)

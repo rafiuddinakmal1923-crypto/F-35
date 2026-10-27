@@ -66,6 +66,9 @@ export default function Zone() {
           </div>
         </div>
       ) : null}
+      {!canSuspects ? (
+        <p className="notice">Premise rankings are shown to analysts and supervisors. Managers see zone-level figures only (SRS 2.2).</p>
+      ) : null}
       {canSuspects ? (
         <div className="card table-wrap">
           <h2>{t("suspects")}</h2>
@@ -94,7 +97,7 @@ export default function Zone() {
         <div className="card">
           <h2>{t("voltageStrip")}</h2>
           <p className="muted">Method: {voltage.data.method} · confidence {voltage.data.confidence}. {(voltage.data.notes || []).join(" ")}</p>
-          <VoltageStrip groups={voltage.data.groups} highlight={suspects.data?.suspects?.[0]?.premise_id} />
+          <VoltageStrip groups={voltage.data.groups} highlight={suspects.data?.suspects?.[0]?.premise_id} minDropV={voltage.data.min_drop_v} />
         </div>
       ) : null}
     </div>

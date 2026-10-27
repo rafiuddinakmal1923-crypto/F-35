@@ -86,6 +86,8 @@ export default function Case() {
   const [team, setTeam] = useState("");
   const [error, setError] = useState(null);
   const d = detail.data;
+  // Managers see evidence photos only for the export (second) approval; the API enforces the same rule.
+  const showPhotos = user?.role !== "manager" || (d?.reports || []).some((r) => ["content_approved", "export_approved"].includes(r.status));
 
   async function act(fn) {
     setError(null);
@@ -163,7 +165,8 @@ export default function Case() {
                   <div><b>Visit {o.visit_no}: {t(o.outcome)}</b> {o.reason_tag ? <span className="chip">{o.reason_tag}</span> : null}
                     <small> · {o.recorded_by} · {new Date(o.recorded_at).toLocaleString()}</small></div>
                   {o.notes_redacted ? <p style={{ margin: "4px 0" }}>{o.notes_redacted}</p> : null}
-                  <div className="row">{(o.photo_keys || []).map((k) => <Photo key={k} caseId={id} photoKey={k} />)}</div>
+                  {showPhotos ? <div className="row">{(o.photo_keys || []).map((k) => <Photo key={k} caseId={id} photoKey={k} />)}</div>
+                    : o.photo_keys?.length ? <small className="muted">{o.photo_keys.length} photo(s): shown to managers when a report waits for export approval.</small> : null}
                 </div>
               )) : <p className="muted">No visit yet.</p>}
               <small>Notes are shown redacted; personal details typed into notes never leave the case service.</small>

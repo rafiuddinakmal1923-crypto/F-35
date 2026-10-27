@@ -13,6 +13,7 @@ from statistics import median
 from fastapi import APIRouter, Depends, Query
 
 from voltguard import db
+from voltguard.service import settings
 from voltguard.api.deps import connection, forbidden, not_found, require
 from voltguard.db import Caller
 
@@ -101,7 +102,9 @@ def zone_voltage(transformer_id: str, c: Caller = Depends(require("analyst", "su
     """Voltage residual per premise by phase and branch: the neighbour voltage strip (FR-PS-02)."""
     zone = _zone(conn, transformer_id, latest_run_date(conn))
     voltage = zone["voltage"] or {"available": False, "method": "none", "groups": [], "notes": ["No voltage result for this zone"]}
-    return {"transformer_id": transformer_id, **voltage}
+    # Groups whose fitted drop is below this are noise: the UI marks a tap position only above it.
+    min_drop_v = settings.thresholds(conn)["voltage"]["min_drop_v"]
+    return {"transformer_id": transformer_id, "min_drop_v": min_drop_v, **voltage}
 
 
 def _usage(conn, premise: dict, days: int = 60) -> dict:
@@ -110,7 +113,8 @@ def _usage(conn, premise: dict, days: int = 60) -> dict:
         """SELECT m.premise_id, (r.ts AT TIME ZONE 'Asia/Kuala_Lumpur')::date AS day, sum(r.kwh) AS kwh
            FROM meter_reading r JOIN meter m USING (meter_id) JOIN premise p ON p.premise_id = m.premise_id
            WHERE p.transformer_id = %s AND p.premise_type = %s
-             AND r.ts >= (SELECT max(ts) FROM meter_reading) - make_interval(days => %s)
+             AND r.ts >= date_trunc('day', (SELECT max(ts) FROM meter_reading) AT TIME ZONE 'Asia/Kuala_Lumpur'
+                                         - make_interval(days => %s)) AT TIME ZONE 'Asia/Kuala_Lumpur'
            GROUP BY 1, 2""", (premise["transformer_id"], premise["premise_type"], days)).fetchall()
     own: dict[date, float] = {}
     peers: dict[date, list[float]] = {}
@@ -120,7 +124,8 @@ def _usage(conn, premise: dict, days: int = 60) -> dict:
         else:
             peers.setdefault(r["day"], []).append(r["kwh"])
     series = [{"date": d, "kwh": own.get(d), "similar_median_kwh": round(median(v), 2)} for d, v in sorted(peers.items())]
-    return {"premise_type": premise["premise_type"], "days": series}
+    # Monthly-read (conventional) meters have no daily readings: the UI says so instead of an empty line.
+    return {"premise_type": premise["premise_type"], "days": series, "interval_data": bool(own)}
 
 
 @router.get("/premises/{premise_id}")
@@ -158,7 +163,7 @@ def premise_view(premise_id: str, c: Caller = Depends(require("analyst", "superv
         "premise": premise, "score": score, "reasons": reasons,
         "features": features["features"] if features else None, "details": features["details"] if features else None,
         "score_history": history, "account_events": events, "usage": _usage(conn, premise),
-        "neighbour_voltage": neighbours, "zone": {"flagged": zone["flagged"], "gap_start": zone["gap_start"],
+        "neighbour_voltage": neighbours, "voltage_min_drop_v": settings.thresholds(conn)["voltage"]["min_drop_v"], "zone": {"flagged": zone["flagged"], "gap_start": zone["gap_start"],
                                                   "gap_since_start": zone["gap_since_start"]} if zone else None,
         "case": case, "contact": contact,
         "masked": contact is None,

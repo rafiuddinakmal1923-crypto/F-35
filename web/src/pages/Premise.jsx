@@ -70,6 +70,7 @@ export default function Premise() {
           <div className="grid two">
             <div className="card">
               <h2>{t("usage")}</h2>
+              {!p.usage.interval_data ? <p className="muted">Monthly-read meter: no daily readings, so only similar homes are shown.</p> : null}
               <LineChart yLabel="kWh/day" xLabels={p.usage.days.map((d) => String(d.date).slice(5))}
                 series={[
                   { name: "This premise", values: p.usage.days.map((d) => d.kwh), color: "var(--series-4)" },
@@ -78,7 +79,7 @@ export default function Premise() {
             </div>
             <div className="card">
               <h2>{t("voltageStrip")}</h2>
-              {p.neighbour_voltage ? <VoltageStrip groups={[p.neighbour_voltage]} highlight={p.premise.premise_id} />
+              {p.neighbour_voltage ? <VoltageStrip groups={[p.neighbour_voltage]} highlight={p.premise.premise_id} minDropV={p.voltage_min_drop_v} />
                 : <p className="muted">No voltage evidence for this premise (no voltage data, no phase data, or zone not located).</p>}
             </div>
           </div>

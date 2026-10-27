@@ -62,8 +62,11 @@ def reason_text(feature: str, d: dict, sub_reasons: list[str]) -> str:
         basis = " at night" if d.get("night_basis") else ""
         return f"Metered use{basis} fell {d.get('drop_share', 0) * 100:.0f}% compared with its own history{when}"
     if feature == "voltage_proximity":
+        distance = d.get("tap_distance", 0)
+        where = ("at or right next to this premise" if distance < 15
+                 else f"about {distance:.0f} m from this premise")
         return (f"Neighbours on the same phase and branch show an unexplained voltage drop of {d.get('group_drop_v', 0):.1f} V; "
-                f"the estimated hidden load is about {d.get('tap_distance', 0):.0f} m from this premise")
+                f"the estimated hidden load is {where}")
     if feature == "voltage_residual":
         return f"This meter's voltage is {d.get('voltage_drop_v', 0):.1f} V lower than its metered use explains"
     if feature == "timing_match":

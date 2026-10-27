@@ -9,7 +9,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from voltguard import db, storage
-from voltguard.api.deps import ApiError, connection, not_found, require
+from voltguard.api.deps import ApiError, connection, forbidden, not_found, require
 from voltguard.db import Caller
 from voltguard.service import cases, jobs
 
@@ -105,8 +105,11 @@ async def upload_photo(case_id: str, file: UploadFile = File(...), c: Caller = D
 
 
 @router.get("/cases/{case_id}/photos/{key}")
-def get_photo(case_id: str, key: str, c: Caller = Depends(require("supervisor", "analyst", "inspector")), conn=Depends(connection)):
+def get_photo(case_id: str, key: str, c: Caller = Depends(require("supervisor", "analyst", "inspector", "manager")), conn=Depends(connection)):
     detail = _call(cases.case_detail, conn, c, case_id)
+    # A manager sees the evidence only to give the second (export) approval of a report.
+    if c.role == "manager" and not any(r["status"] in ("content_approved", "export_approved") for r in detail["reports"]):
+        raise forbidden("Managers see evidence photos when a report waits for their export approval")
     if not any(key in (o["photo_keys"] or []) for o in detail["outcomes"]) and not any(
             (e["detail"] or {}).get("photo_key") == key for e in detail["events"]):
         raise not_found("No such photo on this case")
