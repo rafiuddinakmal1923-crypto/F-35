@@ -1,0 +1,45 @@
+# Demo organisation: two regions, three field teams, one test account per role and region.
+# Passwords are never stored here: `make.ps1 demo` generates strong ones into .env and prints them.
+
+regions:
+  - code: CEN
+    name: Central
+  - code: NOR
+    name: Northern
+
+teams:
+  - team_id: T-CEN-A
+    name: Team A
+    region: CEN
+    base_lat: 3.0738
+    base_lon: 101.5183
+  - team_id: T-CEN-B
+    name: Team B
+    region: CEN
+    base_lat: 3.1390
+    base_lon: 101.6869
+  - team_id: T-NOR-C
+    name: Team C
+    region: NOR
+    base_lat: 5.4141
+    base_lon: 100.3288
+
+users:
+  - {user_id: manager.cen,    role: manager,        region: CEN}
+  - {user_id: manager.nor,    role: manager,        region: NOR}
+  - {user_id: analyst.cen,    role: analyst,        region: CEN}
+  - {user_id: analyst2.cen,   role: analyst,        region: CEN}
+  - {user_id: analyst.nor,    role: analyst,        region: NOR}
+  - {user_id: supervisor.cen, role: supervisor,     region: CEN}
+  - {user_id: supervisor.nor, role: supervisor,     region: NOR}
+  - {user_id: inspector.a,    role: inspector,      region: CEN, team: T-CEN-A}
+  - {user_id: inspector.b,    role: inspector,      region: CEN, team: T-CEN-B}
+  - {user_id: inspector.c,    role: inspector,      region: NOR, team: T-NOR-C}
+  - {user_id: datasci,        role: data_scientist, region: "*"}
+  - {user_id: admin,          role: admin,          region: "*"}
+  - {user_id: auditor,        role: auditor,        region: "*"}
+
+# Fixed demo case: a fixed simulation seed makes this premise rank top in the demo zone,
+# so the case job always opens a case for it and the pre-drafted report is keyed to it.
+demo_zone: TX-CEN-001
+demo_seed: 20261027

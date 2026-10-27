@@ -1,0 +1,39 @@
+# Secrets and local settings
+.env
+deploy/cloudflared/*.json
+deploy/cloudflared/config.yml
+
+# Data, models, generated files (all live under DATA_ROOT on D:)
+data/raw/
+data/processed/
+data/simulated/
+data/uploads/*/
+!data/uploads/templates/
+models/
+mlruns/
+photos/
+pdfs/
+logs/
+audit_anchor/
+*.parquet
+*.onnx
+*.pdf
+!VoltGuard*.pdf
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+
+# Node
+web/node_modules/
+web/dist/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

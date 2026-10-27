@@ -1,0 +1,110 @@
+"""R0 score and reasons (SDD 5.4; FR-PS-01, FR-PS-05, FR-PS-07 to 09).
+
+s(i) = 100 * clip(sum_k w_k * x(i,k) - sum_t p_t * tag(i,t), 0, 1)
+
+Each input's contribution is exactly its weighted value and each tag's penalty is a negative
+contribution, so the lines add up to the score: the page shows the top three plus "other",
+and a "capped" line whenever clipping applies. Wording describes risk only and never labels
+a premise or person as a thief (FR-PS-08).
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+import numpy as np
+
+from voltguard.detection.features import FEATURE_NAMES
+
+TAG_TEXT = {
+    "ev_charging": "Regular night-time block that matches EV charging (legitimate use)",
+    "solar": "Drop in daytime use explained by rooftop solar (legitimate use)",
+    "vacancy": "Near-zero use with no sign of occupancy, consistent with an empty premise (legitimate use)",
+}
+
+
+@dataclass
+class Reason:
+    feature: str
+    points: float
+    text: str
+
+    def as_dict(self) -> dict:
+        return {"feature": self.feature, "contribution": round(self.points, 1), "reason_text": self.text}
+
+
+@dataclass
+class Score:
+    score: int
+    lines: list[Reason]            # top three, then "other" and "capped" when needed; they add up to score
+    all_contributions: list[Reason]
+
+
+def reason_text(feature: str, d: dict, sub_reasons: list[str]) -> str:
+    if feature == "gap_from_similar":
+        basis = " at night (daytime use is explained by solar)" if d.get("night_basis") else ""
+        return f"Use is {d.get('below_similar_share', 0) * 100:.0f}% below similar {d.get('peer_type', '')} homes on this transformer{basis}"
+    if feature == "change_from_history":
+        when = f" from {d['own_change_day']}" if d.get("own_change_day") else " over the last two weeks"
+        basis = " at night" if d.get("night_basis") else ""
+        return f"Metered use{basis} fell {d.get('drop_share', 0) * 100:.0f}% compared with its own history{when}"
+    if feature == "voltage_proximity":
+        return (f"Neighbours on the same phase and branch show an unexplained voltage drop of {d.get('group_drop_v', 0):.1f} V; "
+                f"the estimated hidden load is about {d.get('tap_distance', 0):.0f} m from this premise")
+    if feature == "voltage_residual":
+        return f"This meter's voltage is {d.get('voltage_drop_v', 0):.1f} V lower than its metered use explains"
+    if feature == "timing_match":
+        return f"Its use changed {d.get('timing_days', 0)} day(s) from when the zone's energy gap opened"
+    if feature == "zero_streaks":
+        return f"{d.get('zero_share', 0) * 100:.0f}% of recent half-hours read almost zero, more than before"
+    if feature == "night_to_day":
+        return f"Night-time share of use is {d.get('night_share', 0) * 100:.0f}% against {d.get('peer_night_share', 0) * 100:.0f}% for similar homes"
+    if feature == "flatness":
+        return "Metered load is unusually constant across the day"
+    if feature == "pattern_model":
+        extra = f": {', '.join(sub_reasons)}" if sub_reasons else ""
+        return f"Daily-use pattern resembles labelled theft cases in public training data{extra}"
+    if feature == "anomaly":
+        return f"Weekly profile is {d.get('anomaly_ratio', 1):.1f}x harder to reconstruct than a typical home's"
+    if feature == "tenancy_change":
+        return f"Tenancy changed on {d.get('tenancy_date', '?')}, near the gap start (supporting evidence only)"
+    return TAG_TEXT.get(feature, feature)
+
+
+def score_premise(x: np.ndarray, tags: list[str], details: dict, sub_reasons: list[str], cfg: dict) -> Score:
+    weights = cfg["weights"]
+    contributions: list[Reason] = []
+    other_evidence = 0.0
+    for k, name in enumerate(FEATURE_NAMES):
+        if name == "tenancy_change":
+            continue
+        value = float(weights.get(name, 0.0)) * float(x[k])
+        other_evidence += value
+        if value > 1e-6:
+            contributions.append(Reason(name, 100 * value, reason_text(name, details, sub_reasons)))
+    tenancy = 0.0
+    t_idx = FEATURE_NAMES.index("tenancy_change")
+    if x[t_idx] > 0 and other_evidence >= cfg["tenancy"]["gate_other_evidence"]:
+        tenancy = min(float(weights.get("tenancy_change", 0.0)) * float(x[t_idx]), cfg["tenancy"]["max_contribution"])
+        contributions.append(Reason("tenancy_change", 100 * tenancy, reason_text("tenancy_change", details, sub_reasons)))
+    penalty = 0.0
+    for tag in tags:
+        p = float(cfg["penalties"].get(tag, 0.0))
+        if p:
+            penalty += p
+            contributions.append(Reason(f"tag:{tag}", -100 * p, TAG_TEXT[tag]))
+
+    total = other_evidence + tenancy - penalty
+    exact = 100 * float(np.clip(total, 0.0, 1.0))
+    score = int(round(exact))
+    contributions.sort(key=lambda r: -abs(r.points))
+    top = [Reason(r.feature, round(r.points, 1), r.text) for r in contributions[:3]]
+    rest = sum(r.points for r in contributions[3:])
+    lines = list(top)
+    capped = exact - 100 * total
+    if abs(capped) >= 0.05:
+        lines.append(Reason("capped", round(capped, 1), "Score capped at 0 or 100" if capped else ""))
+    other = score - sum(r.points for r in lines)
+    if contributions[3:] or abs(other) >= 0.05:
+        lines.insert(len(top), Reason("other", round(other, 1), "Other evidence" if contributions[3:] else "Rounding"))
+    return Score(score, lines, contributions)

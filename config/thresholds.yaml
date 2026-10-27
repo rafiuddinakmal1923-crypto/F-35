@@ -1,0 +1,65 @@
+# Detection and workflow defaults (SDD 5, prompt section 5).
+# These are placeholders to tune in simulation. Admins change them through
+# PUT /settings/thresholds (FR-AD-03); values saved there override this file.
+
+zone:
+  share_of_supply: 0.05        # theta: gap must exceed this share of supply...
+  min_gap_kwh_per_day: 15.0    # ...and this daily amount (G_min), plus the margin u
+  consecutive_days: 7          # k
+  large_load_share: 0.15       # above this the zone is large-load priority
+  flat_cv: 0.2                 # gap is flat (24/7 load) below this coefficient of variation
+  meter_accuracy_share: 0.005  # u_meter default when a transformer has no accuracy class (class 0.5)
+  loss_model_error_share: 0.15 # u_loss: relative error of the loss model on clean zones (recalibrated by `tune`)
+  conventional_daily_cv: 0.25  # u_conv: day-to-day spread of similar homes when spreading monthly readings
+  change_min_shift_share: 0.02 # smallest jump in gap share accepted as a change point
+  change_min_segment_days: 3
+
+voltage:
+  window_days: 14
+  min_drop_v: 0.4              # residual drop below this is treated as noise
+  proximity_scale_m: 60        # distance at which tap proximity evidence halves
+
+features:
+  history_weeks: 8
+  recent_days: 14
+  zero_kwh: 0.02               # half-hour reading counted as near zero
+  timing_tau_days: 3
+
+# R0 additive score: weights add up to 1 (tuned on the tuning set by `voltguard tune`).
+weights:
+  gap_from_similar: 0.16
+  change_from_history: 0.14
+  voltage_proximity: 0.20
+  voltage_residual: 0.12
+  timing_match: 0.10
+  zero_streaks: 0.06
+  night_to_day: 0.04
+  flatness: 0.02
+  pattern_model: 0.08
+  anomaly: 0.05
+  tenancy_change: 0.03
+
+tenancy:
+  max_contribution: 0.03       # capped weight (FR-PS-09)
+  gate_other_evidence: 0.25    # counts only when other evidence already reaches this share
+
+# Penalties for legitimate-use tags, subtracted from the score (FR-PS-05)
+penalties:
+  ev_charging: 0.12
+  solar: 0.10
+  vacancy: 0.10
+
+cases:
+  case_threshold: 35           # score at or above this creates a case (OI-7)
+  max_cases_per_zone: 3
+  random_sample_per_zone: 1    # random-sample cases per flagged zone per run (OI-10)
+
+dispatch:
+  reminder_hours: 24
+  escalation_hours: 72
+  demo_reminder_minutes: 2     # shortened timers when DEMO_MODE=1
+  demo_escalation_minutes: 4
+
+monitoring:
+  min_interval_completeness: 0.90  # SRS 5.3
+  drift_psi_alert: 0.2

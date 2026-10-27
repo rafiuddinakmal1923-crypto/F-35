@@ -1,0 +1,27 @@
+# Active source per canonical table (prompt 3.4).
+# Values: simulated | upload:<dataset_name>
+# Switching a source is a config change plus `make.ps1 pipeline`.
+tables:
+  transformer: simulated
+  premise: simulated
+  meter: simulated
+  meter_reading: simulated
+  meter_monthly_reading: simulated
+  transformer_reading: simulated
+  account_event: simulated
+  duty_roster: simulated
+  customer_pii: simulated
+  inspection_outcome: simulated
+
+# Household load profiles used by the simulator: synthetic | london
+profiles: synthetic
+london:
+  households: 300              # default subset; set 0 for the full set
+# Scale profiles to Malaysian domestic consumption: none | datagovmy
+rescale: none
+# Pattern model training data: synthetic | sgcc
+pattern_training: synthetic
+
+# Simulation run used by `make.ps1 pipeline` and `make.ps1 demo`
+simulation:
+  run: demo
