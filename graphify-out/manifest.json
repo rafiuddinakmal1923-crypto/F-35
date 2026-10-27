@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1793091130.6092916,
-    "seen": 1793091133.0364382,
-    "ast_hash": "f132ccac663feb766b90333b857d4c12",
+    "mtime": 1793091133.87241,
+    "seen": 1793092206.4820151,
+    "ast_hash": "51f7193ecfd13745810272bf0d637569",
     "semantic_hash": ""
   },
   "README.md": {
@@ -270,8 +270,8 @@
     "semantic_hash": ""
   },
   "TRACEABILITY.md": {
-    "mtime": 1793091077.3665042,
-    "seen": 1793091133.0364726,
+    "mtime": 1793091133.2349908,
+    "seen": 1793092206.4820642,
     "ast_hash": "793fc471995de5188e31d640448ef94a",
     "semantic_hash": ""
   },
@@ -672,9 +672,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_agents.py": {
-    "mtime": 1793088513.2538133,
-    "seen": 1793088783.6115768,
-    "ast_hash": "7e66e22f70bc5867adfa40185fec980b",
+    "mtime": 1793092013.8222675,
+    "seen": 1793092206.479729,
+    "ast_hash": "a7ac0e9e9d0a4d3e4481817fb5cdd4d9",
     "semantic_hash": ""
   },
   "backend/voltguard/agents/chatbot.py": {
@@ -720,9 +720,9 @@
     "semantic_hash": ""
   },
   "backend/voltguard/pdf.py": {
-    "mtime": 1793088177.0421305,
-    "seen": 1793088783.6123967,
-    "ast_hash": "f768315f13f7e4781894e1b6e1a4bcfa",
+    "mtime": 1793092013.8220506,
+    "seen": 1793092206.4808633,
+    "ast_hash": "813bbfa5cb6ff0939a108d117f18010f",
     "semantic_hash": ""
   },
   "backend/voltguard/service/seed.py": {

@@ -164,3 +164,15 @@ def test_NFR_15_model_output_with_personal_details_is_blocked(monkeypatch):
     with pytest.raises(guardrails.OutputBlocked):
         guardrails.check_output("Answer: the owner is Encik Ahmad bin Ali, phone 012-345 6789")
     assert scrubber.scrub("Kumar a/l Muthu").found == {"NAME": 1}
+
+
+def test_FR_UI_05_pdf_fallback_without_a_browser(monkeypatch):
+    """Without Chromium (e.g. a minimal image) the export still produces a PDF with every line."""
+    from pypdf import PdfReader
+
+    from voltguard import pdf
+
+    html = "<h1>CASE REPORT C-1</h1><p>Account holder: FAKE Siti binti Rahman.</p><p>Second line.</p><p>Third line.</p>"
+    data = pdf._fpdf(html)
+    text = "".join(page.extract_text() for page in PdfReader(io.BytesIO(data)).pages)
+    assert data.startswith(b"%PDF") and "Third line." in text and "Siti" in text

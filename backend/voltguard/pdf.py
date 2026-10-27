@@ -54,5 +54,6 @@ def _fpdf(document: str) -> bytes:
     pdf.add_page()
     pdf.set_font("Helvetica", size=10)
     for line in text.splitlines():
-        pdf.multi_cell(0, 5, line.encode("latin-1", "replace").decode("latin-1"))
+        # Back to the left margin after each line; fpdf2 otherwise leaves the cursor at the right edge.
+        pdf.multi_cell(0, 5, line.encode("latin-1", "replace").decode("latin-1"), new_x="LMARGIN", new_y="NEXT")
     return bytes(pdf.output())

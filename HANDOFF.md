@@ -122,16 +122,16 @@ graphify graph in `graphify-out/` and `TRACEABILITY.md`).
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.sh)
 
-- Generated: 2026-10-27T08:52
-- Branch: `claude/practical-clarke-t5uwrc`; last commit: `0d4b295 Verify the compose stack on TimescaleDB and pgvector; fix empty settings and local paths`
-- Tests collected: 74 tests
+- Generated: 2026-10-27T09:10
+- Branch: `claude/practical-clarke-t5uwrc`; last commit: `98abea4 Test every functional requirement by name: FR-DI-07, FR-IW-03, NFR-02, NFR-13`
+- Tests collected: 75 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
   query with `graphify query "<question>"` or `graphify explain "<name>"`)
 
 ### Graph summary
 
-- 1897 nodes · 4390 edges · 126 communities (113 shown, 13 thin omitted)
+- 1899 nodes · 4394 edges · 126 communities (114 shown, 12 thin omitted)
 - Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 252 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
