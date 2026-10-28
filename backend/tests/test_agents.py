@@ -166,6 +166,35 @@ def test_NFR_15_model_output_with_personal_details_is_blocked(monkeypatch):
     assert scrubber.scrub("Kumar a/l Muthu").found == {"NAME": 1}
 
 
+def test_FR_AG_01_live_model_gets_figures_with_units(monkeypatch):
+    """The live model once turned a raw gap share of 0.0012 into "0.001%": it now gets finished figures."""
+    from voltguard.agents import report
+
+    sent = {}
+
+    def fake_complete(system, user, **kwargs):
+        sent["system"], sent["user"] = system, user
+        return llm.Completion("The zone shows an unexplained gap of 118 kWh per day (11.8% of supply).", "ollama", "qwen")
+
+    monkeypatch.setattr(llm, "complete", fake_complete)
+    f = {"case": {"transformer_id": "TX-CEN-001", "premise_id": "P-1"},
+         "zone": {"gap_kwh_recent": 117.6, "gap_pct_recent": 0.1184, "flatness_cv": 0.16},
+         "score": {"score": 57, "rank": 1}, "reasons": [{"reason_text": "Use fell 70% compared with its own history"}],
+         "outcomes": [{"outcome": "confirmed_theft"}]}
+    facts = report.live_facts(f)
+    assert facts["unexplained_energy_gap"] == "118 kWh per day"
+    assert facts["gap_as_share_of_supply"] == "11.8%"
+    assert facts["daily_shape_of_the_gap"].startswith("nearly constant")
+    assert facts["premise_risk_score"].startswith("57 out of 100")
+    assert facts["inspection_outcomes"] == ["Confirmed theft"]
+    text, mode = report._assessment(f, "live")
+    assert mode == "live (qwen)" and "118 kWh per day" in text
+    assert json.loads(sent["user"]) == facts and "never convert" in sent["system"]
+    small = report.live_facts({**f, "zone": {"gap_kwh_recent": 0.99, "gap_pct_recent": 0.0012, "flatness_cv": None}, "score": None, "outcomes": []})
+    assert small["gap_as_share_of_supply"] == "0.1%" and small["daily_shape_of_the_gap"] == "not computed"
+    assert small["inspection_outcomes"] == ["not inspected yet"]
+
+
 def test_FR_UI_05_pdf_fallback_without_a_browser(monkeypatch):
     """Without Chromium (e.g. a minimal image) the export still produces a PDF with every line."""
     from pypdf import PdfReader
