@@ -2,15 +2,37 @@
 // and the field assistant (procedure questions from approved documents with citations, FR-AG-04).
 // Chatbot answers draw the chart the query service names for their rows; the table and query stay one click away.
 import { useEffect, useRef, useState } from "react";
-import { post, session } from "../api.js";
+import { CHAT_KEY, post, session } from "../api.js";
 import { QueryChart } from "../components/Charts.jsx";
 import { t } from "../i18n.js";
 
 const EXAMPLES = {
   analyst: ["Which zones had a gap above 10% this week?", "Show the gap trend for TX-CEN-001", "Daily gap of all zones as a chart",
     "Unexplained energy by district", "How many open cases are there?", "Hit rate model-ranked vs random sample", "Inspection outcomes so far"],
-  field: ["What should I photograph at the meter board?", "What does a flat 24/7 gap mean?", "Should I disconnect the bypass cable?"],
+  field: ["What should I photograph at the meter board?", "What does Section 37 of Act 447 say?",
+    "Apakah hukuman mencuri elektrik di bawah Akta 447?", "What does a flat 24/7 gap mean?", "Should I disconnect the bypass cable?"],
 };
+const AGENT_LABEL = { analyst: "Numbers and charts", field: "Documents and procedures" };
+const KEEP_TURNS = 40;
+
+// The conversation survives moving to another page and back: it is kept in this tab's sessionStorage, per user,
+// and removed on sign-out or when the tab closes (api.js), like the session token itself.
+function restore(userId) {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(CHAT_KEY + userId) || "[]");
+    return Array.isArray(saved) ? saved.filter((item) => item && !item.pending) : [];
+  } catch {
+    return [];
+  }
+}
+
+function keep(userId, history) {
+  try {
+    sessionStorage.setItem(CHAT_KEY + userId, JSON.stringify(history.filter((item) => !item.pending).slice(-KEEP_TURNS)));
+  } catch {
+    /* storage full or blocked: the chat still works for this visit */
+  }
+}
 
 function csv(rows) {
   const cols = Object.keys(rows[0] || {});
@@ -59,7 +81,10 @@ function Answer({ item }) {
           {r.sources.map((s, i) => <li key={i}><small>{s.title}{s.section ? `, ${s.section}` : ""} ({s.source_ref})</small></li>)}
         </ol>
       ) : null}
-      <small className="muted">{q ? `Template ${q.template} · ` : ""}{r.mode ? `answered in ${r.mode} mode` : ""}</small>
+      <small className="muted">
+        {r.answered_by === "documents" ? "Not a numeric question: answered from approved documents · " : ""}
+        {q ? `Template ${q.template} · ` : ""}{r.mode ? `answered in ${r.mode} mode` : ""}
+      </small>
     </div>
   );
 }
@@ -67,12 +92,15 @@ function Answer({ item }) {
 export default function Assistant() {
   const { user } = session();
   const canAnalyst = ["manager", "analyst"].includes(user?.role);
-  const [agent, setAgent] = useState(canAnalyst ? "analyst" : "field");
+  const userId = user?.user_id || "";
+  const [history, setHistory] = useState(() => restore(userId));
+  const last = history[history.length - 1];
+  const [agent, setAgent] = useState(last && (canAnalyst || last.agent === "field") ? last.agent : canAnalyst ? "analyst" : "field");
   const [message, setMessage] = useState("");
-  const [history, setHistory] = useState([]);
   const [busy, setBusy] = useState(false);
   const end = useRef(null);
   useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [history.length, busy]);
+  useEffect(() => { keep(userId, history); }, [userId, history]);
 
   async function ask(text) {
     const q = (text ?? message).trim();
@@ -86,7 +114,9 @@ export default function Assistant() {
     } catch (e) {
       entry = { q, agent, error: e.message };
     }
-    setHistory((h) => [...h.slice(0, -1), entry]);
+    setHistory((h) => [...h.filter((item) => !item.pending), entry]);
+    // Saved here too, so an answer that arrives after the page was left is there on the way back.
+    keep(userId, [...restore(userId), entry]);
     setBusy(false);
   }
 
@@ -97,23 +127,27 @@ export default function Assistant() {
           <h1>{t("assistant")}</h1>
           <small className="muted">Answers come only from your region's results or approved documents; agents never act on their own.</small>
         </div>
-        {canAnalyst ? (
-          <div className="segmented">
-            <button className={agent === "analyst" ? "active" : ""} onClick={() => setAgent("analyst")}>Numbers and charts</button>
-            <button className={agent === "field" ? "active" : ""} onClick={() => setAgent("field")}>Procedures</button>
-          </div>
-        ) : null}
+        <div className="row">
+          {canAnalyst ? (
+            <div className="segmented">
+              <button className={agent === "analyst" ? "active" : ""} onClick={() => setAgent("analyst")}>{AGENT_LABEL.analyst}</button>
+              <button className={agent === "field" ? "active" : ""} onClick={() => setAgent("field")}>{AGENT_LABEL.field}</button>
+            </div>
+          ) : null}
+          {history.length ? <button type="button" onClick={() => setHistory([])} disabled={busy}>Clear chat</button> : null}
+        </div>
       </div>
       <div className="chat-log">
         {!history.length ? (
           <div className="chat-empty">
-            <p><b>{agent === "analyst" ? "Ask about zones, gaps, cases and hit rates." : "Ask about inspection procedures."}</b></p>
-            <p className="muted">{agent === "analyst" ? "Try a trend or a breakdown: the answer comes with a chart, its table and the query used."
+            <p><b>{agent === "analyst" ? "Ask about zones, gaps, cases and hit rates." : "Ask about inspection procedures, the Electricity Supply Act (Act 447) and other approved documents."}</b></p>
+            <p className="muted">{agent === "analyst" ? "Try a trend or a breakdown: the answer comes with a chart, its table and the query used. Questions about laws or procedures are answered from approved documents."
               : "Answers cite the approved document they come from, or say \"not found\"."}</p>
           </div>
         ) : null}
         {history.map((item, i) => (
           <div key={i} className="chat-turn">
+            {canAnalyst ? <small className="muted">{AGENT_LABEL[item.agent]}</small> : null}
             <div className="chat-q">{item.q}</div>
             {item.pending ? <div className="answer typing"><span /><span /><span /></div> : <Answer item={item} />}
           </div>

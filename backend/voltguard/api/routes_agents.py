@@ -78,7 +78,13 @@ def chat(body: Chat, c: Caller = Depends(require("manager", "analyst", "inspecto
     if body.agent == "analyst":
         if c.role not in ("manager", "analyst"):
             raise forbidden("The analyst chatbot answers managers and analysts")
-        return _call(chatbot.ask, conn, c, body.message)
+        result = _call(chatbot.ask, conn, c, body.message)
+        if result.get("query") or result.get("refused"):
+            return result
+        # Not a numeric question ("What does Act 447 say about meter tampering?"): try the approved documents,
+        # through the document assistant and its own checks. Keep the chatbot's reply when they hold nothing.
+        docs = _call(rag.answer, conn, c, body.message, "field_assistant")
+        return {**docs, "answered_by": "documents"} if docs["sources"] else result
     return _call(rag.answer, conn, c, body.message, "field_assistant")
 
 

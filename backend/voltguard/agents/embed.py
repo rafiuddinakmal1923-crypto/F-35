@@ -22,7 +22,10 @@ BATCH = 16                      # passages per model run: bounded memory however
 MODEL_ID = os.environ.get("EMBED_MODEL", "intfloat/multilingual-e5-small")
 TOKEN = re.compile(r"[a-z0-9]+")
 STOP = set("the a an and or of to in on at for is are was were be by with this that it its as from into than then there their "
-           "yang dan di ke dari untuk pada ini itu dengan atau adalah oleh".split())
+           "yang dan di ke dari untuk pada ini itu dengan atau adalah oleh "
+           # question words: "What should I ..." shares them with every passage that says "what" or "should"
+           "what which who whom whose when where why how do does did can could should would will my me we our you your about "
+           "apa apakah adakah bagaimana bila bilakah mana siapa mengapa kenapa saya kami kita anda tentang mengenai".split())
 
 
 def _model_dir() -> Path | None:
@@ -97,12 +100,52 @@ def cosine(a: np.ndarray, b: np.ndarray) -> float:
     return float(a @ b / (na * nb)) if na and nb else 0.0
 
 
+# Words that mean the same in English and Bahasa Melayu, for the keyword check: the Electricity Supply
+# Act on file is the Malay reprint, and an English question about it ("penalty for tampering") shares
+# almost no words with "didenda ... mengganggu". Domain terms only, so unrelated questions stay unmatched.
+TERMS = [
+    # the Act words electricity theft as dishonestly taking or using it ("dengan curang mengambil elektrik")
+    {"theft", "steal", "stealing", "stolen", "curi", "mencuri", "kecurian", "dishonestly", "abstracts", "abstraction", "curang"},
+    {"penalty", "penalties", "punishment", "punished", "fine", "fined", "hukuman", "dihukum", "denda", "didenda", "penalti"},
+    {"imprisonment", "imprisoned", "jail", "prison", "penjara", "dipenjarakan", "pemenjaraan"},
+    {"tamper", "tampering", "tampered", "interfere", "interferes", "interference", "usik", "mengusik", "ganggu", "mengganggu"},
+    {"convicted", "conviction", "disabitkan", "sabitan"},
+    {"offence", "offences", "offense", "kesalahan"},
+    {"electricity", "electric", "electrical", "elektrik"},
+    {"supply", "bekalan", "pembekalan"},
+    {"act", "akta"},
+    {"section", "seksyen"},
+    {"licence", "license", "licensee", "lesen"},
+    {"installation", "installations", "pepasangan"},
+    {"equipment", "kelengkapan"},
+    {"consumer", "consumers", "customer", "customers", "pengguna"},
+    {"disconnect", "disconnection", "memotong", "pemotongan"},
+    {"inspect", "inspection", "inspections", "pemeriksaan", "memeriksa"},
+    {"evidence", "bukti", "keterangan"},
+    {"owner", "occupier", "pemunya", "penghuni"},
+    {"premises", "premis"},
+    {"damage", "damaged", "rosak", "kerosakan", "merosakkan"},
+    {"meter", "meters", "penyukatan"},
+    {"cable", "cables", "kabel"},
+    {"wiring", "wire", "wires", "pendawaian", "wayar"},
+    {"connection", "connect", "connected", "sambungan", "menyambung"},
+    {"compensation", "pampasan"},
+    {"court", "mahkamah"},
+    {"seize", "seizure", "sita", "menyita"},
+    {"enter", "entry", "memasuki"},
+    {"solar", "suria"},
+]
+_SAME = {w: group for group in TERMS for w in group}
+
+
 def keyword_overlap(query: str, text: str) -> float:
+    """Share of the question's words found in the text (√-scaled); a word also counts when its English or
+    Malay counterpart (TERMS) is there."""
     q = set(words(query))
     if not q:
         return 0.0
     t = set(words(text))
-    return len(q & t) / math.sqrt(len(q))
+    return sum(1 for w in q if w in t or not _SAME.get(w, set()).isdisjoint(t)) / math.sqrt(len(q))
 
 
 def download(target: Path | None = None) -> Path:
