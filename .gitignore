@@ -44,4 +44,5 @@ graphify-out/cache/
 
 # Weekly report outputs kept for review (reports/ui/CHANGES.md)
 !reports/ui/*.pdf
-graphify-out/20*-*-*/    # graphify's dated backups of earlier graphs
+# graphify's dated backups of earlier graphs
+graphify-out/20*-*-*/
