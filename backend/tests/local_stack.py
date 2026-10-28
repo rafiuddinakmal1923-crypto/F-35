@@ -24,8 +24,11 @@ PASSWORD = os.environ.get("VG_STACK_PASSWORD", "demo-pass-1")
 
 
 def chromium_path() -> str | None:
-    """Pre-installed Chromium when the Playwright package's own browser is not installed."""
-    for candidate in ("/opt/pw-browsers/chromium-1243/chrome-linux64/chrome",):
+    """Pre-installed Chromium when the Playwright package's own browser is not installed
+    (on Windows: the installed Edge or Chrome)."""
+    for candidate in ("/opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+                      r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+                      r"C:\Program Files\Google\Chrome\Application\chrome.exe"):
         if Path(candidate).exists():
             return candidate
     found = sorted(Path("/opt/pw-browsers").glob("chromium-*/chrome-linux64/chrome")) if Path("/opt/pw-browsers").exists() else []
@@ -40,16 +43,16 @@ class LocalStack:
         self.server = None
 
     def start(self) -> "LocalStack":
-        from tests.pg_server import TempPostgres
+        from tests.pg_server import make_postgres
 
-        self.pg = TempPostgres()
+        self.pg = make_postgres()
         self.pg.start()
         data_root = Path(self.pg.dir) / "data_root"
         data_root.mkdir()
         os.environ.update({"ADMIN_DATABASE_URL": self.pg.url("voltguard"), "DATABASE_URL": self.pg.url("voltguard_app"),
                            "DATA_ROOT": str(data_root), "SCHEDULER": os.environ.get("SCHEDULER", "on"), "LLM_MODE": "mock",
                            "REPORT_MODE": os.environ.get("REPORT_MODE", "mock"), "PUBLIC_BASE_URL": f"http://localhost:{self.web_port}"})
-        models = ROOT / ".data" / "models"
+        models = Path(os.environ["VG_MODELS_DIR"]) if os.environ.get("VG_MODELS_DIR") else ROOT / ".data" / "models"
         if models.exists():
             shutil.copytree(models, data_root / "models")
         from voltguard import db
@@ -81,11 +84,12 @@ class LocalStack:
         self.thread.start()
         while not self.server.started:
             time.sleep(0.1)
+        windows = os.name == "nt"
         if not (ROOT / "web" / "dist" / "index.html").exists():
-            subprocess.run(["npm", "run", "build"], cwd=ROOT / "web", check=True)
-        self.web = subprocess.Popen(["npx", "vite", "preview", "--port", str(self.web_port), "--strictPort"], cwd=ROOT / "web",
-                                    env={**os.environ, "VG_API": f"http://127.0.0.1:{self.api_port}"},
-                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+            subprocess.run(["npm", "run", "build"], cwd=ROOT / "web", check=True, shell=windows)
+        self.web = subprocess.Popen(["npx", "vite", "preview", "--host", "127.0.0.1", "--port", str(self.web_port), "--strictPort"], cwd=ROOT / "web",
+                                    env={**os.environ, "VG_API": f"http://127.0.0.1:{self.api_port}"}, shell=windows,
+                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=not windows)
         atexit.register(self.stop)
         import httpx
 
@@ -104,10 +108,13 @@ class LocalStack:
 
     def stop(self) -> None:
         if self.web and self.web.poll() is None:
-            try:
-                os.killpg(self.web.pid, signal.SIGTERM)   # npx -> sh -> node: stop the whole group
-            except ProcessLookupError:
-                pass
+            if os.name == "nt":                        # cmd -> npx -> node: stop the whole tree
+                subprocess.run(["taskkill", "/T", "/F", "/PID", str(self.web.pid)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            else:
+                try:
+                    os.killpg(self.web.pid, signal.SIGTERM)   # npx -> sh -> node: stop the whole group
+                except ProcessLookupError:
+                    pass
         if self.server:
             self.server.should_exit = True
             self.thread.join(timeout=10)      # lifespan shutdown stops the scheduler before the database goes
