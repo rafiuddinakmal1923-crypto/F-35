@@ -1,9 +1,12 @@
 // Map of zones by gap (FR-UI-01): transformer positions only, never premise locations.
-import { CircleMarker, MapContainer, TileLayer, Tooltip } from "react-leaflet";
+import { CircleMarker, MapContainer, Tooltip } from "react-leaflet";
+import { useState } from "react";
 import "leaflet/dist/leaflet.css";
+import BaseTiles from "./BaseTiles.jsx";
 import { pct } from "./Common.jsx";
 
 export default function ZoneMap({ zones, onSelect }) {
+  const [noTiles, setNoTiles] = useState(false);
   const placed = zones.filter((z) => z.lat != null && z.lon != null);
   if (!placed.length) return <p className="muted">No zone positions recorded.</p>;
   const lat = placed.reduce((s, z) => s + z.lat, 0) / placed.length;
@@ -13,10 +16,8 @@ export default function ZoneMap({ zones, onSelect }) {
   return (
     <div className="map">
       <MapContainer center={[lat, lon]} zoom={zoom} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false}>
-        {/* Tiles need internet; without it the circles still show on a blank map. OpenStreetMap refuses
-            tiles without a Referer, and the site sends none (Caddyfile), so tiles alone send the origin. */}
-        <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors"
-          referrerPolicy="strict-origin" />
+        {/* Tiles need internet; without it the circles still show on a blank map. */}
+        <BaseTiles onUnavailable={() => setNoTiles(true)} />
         {placed.map((z) => (
           <CircleMarker key={z.transformer_id} center={[z.lat, z.lon]}
             radius={6 + Math.min(Math.max((z.gap_pct_recent || 0) * 100, 0), 25)}
@@ -26,6 +27,7 @@ export default function ZoneMap({ zones, onSelect }) {
           </CircleMarker>
         ))}
       </MapContainer>
+      {noTiles ? <small className="map-note">Map background unavailable (no internet, or blocked by the network). Zones are still placed correctly.</small> : null}
     </div>
   );
 }

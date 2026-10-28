@@ -154,8 +154,8 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.sh)
 
-- Generated: 2026-10-27T17:58
-- Branch: `claude/practical-clarke-t5uwrc`; last commit: `f1de3c3 Nightly run in batches: flat memory for large networks (NFR-01)`
+- Generated: 2026-10-28T00:48
+- Branch: `claude/practical-clarke-t5uwrc`; last commit: `bae6984 Second-round recheck: docs, deviations and test counts`
 - Tests collected: 100 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
@@ -163,8 +163,8 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 
 ### Graph summary
 
-- 2192 nodes · 5181 edges · 126 communities (113 shown, 13 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 285 edges (avg confidence: 0.93)
+- 2197 nodes · 5196 edges · 132 communities (119 shown, 13 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 286 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
@@ -208,7 +208,7 @@ Most connected (core abstractions):
 - `web/`: .dockerignore, .gitignore, Dockerfile, index.html, nginx.conf, package-lock.json, package.json, vite.config.js
 - `web/public/`: icon.svg, manifest.webmanifest, sw.js
 - `web/src/`: App.jsx, api.js, i18n.js, main.jsx, styles.css
-- `web/src/components/`: Charts.jsx, Common.jsx, RouteMap.jsx, TelegramChat.jsx, ZoneMap.jsx
+- `web/src/components/`: BaseTiles.jsx, Charts.jsx, Common.jsx, RouteMap.jsx, TelegramChat.jsx, ZoneMap.jsx
 - `web/src/field/`: FieldApp.jsx, secureStore.js
 - `web/src/pages/`: Assistant.jsx, Audit.jsx, Case.jsx, Cases.jsx, DataManager.jsx, Dispatch.jsx, Login.jsx, Models.jsx, Overview.jsx, Premise.jsx, Settings.jsx, Weekly.jsx, ... (+3)
 <!-- auto:end -->

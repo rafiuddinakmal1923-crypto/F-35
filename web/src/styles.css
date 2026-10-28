@@ -359,3 +359,6 @@ a.button.primary { background: var(--brand); color: var(--brand-ink); border-col
 @media (max-width: 1100px) { .icon-btn.sign-out span { display: none; } }
 .route-stop { display: flex; align-items: flex-start; gap: 0; width: 100%; text-align: left; border: 0; background: transparent; padding: 4px 0; min-height: 0; }
 .route-stop:hover { background: var(--surface-2); }
+.map, .route-map { position: relative; }
+.map-note { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 500; background: var(--surface); color: var(--muted);
+  padding: 6px 10px; border-radius: 8px; box-shadow: var(--shadow); font-size: 0.8rem; }

@@ -252,15 +252,15 @@
     "semantic_hash": ""
   },
   "DEVIATIONS.md": {
-    "mtime": 1793123678.0562527,
-    "seen": 1793123893.5953636,
-    "ast_hash": "df096fbe102c707be3fa27732055273f",
+    "mtime": 1793148515.4628284,
+    "seen": 1793148525.3256507,
+    "ast_hash": "c15610b5b28dfd47db96806a199e102d",
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1793123642.8968973,
-    "seen": 1793123893.5953665,
-    "ast_hash": "f04cb47e5bc47074857dae8231a0bcf5",
+    "mtime": 1793123894.7398567,
+    "seen": 1793148525.325653,
+    "ast_hash": "95f7b9f3ca543babdb956fcac4c25730",
     "semantic_hash": ""
   },
   "README.md": {
@@ -270,8 +270,8 @@
     "semantic_hash": ""
   },
   "TRACEABILITY.md": {
-    "mtime": 1793123642.1042721,
-    "seen": 1793123893.595405,
+    "mtime": 1793123893.8834064,
+    "seen": 1793148525.3257139,
     "ast_hash": "fabc1f385725ce48260adf8889e2eca7",
     "semantic_hash": ""
   },
@@ -564,9 +564,9 @@
     "semantic_hash": ""
   },
   "web/src/components/ZoneMap.jsx": {
-    "mtime": 1793116188.514028,
-    "seen": 1793119904.9421868,
-    "ast_hash": "1a315e1da9f18ecba2984d59523db23c",
+    "mtime": 1793148391.2117,
+    "seen": 1793148525.3250773,
+    "ast_hash": "6b570b279fa49fd9effd48f81d3776d1",
     "semantic_hash": ""
   },
   "web/src/field/FieldApp.jsx": {
@@ -912,9 +912,9 @@
     "semantic_hash": ""
   },
   "web/src/components/RouteMap.jsx": {
-    "mtime": 1793120777.1680803,
-    "seen": 1793120926.6337886,
-    "ast_hash": "0f4c8199ba404ff7a87ab8ea464ce35e",
+    "mtime": 1793148391.212457,
+    "seen": 1793148525.325048,
+    "ast_hash": "273cb0bf88c4b840e89531351c7dd0ec",
     "semantic_hash": ""
   },
   "backend/tests/test_digest.py": {
@@ -969,6 +969,12 @@
     "mtime": 1793123005.1015213,
     "seen": 1793123641.7856417,
     "ast_hash": "a186c0442ab57f232c993376f280f9e0",
+    "semantic_hash": ""
+  },
+  "web/src/components/BaseTiles.jsx": {
+    "mtime": 1793148376.6185896,
+    "seen": 1793148525.3249886,
+    "ast_hash": "113bd9f831c93e86bc2348ba02762265",
     "semantic_hash": ""
   },
   "web/package-lock.json": {
