@@ -94,7 +94,10 @@ def test_FR_PS_07_suspects_reasons_add_up(api):
     body = api.get("/zones/TX-CEN-001/suspects", headers=login(api, "analyst.cen")).json()
     for s in body["suspects"][:10]:
         assert sum(r["contribution"] for r in s["reasons"]) == pytest.approx(s["score"], abs=0.051 * len(s["reasons"]))
-    assert body["suspects"][0]["premise_id"] == "P-CEN-001-054"
+    # SDD 10.5 step 2: the injected thefts lead the ranking (mining tap from day one, partial bypass, and the
+    # solar home that also bypasses its night load); their order among themselves is not a requirement.
+    top3 = {s["premise_id"] for s in body["suspects"][:3]}
+    assert top3 == {"P-CEN-001-054", "P-CEN-001-049", "P-CEN-001-069"}
 
 
 def test_NFR_16_remote_sign_out(api):

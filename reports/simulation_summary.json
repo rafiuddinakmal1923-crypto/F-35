@@ -1,14 +1,14 @@
 {
-  "generated": "2026-10-28T14:05:50",
+  "generated": "2026-10-28T16:11:01",
   "source": "simulation",
-  "seconds": 100,
+  "seconds": 116,
   "heldout": {
     "thefts": 36,
     "thefts_ranked": 27,
-    "thefts_in_top5": 26,
-    "share_all_thefts_in_top5": 0.7222,
-    "share_ranked_thefts_in_top5": 0.963,
-    "inspections_per_theft_model": 2.0769,
+    "thefts_in_top5": 27,
+    "share_all_thefts_in_top5": 0.75,
+    "share_ranked_thefts_in_top5": 1.0,
+    "inspections_per_theft_model": 2.0,
     "inspections_per_theft_random": 35.4815,
     "clean_zone_false_flags": 0,
     "clean_zones": 3,
@@ -85,7 +85,7 @@
   ],
   "pattern_model": {
     "source": "sgcc",
-    "holdout_auc": 0.5542
+    "holdout_auc": 0.6441
   },
   "flag_rule": {
     "share_of_supply": 0.05,

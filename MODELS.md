@@ -6,7 +6,7 @@
 | Phi-3.5-mini-instruct (`phi3.5`) | Fallback model on low-memory laptops | MIT | Docker volume `ollama_models` | `docker compose exec ollama ollama pull phi3.5` (or set `LLM_MODEL`) |
 | intfloat/multilingual-e5-small (ONNX) | Embeddings for RAG and similar cases (English and Bahasa Melayu) | MIT | `HF_HOME` (D:\VoltGuard\models\hf\voltguard) | `python -m voltguard fetch-models` |
 | spaCy `en_core_web_sm` 3.8.0 | Presidio name, e-mail and phone detection in the notes scrubber | MIT | Python environment | installed from `backend/requirements.txt` |
-| Pattern model (XGBoost) | One input of the R0 score; SHAP-style sub-reasons | Trained in-house (XGBoost: Apache 2.0) | `DATA_ROOT/models/pattern_xgb.json` | `python -m voltguard train-models` (SGCC data when loaded, else synthetic SGCC-style windows) |
+| Pattern model (XGBoost, pattern-v2: 40 inputs) | One input of the R0 score; SHAP-style sub-reasons | Trained in-house (XGBoost: Apache 2.0) | `DATA_ROOT/models/pattern_xgb.json` (a pattern-v1 file is retrained automatically on load) | `python -m voltguard train-models` (SGCC data when loaded, else synthetic SGCC-style windows) |
 | Autoencoder (scikit-learn MLP) | Anomaly score input | Trained in-house (scikit-learn: BSD-3) | `DATA_ROOT/models/autoencoder.pkl` | `python -m voltguard train-models` (normal homes of the tuning split) |
 | Label model (XGBoost) | Retrained on inspection outcomes; recorded per version for R1 | Trained in-house | `DATA_ROOT/models/label-vN.json`, MLflow file store `DATA_ROOT/mlruns` | Models page -> Retrain, or `python -m voltguard retrain` |
 

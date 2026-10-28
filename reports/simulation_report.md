@@ -1,24 +1,24 @@
 # Simulation report
 
-Generated 2026-10-28T14:05:50 in 100 s by `make.ps1 simreport`. Failures are reported as they are.
+Generated 2026-10-28T16:11:01 in 116 s by `make.ps1 simreport`. Failures are reported as they are.
 ## Summary (copy into the pitch deck)
 
 | Result | Value |
 | --- | --- |
-| Injected thefts in the top 5% (held-out settings, ranked zones) | 26 of 27 (96%) |
-| Injected thefts in the top 5% (held-out settings, all thefts incl. unflagged zones) | 26 of 36 (72%) |
-| Inspections per theft found: model ranking vs random order | 2.08 vs 35.48 |
-| Day-one tap in the demo zone flagged and in the top 5% | yes (rank 1) |
+| Injected thefts in the top 5% (held-out settings, ranked zones) | 27 of 27 (100%) |
+| Injected thefts in the top 5% (held-out settings, all thefts incl. unflagged zones) | 27 of 36 (75%) |
+| Inspections per theft found: model ranking vs random order | 2.00 vs 35.48 |
+| Day-one tap in the demo zone flagged and in the top 5% | yes (rank 2) |
 | Partial bypass in the demo zone flagged and in the top 5% | yes (rank 3) |
 | EV, rooftop solar, metered mining or tenancy-only homes in the top suspects (demo zone) | none |
 | Same, held-out settings | none |
-| Pattern model AUC on a held-out split (sgcc) | 0.5542 |
+| Pattern model AUC on a held-out split (sgcc) | 0.6441 |
 | Smallest total theft that flagged its zone (stress tests, share of zone supply) | 6% |
 | Largest total theft that did not flag its zone (held-out settings) | 7% |
 | Clean held-out zones wrongly flagged | 0 of 3 |
 | Solar homes in top suspects (held-out settings, ranked zones; plain, battery and unregistered export) | 0 of 18 |
 | Solar + theft found in top 5% (held-out settings, ranked zones) | 8 of 8 |
-| Solar + theft in the demo zone in the top 5% | yes (rank 2) |
+| Solar + theft in the demo zone in the top 5% | yes (rank 1) |
 
 ## How to read this
 
@@ -34,18 +34,18 @@ The rule is gap > max(share x supply, minimum) + uncertainty margin u for 7 days
 
 | Flag rule: share of supply / minimum kWh per day | Theft zones flagged | Clean zones wrongly flagged | All thefts in top 5% | Smallest flagged zone theft |
 | --- | --- | --- | --- | --- |
-| 5% / 15 kWh (default) | 67% | 0/3 | 26/36 | 9% |
-| 3% / 10 kWh | 71% | 0/3 | 27/36 | 7% |
-| 2% / 5 kWh | 71% | 0/3 | 27/36 | 7% |
-| 1% / 3 kWh | 71% | 0/3 | 27/36 | 7% |
-| 1% / 0 kWh | 71% | 0/3 | 27/36 | 7% |
+| 5% / 15 kWh (default) | 67% | 0/3 | 27/36 | 9% |
+| 3% / 10 kWh | 71% | 0/3 | 28/36 | 7% |
+| 2% / 5 kWh | 71% | 0/3 | 28/36 | 7% |
+| 1% / 3 kWh | 71% | 0/3 | 28/36 | 7% |
+| 1% / 0 kWh | 71% | 0/3 | 28/36 | 7% |
 
 ## Stress tests (SDD 10.3): where detection breaks
 
 | Stress test | Theft zones flagged | Thefts in top 5% (ranked zones) | All thefts in top 5% | Smallest flagged tap | Clean zones wrongly flagged | Legitimate homes in top 5% |
 | --- | --- | --- | --- | --- | --- | --- |
 | noise high | 67% | 7/7 | 7/10 | 8% | 0/2 | none |
-| small taps | 33% | 3/4 | 3/10 | 6% | 0/2 | none |
+| small taps | 50% | 5/6 | 5/10 | 6% | 0/2 | none |
 | day one taps | 67% | 5/7 | 5/10 | 8% | 0/2 | none |
 | monthly meters 50pct | 50% | 4/4 | 4/10 | 8% | 0/2 | none |
 | tx voltage swings | 67% | 7/7 | 7/10 | 8% | 0/2 | none |
@@ -79,12 +79,12 @@ The rule is gap > max(share x supply, minimum) + uncertainty margin u for 7 days
 | TX-NOR-110 | full_bypass_mining (day one) | 104.2 | 13.0% | yes | 1 | yes |
 | TX-NOR-110 | partial_bypass | 8.8 | 1.1% | yes | 2 | yes |
 | TX-NOR-111 | solar_with_theft | 67.0 | 8.7% | yes | 1 | yes |
-| TX-NOR-112 | full_bypass_mining (day one) | 141.8 | 16.8% | yes | 1 | yes |
-| TX-NOR-112 | solar_with_theft | 59.4 | 7.0% | yes | 2 | yes |
-| TX-NOR-113 | partial_bypass | 12.5 | 1.5% | yes | 3 | yes |
+| TX-NOR-112 | full_bypass_mining (day one) | 141.8 | 16.8% | yes | 2 | yes |
+| TX-NOR-112 | solar_with_theft | 59.4 | 7.0% | yes | 1 | yes |
+| TX-NOR-113 | partial_bypass | 12.5 | 1.5% | yes | 2 | yes |
 | TX-NOR-113 | solar_with_theft | 89.8 | 10.6% | yes | 1 | yes |
 | TX-NOR-114 | full_bypass_mining | 189.7 | 20.5% | yes | 1 | yes |
-| TX-NOR-114 | partial_bypass | 11.7 | 1.3% | yes | 4 | no |
+| TX-NOR-114 | partial_bypass | 11.7 | 1.3% | yes | 3 | yes |
 | TX-NOR-114 | solar_with_theft | 79.2 | 8.6% | yes | 2 | yes |
 | TX-NOR-115 | solar_with_theft | 6.0 | 0.6% | no | - | no |
 | TX-NOR-116 | full_bypass_mining (day one) | 92.9 | 10.5% | yes | 1 | yes |
@@ -93,21 +93,21 @@ The rule is gap > max(share x supply, minimum) + uncertainty margin u for 7 days
 | TX-NOR-118 | partial_bypass | 7.2 | 0.6% | yes | 2 | yes |
 | TX-NOR-120 | full_bypass_mining (day one) | 143.1 | 14.4% | yes | 1 | yes |
 | TX-NOR-121 | partial_bypass | 8.6 | 0.7% | no | - | no |
-| TX-NOR-122 | full_bypass_mining (day one) | 118.7 | 11.8% | yes | 1 | yes |
-| TX-NOR-122 | partial_bypass | 40.2 | 4.0% | yes | 2 | yes |
+| TX-NOR-122 | full_bypass_mining (day one) | 118.7 | 11.8% | yes | 2 | yes |
+| TX-NOR-122 | partial_bypass | 40.2 | 4.0% | yes | 1 | yes |
 
 ## Demo zone TX-CEN-001
 
 | Case | Premise | Rank | Tags |
 | --- | --- | --- | --- |
-| full_bypass_mining | P-CEN-001-054 | 1 |  |
+| full_bypass_mining | P-CEN-001-054 | 2 |  |
 | partial_bypass | P-CEN-001-049 | 3 |  |
-| ev_charging | P-CEN-001-051 | 70 | ev_charging |
-| metered_mining | P-CEN-001-035 | 51 |  |
-| tenancy_only | P-CEN-001-048 | 26 |  |
-| solar | P-CEN-001-001 | 66 | solar |
-| solar | P-CEN-001-063 | 71 | solar |
-| solar_with_theft | P-CEN-001-069 | 2 | solar |
+| ev_charging | P-CEN-001-051 | 66 | ev_charging |
+| metered_mining | P-CEN-001-035 | 42 |  |
+| tenancy_only | P-CEN-001-048 | 29 |  |
+| solar | P-CEN-001-001 | 49 | solar |
+| solar | P-CEN-001-063 | 70 | solar |
+| solar_with_theft | P-CEN-001-069 | 1 | solar |
 
 ## Where it breaks: noise and monthly-read meters
 

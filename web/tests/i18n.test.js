@@ -36,7 +36,7 @@ const INDIRECT = ["work", "overview", "cases", "assistant", "weekly", "dispatch"
   "inconclusive", "no_access", "tagEv", "tagSolar", "tagVacancy", "limitVoltage", "limitSgcc", "limitSimulation", "limitPilot",
   "conceptRule1", "conceptRule2", "conceptRule3", "conceptRule4", "conceptRule5",
   ...["cv", "min_ratio", "max_ratio", "zero_day_share", "trend", "half_ratio", "max_drop", "weekly_autocorr", "low_day_share",
-    "last_first_week_ratio", "level_vs_peers"].map((f) => `shap_${f}`),
+    "last_first_week_ratio", "level_vs_peers", "shape", "level_kwh"].map((f) => `shap_${f}`),
   // Rooftop-solar check (camel-case families the pattern above does not pick up).
   ...CHECK_NAMES.map((c) => `solarCheckName_${c}`), ...MARKS.map((m) => `solarMark_${m}`), ...VERDICTS.map((v) => `solarVerdict_${v}`),
   ...["panels_inverter_seen", "inverter_total_vs_expected", "registration_seen", "wiring_before_meter"].map((k) => `solarCheck_${k}`)];

@@ -182,12 +182,18 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 ## Known issues
 
 - NFR-09 on held-out settings that now include theft hidden behind solar (`reports/simulation_report.md`):
-  - ranked zones: 26 of 27 thefts in the top 5%. The miss is a 1.3% partial bypass at rank 4 where the top 5% is 3 homes.
-  - overall: 26 of 36 thefts in the top 5%. Most of the misses are about 1% of supply or less, inside the
+  - ranked zones: 27 of 27 thefts in the top 5%.
+  - overall: 27 of 36 thefts in the top 5%. Most of the misses are about 1% of supply or less, inside the
     uncertainty margin u; narrowing u needs TNB inputs.
   - TX-NOR-107 (7.3% gap) is not flagged: the rule needs 7 days in a row above the threshold, and noise
     breaks the run twice in 14 days. A "k of the last n days" rule would catch it (to agree with TNB, OI-7).
-- The SGCC-trained pattern model has a held-out AUC of only 0.55 on 28-day windows (OI-3).
+- The SGCC-trained pattern model (pattern-v2) has a held-out AUC of 0.64 on held-out customers (OI-3).
+- **Two sessions at once (28 Oct)**: a second Claude session worked on `claude/practical-clarke-t5uwrc` in the main
+  folder while this one worked on `claude/ui-upgrade`, and both wrote to `D:\VoltGuard`. Its improvements (pattern-v2,
+  SGCC reader with 4 windows per customer, embedding in small batches, field-assistant fixes for Malay statute text and
+  "Section 37" lookups) were reapplied on `claude/integrate`, made from `main`, then the weights were retuned and every
+  test rerun. Run one session per repository and `DATA_ROOT` at a time: the model file in `DATA_ROOT/models` is shared,
+  and a pattern-v2 file cannot be read by pattern-v1 code.
 - Fixed this session: metered mining no longer reaches the held-out top 5% (re-tuned weights);
   the sweep now varies both parts of the flag rule.
 - Not exercised here: a live Ollama model, a real Telegram bot token (the bot path is tested with a

@@ -151,11 +151,16 @@ class PatternModel:
         return [t for t, _ in sorted(texts.items(), key=lambda kv: -kv[1])[:top]]
 
     def sub_reason_values(self, x_row: np.ndarray, top: int = 4) -> list[dict]:
-        """SHAP contributions (log-odds) of the strongest inputs, for the premise page's expandable bar."""
+        """SHAP contributions (log-odds) of the strongest inputs, for the premise page's expandable bar.
+        The 28 day-shape inputs (pattern-v2) are summed into one "shape" line, as in sub_reasons()."""
         contrib = self.contributions(x_row[None, :])[0]
-        order = np.argsort(-np.abs(contrib))
-        return [{"feature": FEATURES[i], "text": FEATURE_TEXT[FEATURES[i]], "shap": round(float(contrib[i]), 3)}
-                for i in order[:top] if abs(contrib[i]) >= 1e-3]
+        grouped: dict[str, float] = {}
+        for i, c in enumerate(contrib):
+            name = "shape" if FEATURES[i].startswith("shape_d") else FEATURES[i]
+            grouped[name] = grouped.get(name, 0.0) + float(c)
+        order = sorted(grouped, key=lambda k: -abs(grouped[k]))
+        return [{"feature": k, "text": FEATURE_TEXT[k], "shap": round(grouped[k], 3)}
+                for k in order[:top] if abs(grouped[k]) >= 1e-3]
 
 
 def train(X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None, seed: int = 7):
