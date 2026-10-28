@@ -352,10 +352,17 @@
    ]
   },
   {
-   "name": "Public dataset adapters (London, SGCC, data.gov.my)",
+   "name": "Dataset adapter: London smart meters",
    "file": "backend/voltguard/data/adapters/london.py",
    "has": [
     "london.py"
+   ]
+  },
+  {
+   "name": "Dataset adapters: SGCC theft labels and data.gov.my months",
+   "file": "backend/voltguard/data/adapters/sgcc.py",
+   "has": [
+    "sgcc.py"
    ]
   },
   {

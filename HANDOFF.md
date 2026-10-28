@@ -216,16 +216,16 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.py)
 
-- Generated: 2026-10-28T15:36
-- Branch: `claude/ui-upgrade`; last commit: `aefd2c2 Refresh graphify graph, HANDOFF and traceability after the UI upgrade`
-- Tests collected: 151 tests
+- Generated: 2026-10-28T16:17
+- Branch: `claude/integrate`; last commit: `739a27a Integrate: pattern-v2 sub-reasons on the premise page, retuned weights, fresh reports`
+- Tests collected: 152 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
   query with `graphify query "<question>"` or `graphify explain "<name>"`)
 
 ### Graph summary
 
-- 2725 nodes · 6010 edges · 154 communities (143 shown, 11 thin omitted)
+- 2731 nodes · 6024 edges · 153 communities (143 shown, 10 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 188 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 

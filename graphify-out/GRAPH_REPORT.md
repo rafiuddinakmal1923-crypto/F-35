@@ -1,21 +1,21 @@
-# Graph Report - wt-ui  (2026-10-28)
+# Graph Report - wt-int  (2026-10-28)
 
 ## Corpus Check
-- 168 files · ~1,247,494 words
+- 168 files · ~1,248,475 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2725 nodes · 6010 edges · 154 communities (143 shown, 11 thin omitted)
+- 2731 nodes · 6024 edges · 153 communities (143 shown, 10 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 188 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `aefd2c21`
+- Built from commit: `739a27ac`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- Test Postgres server (pg_server.py)
+- Test Postgres server
 - Web data loading (cases, dispatch)
 - Score weights
 - SDD: software design document
@@ -30,7 +30,7 @@
 - Detection and solar tests
 - Tuned weights
 - Zone flag rule settings
-- Public dataset adapters (London, SGCC, data.gov.my)
+- Dataset adapters: SGCC theft labels and data.gov.my months
 - Simulation report
 - R0 build plan
 - Prometheus scrape config
@@ -41,7 +41,7 @@
 - Local test stack and browser tests
 - Dispatch timer settings
 - Feature window settings
-- Background job runner (one heavy job at a time)
+- Tuning and simulation report code
 - make.ps1 tasks
 - Case job settings
 - Inspection route planner
@@ -49,7 +49,7 @@
 - handoff.sh wrapper
 - Tunnel script
 - Compose: worker and web build
-- Telegram API routes
+- Rooftop solar checks (FR-PS-10)
 - Compose: database
 - Compose: full-profile services
 - Compose: Keycloak
@@ -66,7 +66,7 @@
 - Schema: account event (solar registration)
 - Schema: table list
 - Schema: customer personal details
-- UI upgrade API (meta, demo, back-test)
+- Admin API (datasets, sources, audit)
 - Schema: transformer
 - Schema: premise
 - Network loss model and zone inputs
@@ -86,14 +86,14 @@
 - Web dependencies
 - Data manager and job buttons
 - Shared UI components and labels
-- Database connections and Telegram dispatch bot
-- RAG indexing (rag.py)
+- Telegram dispatch bot
+- Dataset adapter: London smart meters
 - Back-test script
-- PDF export
+- Threshold settings (admin overrides)
 - Case API routes and My work
 - Audit chain and daily anchor
 - Active sources and dataset versions
-- Model API and retraining
+- UI upgrade API (meta, demo, back-test)
 - Case workflow tests
 - Pattern model and autoencoder
 - Power BI build guide
@@ -120,7 +120,7 @@
 - Service worker
 - Labels (EN/BM) and solar wording
 - Database tables and reporting views
-- RAG indexing (rag.py)
+- RAG indexing
 - Power BI dashboard layout
 - Sign-in, sessions and file storage
 - Upload area guide
@@ -136,21 +136,21 @@
 - Hand-off script
 - Deviations from the SDD
 - Data health
-- Monitoring and alerts
+- Demo-mode test config
 - Pipeline batch settings
 - Traceability matrix
 - Hand-off notes
 - Demo script
 - Models and licences
 - Back-test report
-- Airflow nightly DAG
+- Retraining and weekly endpoints
 - Compose: token tunnel
-- Test Postgres server (pg_server.py)
+- Encrypted file storage
 - Scoring and reasons
-- Assistant page and query charts
-- Weekly report and message tests
+- CLI entry and reporting tests
+- Route planner tests
 - Demo guide and reset
-- API app, scheduler and lifespan
+- Monitoring and alerts
 - Feeder schematic
 - Route planner settings
 - Solar brief
@@ -160,7 +160,6 @@
 - Rooftop solar schemes explainer (RAG)
 - UI upgrade plan
 - Vite dev proxy
-- Agent guardrails
 - Learning and monitoring tests
 - Row-level security
 - Telegram tables
@@ -194,15 +193,15 @@
 ## Import Cycles
 - None detected.
 
-## Communities (154 total, 11 thin omitted)
+## Communities (153 total, 10 thin omitted)
 
-### Community 0 - "Test Postgres server (pg_server.py)"
-Cohesion: 0.19
-Nodes (9): TempPostgres, _bin(), _free_port(), make_postgres(), A throwaway PostgreSQL for database tests. Uses TEST_DATABASE_URL (owner…, Throwaway database: on TEST_DATABASE_URL's server when set, else a local…, socket, subprocess (+1 more)
+### Community 0 - "Test Postgres server"
+Cohesion: 0.14
+Nodes (11): ExternalPostgres, TempPostgres, _bin(), _free_port(), make_postgres(), A throwaway PostgreSQL for database tests. Uses TEST_DATABASE_URL (owner…, Throwaway database: on TEST_DATABASE_URL's server when set, else a local…, A fresh database on the server named by TEST_DATABASE_URL (Windows: a throwaway… (+3 more)
 
 ### Community 1 - "Web data loading (cases, dispatch)"
 Cohesion: 0.09
-Nodes (37): get(), put(), session(), ErrorBox(), useLoad(), DemoGuide(), go(), fill() (+29 more)
+Nodes (39): get(), put(), session(), ErrorBox(), useLoad(), DemoGuide(), go(), fill() (+31 more)
 
 ### Community 2 - "Score weights"
 Cohesion: 0.17
@@ -222,7 +221,7 @@ Nodes (31): 1.1 Purpose, 1.2 Scope, 1.3 Releases, 1.4 Definitions, 1.5 Reference
 
 ### Community 6 - "Configuration loader"
 Cohesion: 0.13
-Nodes (26): test_sgcc_adapter_feeds_pattern_model(), meta(), admin_database_url(), config_dir(), data_sources(), database_url(), deep_merge(), demo_config() (+18 more)
+Nodes (29): _timers(), agent_status(), cmd_detect(), admin_database_url(), config_dir(), data_path(), data_root(), data_sources() (+21 more)
 
 ### Community 7 - "Data source selection"
 Cohesion: 0.08
@@ -234,7 +233,7 @@ Nodes (17): 1. What "done" means, 2. Working rules, 3.1 Canonical schema (the on
 
 ### Community 9 - "Data layer tests"
 Cohesion: 0.17
-Nodes (22): isolated(), small_scenario(), test_bad_upload_is_rejected_with_reasons(), test_column_map_units_and_timezone(), test_FR_DI_06_upload_with_missing_intervals_flags_meter(), test_london_adapter_profiles_and_canonical_tables(), test_missing_voltage_and_phase_use_fallbacks(), test_switch_to_uploaded_dataset_without_code_changes() (+14 more)
+Nodes (20): isolated(), small_scenario(), test_bad_upload_is_rejected_with_reasons(), test_column_map_units_and_timezone(), test_FR_DI_06_upload_with_missing_intervals_flags_meter(), test_london_adapter_profiles_and_canonical_tables(), test_missing_voltage_and_phase_use_fallbacks(), test_switch_to_uploaded_dataset_without_code_changes() (+12 more)
 
 ### Community 10 - "End-to-end use-case script"
 Cohesion: 0.08
@@ -256,9 +255,9 @@ Nodes (20): _tuning, objective, seed, split, tuned_at, zones, weights, anomaly (
 Cohesion: 0.18
 Nodes (11): zone, change_min_segment_days, change_min_shift_share, consecutive_days, conventional_daily_cv, flat_cv, large_load_share, loss_model_error_share (+3 more)
 
-### Community 15 - "Public dataset adapters (London, SGCC, data.gov.my)"
-Cohesion: 0.09
-Nodes (38): test_datagovmy_adapter_month_factors(), _columns(), convert(), month_factors(), month_factors_from(), processed(), raw_dir(), _stamp() (+30 more)
+### Community 15 - "Dataset adapters: SGCC theft labels and data.gov.my months"
+Cohesion: 0.15
+Nodes (23): test_datagovmy_adapter_month_factors(), test_sgcc_adapter_feeds_pattern_model(), _columns(), convert(), month_factors(), month_factors_from(), processed(), raw_dir() (+15 more)
 
 ### Community 16 - "Simulation report"
 Cohesion: 0.22
@@ -277,20 +276,20 @@ Cohesion: 0.18
 Nodes (10): monitoring, drift_psi_alert, min_interval_completeness, penalties, ev_charging, solar, vacancy, tenancy (+2 more)
 
 ### Community 20 - "Case workflow and notifications"
-Cohesion: 0.06
-Nodes (64): CaseError, BlockedMessage, data_path(), public_base_url(), add_photo(), _assign(), _case(), case_detail() (+56 more)
+Cohesion: 0.14
+Nodes (36): CaseError, suggest(), audit(), add_photo(), _assign(), _case(), case_detail(), claim() (+28 more)
 
 ### Community 21 - "Cloudflare tunnel config"
 Cohesion: 0.33
 Nodes (5): credentials-file, ingress, hostname, service, tunnel
 
 ### Community 22 - "Dataset ingest"
-Cohesion: 0.10
-Nodes (28): IngestResult, upload_dataset(), schema_document(), build_tables(), _checksum(), cmd_activate(), cmd_convert(), cmd_ingest() (+20 more)
+Cohesion: 0.17
+Nodes (22): IngestResult, schema_document(), build_tables(), _checksum(), cmd_ingest(), cmd_upload_kit(), context_for(), ingest() (+14 more)
 
 ### Community 23 - "Local test stack and browser tests"
-Cohesion: 0.11
-Nodes (23): LocalStack, run_job_and_wait(), sign_in(), stack(), test_demo_live_steps_1_to_7(), test_NFR_02_NFR_13_pages_load_fast_and_phone_view_in_bahasa_melayu(), api_login(), sign_in() (+15 more)
+Cohesion: 0.12
+Nodes (22): LocalStack, run_job_and_wait(), sign_in(), stack(), test_demo_live_steps_1_to_7(), test_NFR_02_NFR_13_pages_load_fast_and_phone_view_in_bahasa_melayu(), api_login(), sign_in() (+14 more)
 
 ### Community 24 - "Dispatch timer settings"
 Cohesion: 0.40
@@ -300,9 +299,9 @@ Nodes (5): dispatch, demo_escalation_minutes, demo_reminder_minutes, escalation_
 Cohesion: 0.40
 Nodes (5): features, history_weeks, recent_days, timing_tau_days, zero_kwh
 
-### Community 26 - "Background job runner (one heavy job at a time)"
-Cohesion: 0.19
-Nodes (12): run_detection(), create_cases(), _run(), running(), status(), submit(), _update(), Ingest, zone balance, locator and scoring. Creates no cases. (+4 more)
+### Community 26 - "Tuning and simulation report code"
+Cohesion: 0.13
+Nodes (22): cmd_simreport(), cmd_tune(), evaluate(), _fast_scores(), _fmt(), _num(), penalised_tags(), run_scenario() (+14 more)
 
 ### Community 27 - "make.ps1 tasks"
 Cohesion: 0.38
@@ -313,8 +312,8 @@ Cohesion: 0.50
 Nodes (4): cases, case_threshold, max_cases_per_zone, random_sample_per_zone
 
 ### Community 29 - "Inspection route planner"
-Cohesion: 0.11
-Nodes (33): test_route_order_beats_nearest_neighbour_and_is_close_to_the_best(), haversine_km(), roster_date(), run_reminders(), suggest(), _timers(), _base(), _leg() (+25 more)
+Cohesion: 0.20
+Nodes (17): test_route_order_beats_nearest_neighbour_and_is_close_to_the_best(), haversine_km(), roster_date(), _base(), _leg(), maps_links(), nearest_neighbour(), order_stops() (+9 more)
 
 ### Community 30 - "Voltage locator settings"
 Cohesion: 0.50
@@ -324,9 +323,9 @@ Nodes (4): voltage, min_drop_v, proximity_scale_m, window_days
 Cohesion: 0.17
 Nodes (13): build, context, dockerfile, web, worker, build, restart, build (+5 more)
 
-### Community 34 - "Telegram API routes"
-Cohesion: 0.13
-Nodes (16): Press, require(), chats(), link_code(), status(), unlink(), BaseModel, get (+8 more)
+### Community 34 - "Rooftop solar checks (FR-PS-10)"
+Cohesion: 0.19
+Nodes (19): FeatureSet, test_FR_PS_10_energy_budget_without_weather_uses_labelled_default(), change_point(), build_features(), _clip01(), _drop_share(), _mean(), peak_sun_hours() (+11 more)
 
 ### Community 35 - "Compose: database"
 Cohesion: 0.15
@@ -357,8 +356,8 @@ Cohesion: 0.33
 Nodes (6): depends_on, image, ports, restart, volumes, proxy
 
 ### Community 42 - "Embeddings, document search and similar cases"
-Cohesion: 0.17
-Nodes (17): cosine(), download(), embed(), _hash_embed(), _model_dir(), model_name(), _onnx(), words() (+9 more)
+Cohesion: 0.19
+Nodes (15): cosine(), download(), embed(), _hash_embed(), _model_dir(), model_name(), _onnx(), words() (+7 more)
 
 ### Community 43 - "Compose: MLflow"
 Cohesion: 0.40
@@ -381,20 +380,20 @@ Cohesion: 0.11
 Nodes (19): installed_on, meter_id, meter_type, read_frequency, required, type, columns, description (+11 more)
 
 ### Community 48 - "Schema: account event (solar registration)"
-Cohesion: 0.12
-Nodes (16): columns, event_date, event_id, event_type, premise_id, required, type, required (+8 more)
+Cohesion: 0.13
+Nodes (15): columns, description, key, event_date, event_id, event_type, required, type (+7 more)
 
 ### Community 49 - "Schema: table list"
-Cohesion: 0.12
-Nodes (15): description, key, description, key, description, key, tables, account_event (+7 more)
+Cohesion: 0.15
+Nodes (12): description, key, description, key, tables, duty_roster, inspection_outcome, transformer (+4 more)
 
 ### Community 50 - "Schema: customer personal details"
-Cohesion: 0.15
-Nodes (13): required, type, address, contact, holder_name, required, type, columns (+5 more)
+Cohesion: 0.12
+Nodes (17): required, type, address, contact, holder_name, premise_id, required, type (+9 more)
 
-### Community 51 - "UI upgrade API (meta, demo, back-test)"
-Cohesion: 0.11
-Nodes (34): ApiError, DemoSignIn, Tariff, bad_request(), caller(), conflict(), connection(), forbidden() (+26 more)
+### Community 51 - "Admin API (datasets, sources, audit)"
+Cohesion: 0.07
+Nodes (58): ApiError, DemoSignIn, Tariff, bad_request(), caller(), conflict(), connection(), forbidden() (+50 more)
 
 ### Community 52 - "Schema: transformer"
 Cohesion: 0.06
@@ -405,8 +404,8 @@ Cohesion: 0.07
 Nodes (30): feeder_branch, lat, phase, premise_type, street_seq, tariff, description, required (+22 more)
 
 ### Community 54 - "Network loss model and zone inputs"
-Cohesion: 0.16
-Nodes (13): FlowResult, LossParams, ZoneNetwork, network_for(), _phase_shares(), solve(), ndarray, Radial low-voltage network model: per-phase load flow, technical losses and… (+5 more)
+Cohesion: 0.20
+Nodes (11): FlowResult, ZoneNetwork, _phase_shares(), solve(), ndarray, Radial low-voltage network model: per-phase load flow, technical losses and…, Phase resistance from the transformer to each node (ohm)., (n_premises, 3) share of each premise's current carried on each phase. (+3 more)
 
 ### Community 55 - "Schema: monthly readings"
 Cohesion: 0.13
@@ -421,12 +420,12 @@ Cohesion: 0.29
 Nodes (7): distance_m, description, max, min, required, type, unit
 
 ### Community 58 - "Nightly pipeline (batched load and detection)"
-Cohesion: 0.13
-Nodes (32): PipelineError, _scores(), test_NFR_01_small_batches_give_the_same_results(), _chunks(), copy_in(), copy_out(), _csv(), detect_in_batches() (+24 more)
+Cohesion: 0.12
+Nodes (34): PipelineError, _scores(), test_NFR_01_small_batches_give_the_same_results(), _chunks(), copy_in(), copy_out(), _csv(), detect_in_batches() (+26 more)
 
 ### Community 59 - "Case report agent and approvals"
-Cohesion: 0.16
-Nodes (24): ReportError, test_FR_AG_01_live_model_gets_figures_with_units(), approve_content(), approve_export(), _assessment(), _assessment_mock(), build_draft(), draft_for_case() (+16 more)
+Cohesion: 0.15
+Nodes (25): ReportError, test_FR_AG_01_live_model_gets_figures_with_units(), approve_content(), approve_export(), _assessment(), _assessment_mock(), build_draft(), draft_for_case() (+17 more)
 
 ### Community 60 - "Compose: API service"
 Cohesion: 0.29
@@ -437,80 +436,80 @@ Cohesion: 0.38
 Nodes (7): environment, ADMIN_DATABASE_URL, DATA_ROOT, DATABASE_URL, HF_HOME, OLLAMA_URL, environment
 
 ### Community 62 - "Weekly summary report"
-Cohesion: 0.06
-Nodes (84): test_empty_week(), test_energy_takeaways(), test_headline_counts_only(), test_hit_rate_takeaway_overlap_apart_and_synthetic(), test_html_snapshot_has_every_section_and_no_personal_details(), test_malay_rule_sentences(), test_next_step_rules_and_limit(), test_simulated_versus_uploaded_data() (+76 more)
+Cohesion: 0.05
+Nodes (91): test_FR_UI_05_pdf_fallback_without_a_browser(), test_empty_week(), test_energy_takeaways(), test_headline_counts_only(), test_hit_rate_takeaway_overlap_apart_and_synthetic(), test_html_snapshot_has_every_section_and_no_personal_details(), test_malay_rule_sentences(), test_next_step_rules_and_limit() (+83 more)
 
 ### Community 63 - "Web app shell and theme"
 Cohesion: 0.12
 Nodes (16): onSessionChange(), App(), Guarded(), SearchBox(), Shell(), useBadges(), useMeta(), useSession() (+8 more)
 
 ### Community 64 - "Agent API routes"
-Cohesion: 0.23
-Nodes (16): Chat, Query, agent_status(), approve_content(), approve_export(), _call(), draft_report(), get_report() (+8 more)
+Cohesion: 0.24
+Nodes (15): Chat, Query, approve_content(), approve_export(), _call(), draft_report(), get_report(), query_templates() (+7 more)
 
 ### Community 65 - "Schema: meter readings"
 Cohesion: 0.13
 Nodes (15): quality_flag, voltage_v, columns, description, key, allowed, description, required (+7 more)
 
 ### Community 66 - "Detection engine (balance, features, zone input)"
-Cohesion: 0.07
-Nodes (57): BalanceResult, DetectionRun, PremiseResult, ZoneResult, FeatureSet, VoltageResult, ZoneInput, test_FR_PS_10_energy_budget_without_weather_uses_labelled_default() (+49 more)
+Cohesion: 0.09
+Nodes (37): BalanceResult, DetectionRun, PremiseResult, ZoneResult, VoltageResult, ZoneInput, balance_zone(), data_quality_flags() (+29 more)
 
 ### Community 67 - "Notes scrubber (personal details)"
-Cohesion: 0.25
-Nodes (9): ScrubResult, engine(), _known_patterns(), _presidio_analyzer(), scrub(), Pattern, Notes scrubber (SDD 8.4, NFR-15): inspector notes -> notes_redacted before any…, presidio=False runs only the Malaysian recognisers (for templated text whose… (+1 more)
+Cohesion: 0.15
+Nodes (16): OutputBlocked, ToolNotAllowed, ScrubResult, asks_forbidden_action(), check_output(), engine(), _known_patterns(), _presidio_analyzer() (+8 more)
 
 ### Community 68 - "Web dependencies"
 Cohesion: 0.06
 Nodes (31): dependencies, @fontsource/ibm-plex-sans, @fontsource/space-grotesk, leaflet, lucide-react, react, react-dom, react-leaflet (+23 more)
 
 ### Community 69 - "Data manager and job buttons"
-Cohesion: 0.14
-Nodes (21): pollJob(), post(), JobButton(), start(), reset(), openCase(), int(), act() (+13 more)
+Cohesion: 0.10
+Nodes (26): pollJob(), post(), QueryChart(), JobButton(), start(), reset(), openCase(), int() (+18 more)
 
 ### Community 70 - "Shared UI components and labels"
 Cohesion: 0.09
 Nodes (43): bandPath(), BarChart(), CategoryBars(), LineChart(), niceTicks(), scale(), VoltageStrip(), Confidence() (+35 more)
 
-### Community 71 - "Database connections and Telegram dispatch bot"
-Cohesion: 0.11
-Nodes (32): ActionRefused, test_FR_AD_01_database_enforces_region_and_pii_rules(), test_FR_UI_03_unclaimed_case_masked_for_every_analyst(), test_FR_AD_01_training_labels_and_hit_rates_are_region_limited(), admin_connection(), app_connection(), audit(), _pool() (+24 more)
+### Community 71 - "Telegram dispatch bot"
+Cohesion: 0.06
+Nodes (52): Press, BlockedMessage, ActionRefused, chats(), link_code(), status(), unlink(), public_base_url() (+44 more)
 
-### Community 72 - "RAG indexing (rag.py)"
-Cohesion: 0.20
-Nodes (14): Passage, test_FR_AG_04_field_assistant_mode_says_who_answered(), test_FR_AG_06_no_tools_to_act_and_requests_refused(), keyword_overlap(), allow(), answer(), extractive_answer(), search() (+6 more)
+### Community 72 - "Dataset adapter: London smart meters"
+Cohesion: 0.21
+Nodes (17): canonical_tables(), convert(), _kind(), _natural(), _pick(), read_raw(), _scan(), source_files() (+9 more)
 
 ### Community 73 - "Back-test script"
-Cohesion: 0.23
-Nodes (11): cut(), known_cases_active(), known_cases_simulated(), main(), replay_frame(), write_replay(), date, timedelta (+3 more)
+Cohesion: 0.29
+Nodes (11): test_FR_DI_06_missing_day_flags_meter(), cut(), known_cases_active(), known_cases_simulated(), main(), replay_frame(), write_replay(), timedelta (+3 more)
 
-### Community 74 - "PDF export"
-Cohesion: 0.28
-Nodes (8): test_FR_UI_05_pdf_fallback_without_a_browser(), _chromium(), _fpdf(), html_to_pdf(), Without Chromium (e.g. a minimal image) the export still produces a PDF with…, HTML -> PDF for approved case reports (FR-UI-05): Playwright (Chromium) with an…, Returns (pdf bytes, engine). Playwright first; fpdf2 text rendering if no…, html
+### Community 74 - "Threshold settings (admin overrides)"
+Cohesion: 0.22
+Nodes (14): test_FR_AG_02_reminder_then_escalation_on_demo_timers(), run_reminders(), get_thresholds(), overrides(), save(), thresholds(), validate_change(), datetime (+6 more)
 
 ### Community 75 - "Case API routes and My work"
-Cohesion: 0.08
-Nodes (52): Assignment, Decision, NewCase, Outcome, Caller, not_found(), audit_log(), dataset_activate() (+44 more)
+Cohesion: 0.11
+Nodes (37): Assignment, Decision, NewCase, Outcome, Caller, me(), users(), assign() (+29 more)
 
 ### Community 76 - "Audit chain and daily anchor"
-Cohesion: 0.16
-Nodes (17): VerifyResult, test_FR_AD_02_NFR_12_audit_logged_and_tampering_detected(), audit_verify(), anchor_dir(), row_hash(), row_text(), verify(), write_anchor() (+9 more)
+Cohesion: 0.20
+Nodes (14): VerifyResult, test_FR_AD_02_NFR_12_audit_logged_and_tampering_detected(), anchor_dir(), row_hash(), row_text(), verify(), write_anchor(), datetime (+6 more)
 
 ### Community 77 - "Active sources and dataset versions"
-Cohesion: 0.17
-Nodes (22): SourceError, datasets(), data_root(), activate_dataset(), dataset_versions(), datasets_root(), load_table(), resolve_upload() (+14 more)
+Cohesion: 0.16
+Nodes (24): SourceError, datasets(), activate_dataset(), active_sources(), dataset_versions(), datasets_root(), load_active_tables(), load_table() (+16 more)
 
-### Community 78 - "Model API and retraining"
-Cohesion: 0.12
-Nodes (22): acknowledge(), alerts(), models(), retrain(), weekly(), weekly_html(), weekly_pdf(), hit_rates() (+14 more)
+### Community 78 - "UI upgrade API (meta, demo, back-test)"
+Cohesion: 0.09
+Nodes (23): alerts(), models(), weekly(), weekly_html(), weekly_pdf(), demo_accounts(), _demo_only(), demo_status() (+15 more)
 
 ### Community 79 - "Case workflow tests"
-Cohesion: 0.15
-Nodes (14): case_job(), find(), test_FR_AG_02_dispatch_suggestion_claim_and_approval(), test_FR_AG_02_reminder_then_escalation_on_demo_timers(), test_FR_IW_01_case_job_creates_threshold_cases(), test_FR_IW_01_manual_cases_and_only_supervisor_assigns(), test_FR_IW_02_FR_IW_03_FR_IW_04_outcomes_status_and_labels(), test_FR_IW_05_random_sample_presented_as_routine_check() (+6 more)
+Cohesion: 0.23
+Nodes (10): find(), test_FR_AG_02_dispatch_suggestion_claim_and_approval(), test_FR_IW_01_case_job_creates_threshold_cases(), test_FR_IW_01_manual_cases_and_only_supervisor_assigns(), test_FR_IW_02_FR_IW_03_FR_IW_04_outcomes_status_and_labels(), test_FR_IW_05_random_sample_presented_as_routine_check(), test_FR_UI_03_details_only_for_case_roles(), test_FR_UI_03_unclaimed_case_masked_for_every_analyst() (+2 more)
 
 ### Community 80 - "Pattern model and autoencoder"
-Cohesion: 0.21
-Nodes (15): PatternModel, auc(), load(), model_path(), sgcc_training_set(), synthetic_training_set(), train(), train_default() (+7 more)
+Cohesion: 0.17
+Nodes (18): PatternModel, feature_text(), load(), model_path(), reset_cache(), sgcc_training_set(), synthetic_training_set(), train() (+10 more)
 
 ### Community 81 - "Power BI build guide"
 Cohesion: 0.33
@@ -521,8 +520,8 @@ Cohesion: 0.13
 Nodes (22): QueryError, Template, ask(), _ask_model(), _chart_choice(), _model_params(), _num(), other_region_named() (+14 more)
 
 ### Community 83 - "API security and UI upgrade tests"
-Cohesion: 0.11
-Nodes (25): login(), fake_names(), test_data_manager_upload_validates_and_versions(), test_FR_AD_01_role_and_region_refusals(), test_FR_AD_03_threshold_change_applies_on_rerun(), test_FR_PS_07_suspects_reasons_add_up(), test_FR_UI_01_overview_zone_level_in_gap_order(), test_FR_UI_02_zone_view_balance_and_profile() (+17 more)
+Cohesion: 0.15
+Nodes (18): login(), fake_names(), test_data_manager_upload_validates_and_versions(), test_FR_AD_01_role_and_region_refusals(), test_FR_AD_03_threshold_change_applies_on_rerun(), test_FR_PS_07_suspects_reasons_add_up(), test_FR_UI_01_overview_zone_level_in_gap_order(), test_FR_UI_02_zone_view_balance_and_profile() (+10 more)
 
 ### Community 84 - "Compose: Ollama"
 Cohesion: 0.50
@@ -530,15 +529,15 @@ Nodes (4): image, restart, volumes, ollama
 
 ### Community 85 - "Canonical schema and upload validation"
 Cohesion: 0.15
-Nodes (19): Column, Table, Issue, ValidationReport, _check_duplicates(), _check_intervals(), _check_links(), _check_values() (+11 more)
+Nodes (20): Column, Table, Issue, ValidationReport, _check_duplicates(), _check_intervals(), _check_links(), _check_values() (+12 more)
 
 ### Community 86 - "Zone API routes"
-Cohesion: 0.09
-Nodes (41): latest_run_date(), premise_view(), _usage(), _zone(), zone_balance(), zone_cleared(), zone_suspects(), zone_voltage() (+33 more)
+Cohesion: 0.08
+Nodes (44): test_tariff_file_unset_by_default(), test_3_1_value_at_risk_is_an_estimate_from_the_gap_above_the_margin(), latest_run_date(), premise_view(), _usage(), _zone(), zone_balance(), zone_cleared() (+36 more)
 
 ### Community 87 - "Household load profiles"
-Cohesion: 0.10
-Nodes (28): ZoneSim, fake_address(), fake_name(), fake_phone(), _bump(), daily_levels(), household_load_kw(), london_shapes() (+20 more)
+Cohesion: 0.19
+Nodes (15): _bump(), daily_levels(), household_load_kw(), london_shapes(), _night_block(), synthetic_shapes(), ndarray, Path (+7 more)
 
 ### Community 88 - "Inspector app and API client"
 Cohesion: 0.09
@@ -549,20 +548,20 @@ Cohesion: 0.32
 Nodes (13): cryptoKey(), enforceMaxAge(), get(), keys(), openDb(), put(), rawDelete(), rawGet() (+5 more)
 
 ### Community 90 - "Autoencoder and model training"
-Cohesion: 0.16
-Nodes (16): Autoencoder, test_FR_DI_07_district_weather_loaded_and_used(), load(), model_path(), save(), train(), train_from_simulation(), week_vector() (+8 more)
+Cohesion: 0.14
+Nodes (18): Autoencoder, test_FR_DI_07_district_weather_loaded_and_used(), cmd_train_models(), load(), model_path(), save(), train(), train_from_simulation() (+10 more)
 
 ### Community 91 - "Review and test report"
 Cohesion: 0.18
 Nodes (10): 1. Does the build meet the SRS and SDD?, 2. End-to-end test: every use case, every account, 3. Bugs found and fixed, 4. Remaining unfinished task: done, 5. Suggested improvements, 6. How to repeat the test, 7. Second round (after the review): what was added and rechecked, Features (+2 more)
 
 ### Community 92 - "Test fixtures and seeded users"
-Cohesion: 0.11
-Nodes (25): api(), cfg(), demo_run(), demo_run_all(), demo_sim(), models(), pg(), test_NFR_03_no_endpoint_blocks_the_event_loop() (+17 more)
+Cohesion: 0.13
+Nodes (21): api(), cfg(), demo_run(), demo_run_all(), demo_sim(), models(), pg(), test_NFR_03_no_endpoint_blocks_the_event_loop() (+13 more)
 
 ### Community 93 - "Zone simulator"
-Cohesion: 0.07
-Nodes (56): Injected, Scenario, ZoneSpec, _run(), test_FR_DI_01_readings_round_trip_match_generator(), test_FR_DI_06_missing_day_flags_meter(), test_FR_ZD_02_large_load_priority(), test_FR_ZD_05_many_conventional_meters_still_flag_mining() (+48 more)
+Cohesion: 0.08
+Nodes (47): Injected, Scenario, ZoneSim, ZoneSpec, LossParams, _run(), test_FR_DI_01_readings_round_trip_match_generator(), test_FR_ZD_02_large_load_priority() (+39 more)
 
 ### Community 94 - "Overview and Validation pages"
 Cohesion: 0.13
@@ -585,16 +584,16 @@ Cohesion: 0.08
 Nodes (22): 1. What you need (one time), 2. Set up Docker (one time), 3. Get the code (one time), 4. First start, 5. Everyday commands, 6. Make it a public, clickable link (instead of localhost), 7. When something goes wrong, 8. More documents (+14 more)
 
 ### Community 99 - "Telegram bot tests"
-Cohesion: 0.27
-Nodes (11): message(), new_case(), test_FR_AD_01_chat_is_for_supervisors_inspectors_and_managers(), test_FR_AG_02_cannot_attend_tells_the_supervisor(), test_FR_AG_02_decision_on_the_case_page_closes_the_chat_buttons(), test_FR_AG_02_real_bot_links_a_chat_and_answers_a_button(), test_FR_AG_02_supervisor_approves_and_team_answers_from_the_chat(), parametrize (+3 more)
+Cohesion: 0.15
+Nodes (18): fake_names(), test_weekly_job_reaches_every_manager_and_supervisor(), test_weekly_report_page_explains_itself_in_both_languages(), test_weekly_summary_is_zone_level_and_region_limited(), test_weekly_summary_pdf_and_message(), message(), new_case(), test_FR_AD_01_chat_is_for_supervisors_inspectors_and_managers() (+10 more)
 
 ### Community 100 - "UI upgrade brief"
 Cohesion: 0.11
 Nodes (17): 0. Ground rules, 1. Visual direction: "network control room", 2. Pages to redesign, 3.10 Today's route (Could), 3.11 Landlord alert concept (Could, mock only), 3.1 RM at risk (Must), 3.2 Feeder schematic (Must), 3.3 Reason waterfall (Must) (+9 more)
 
 ### Community 101 - "Dataset and document download scripts"
-Cohesion: 0.23
-Nodes (10): apply_overrides(), fetch_kaggle(), fetch_url(), main(), manual(), Try to download the public datasets (prompt 3.2). Never blocks: on failure it…, `downloads: {london: <kaggle slug>, sgcc: <kaggle slug>}` in…, Download the public documents for RAG (data/docs_rag/sources.yaml) into… (+2 more)
+Cohesion: 0.15
+Nodes (14): apply_overrides(), fetch_kaggle(), fetch_url(), main(), manual(), Full profile only: the nightly pipeline as an Airflow DAG (SDD 6.1). In the…, Try to download the public datasets (prompt 3.2). Never blocks: on failure it…, `downloads: {london: <kaggle slug>, sgcc: <kaggle slug>}` in… (+6 more)
 
 ### Community 104 - "Labels (EN/BM) and solar wording"
 Cohesion: 0.12
@@ -604,33 +603,33 @@ Nodes (21): SolarCheck(), checkValue(), pc(), share(), stillSuspect(), verdictTe
 Cohesion: 0.08
 Nodes (29): account_event, customer_pii, detection_run, district_weather, duty_roster, historic_outcome, meter, meter_monthly_reading (+21 more)
 
-### Community 106 - "RAG indexing (rag.py)"
-Cohesion: 0.13
-Nodes (24): test_NFR_15_planted_instruction_in_retrieved_text_is_data(), quote_retrieved(), case_summary_text(), collect_documents(), _front_matter(), index_case_summaries(), index_documents(), _pdf_text() (+16 more)
+### Community 106 - "RAG indexing"
+Cohesion: 0.09
+Nodes (39): Passage, test_FR_AG_04_field_assistant_mode_says_who_answered(), test_FR_AG_04_legal_sections_by_number_and_no_index(), keyword_overlap(), allow(), quote_retrieved(), answer(), case_summary_text() (+31 more)
 
 ### Community 107 - "Power BI dashboard layout"
 Cohesion: 0.25
 Nodes (7): Connect Power BI Desktop, Manager dashboard in Power BI (R0), Page 1: Network overview, Page 2: Leaking zones, Page 3: Cases and hit rates, R1, Views
 
 ### Community 108 - "Sign-in, sessions and file storage"
-Cohesion: 0.11
-Nodes (24): SignIn, AuthError, Session, current_session(), me(), remote_sign_out(), sign_in(), sign_out() (+16 more)
+Cohesion: 0.08
+Nodes (31): SignIn, AuthError, Session, test_FR_AD_01_database_enforces_region_and_pii_rules(), test_FR_AD_01_training_labels_and_hit_rates_are_region_limited(), current_session(), sign_in(), sign_out() (+23 more)
 
 ### Community 109 - "Upload area guide"
 Cohesion: 0.33
 Nodes (5): How to upload, Upload area: bring your own datasets, Versions, What to upload, What validation checks
 
 ### Community 110 - "Language model, seed and demo command"
-Cohesion: 0.19
-Nodes (14): Completion, PromptBlocked, test_FR_AG_03_live_model_choice_is_cleaned_and_labelled(), test_NFR_15_model_never_receives_personal_details(), test_NFR_15_model_output_with_personal_details_is_blocked(), available(), check_prompt(), complete() (+6 more)
+Cohesion: 0.21
+Nodes (13): Completion, PromptBlocked, test_FR_AG_03_live_model_choice_is_cleaned_and_labelled(), test_NFR_15_model_never_receives_personal_details(), test_NFR_15_model_output_with_personal_details_is_blocked(), available(), check_prompt(), complete() (+5 more)
 
 ### Community 111 - "Agent safety tests and PDF export"
-Cohesion: 0.10
-Nodes (17): reporting_case(), test_FR_AG_01_draft_has_placeholders_only_and_cites_the_act(), test_FR_AG_01_FR_UI_05_two_approvals_then_pdf_with_details(), test_FR_AG_01_manager_sees_evidence_photos_only_for_export_approval(), test_FR_AG_03_answers_carry_a_chart_and_a_sentence_from_the_rows(), test_FR_AG_03_chatbot_answers_with_query_and_refuses_other_region(), test_FR_AG_04_field_assistant_cites_or_says_not_found(), test_FR_AG_05_three_similar_closed_cases() (+9 more)
+Cohesion: 0.11
+Nodes (16): reporting_case(), test_FR_AG_01_draft_has_placeholders_only_and_cites_the_act(), test_FR_AG_01_FR_UI_05_two_approvals_then_pdf_with_details(), test_FR_AG_01_manager_sees_evidence_photos_only_for_export_approval(), test_FR_AG_03_answers_carry_a_chart_and_a_sentence_from_the_rows(), test_FR_AG_03_chatbot_answers_with_query_and_refuses_other_region(), test_FR_AG_04_field_assistant_cites_or_says_not_found(), test_FR_AG_05_three_similar_closed_cases() (+8 more)
 
 ### Community 112 - "Graph naming and traceability scripts"
-Cohesion: 0.36
-Nodes (7): community_index(), describe(), main(), match(), Apply curated community names to the graphify graph without re-clustering.…, Per community: its main files (most nodes; ties all count) and node labels, for…, First rule whose `file` is one of the community's main files and whose `has`…
+Cohesion: 0.23
+Nodes (8): community_index(), describe(), main(), match(), Apply curated community names to the graphify graph without re-clustering.…, Per community: its main files (most nodes; ties all count) and node labels, for…, First rule whose `file` is one of the community's main files and whose `has`…, collections
 
 ### Community 113 - "Public RAG document list"
 Cohesion: 0.25
@@ -641,8 +640,8 @@ Cohesion: 0.29
 Nodes (6): 1. What a flagged zone means, 2. Flat 24/7 gap, 3. Risk scores and reasons, 4. Voltage evidence, 5. Routine meter checks, 6. Recording outcomes
 
 ### Community 115 - "CLI commands and audit chain"
-Cohesion: 0.13
-Nodes (21): test_NFR_07_rpt_views_hold_no_premise_ids_or_personal_details(), demo_passwords(), cmd_simreport(), cmd_train_models(), cmd_tune(), command(), main(), migrate() (+13 more)
+Cohesion: 0.17
+Nodes (18): command(), cmd_activate(), cmd_convert(), cmd_sources(), migrate(), _role_password(), cmd_anchor(), cmd_fetch_models() (+10 more)
 
 ### Community 116 - "Screenshot scripts"
 Cohesion: 0.32
@@ -661,12 +660,12 @@ Cohesion: 0.20
 Nodes (9): Additions after the R0 review (not in the SDD), Agents and RAG, Data, Data (current public datasets), Deviations from the SDD, Library swaps, Lite-profile swaps (prompt 7.2), Rooftop solar (`VoltGuard_Solar_Prompt.md`, FR-PS-10) (+1 more)
 
 ### Community 122 - "Data health"
-Cohesion: 0.23
-Nodes (11): cmd_sources(), active_sources(), fallbacks(), health(), _upload_checks(), Any, Connection, Data health per table for the Data manager (UI brief 3.9): how the data was… (+3 more)
-
-### Community 123 - "Monitoring and alerts"
 Cohesion: 0.25
-Nodes (10): after_detection(), _alert(), check_unusual_access(), collect(), psi(), ndarray, Monitoring and alerts for the data team (FR-ML-03, SDD 9.2, NFR-11). After each…, What monitoring needs from a detection run, small enough to keep across zone… (+2 more)
+Nodes (9): fallbacks(), health(), _upload_checks(), Any, Connection, Data health per table for the Data manager (UI brief 3.9): how the data was…, Issue counts by table and check from the active upload's validation report., SRS assumptions whose fallback the latest detection run used. (+1 more)
+
+### Community 123 - "Demo-mode test config"
+Cohesion: 0.15
+Nodes (12): config_copy(), demo_on(), test_3_10_route_stops_show_straight_line_distance_from_base(), test_3_1_rpt_zone_latest_carries_value_at_risk_at_zone_level(), test_3_6_validation_summary_from_files_and_model_versions(), test_3_7_backtest_replay_by_role_and_region(), test_3_8_demo_guide_status_and_reset(), test_3_9_data_health_for_admins() (+4 more)
 
 ### Community 124 - "Pipeline batch settings"
 Cohesion: 0.67
@@ -684,33 +683,37 @@ Nodes (13): Auto-generated state (scripts/handoff.py), Decisions to keep, Docker
 Cohesion: 0.25
 Nodes (7): Backup steps (for questions or a recorded clip), Driving the demo from the screen (`DEMO_MODE=true`), If something goes wrong, Live steps (5 minutes), Rehearsal checklist (prompt 7.5), The day before, VoltGuard AI demo script (R0)
 
-### Community 130 - "Airflow nightly DAG"
-Cohesion: 0.40
-Nodes (3): Full profile only: the nightly pipeline as an Airflow DAG (SDD 6.1). In the…, airflow_operators_python, requests
+### Community 130 - "Retraining and weekly endpoints"
+Cohesion: 0.33
+Nodes (8): auc(), hit_rates(), labels(), _log_mlflow(), retrain(), Model learning (SDD 5.4, FR-ML-01, FR-ML-02, FR-IW-04). Retrain on demand…, Training labels with the premise's features from the latest run on or before…, Hit rate (share confirmed) and precision (share confirmed among cases at or…
 
 ### Community 131 - "Compose: token tunnel"
 Cohesion: 0.25
 Nodes (8): TUNNEL_TOKEN, tunnel-token, command, depends_on, environment, image, profiles, restart
 
+### Community 132 - "Encrypted file storage"
+Cohesion: 0.43
+Nodes (7): exists(), _fernet(), get(), _path(), put(), Encrypted file storage for inspection photos and exported PDFs (lite profile…, cryptography_fernet
+
 ### Community 133 - "Scoring and reasons"
 Cohesion: 0.22
 Nodes (11): Reason, Score, test_FR_PS_07_voltage_reason_at_the_premise_reads_naturally(), test_FR_PS_10_penalty_rule_follows_settings(), reason_text(), score_premise(), solar_timing_text(), solar_unexplained_text() (+3 more)
 
-### Community 134 - "Assistant page and query charts"
-Cohesion: 0.29
-Nodes (7): QueryChart(), Answer(), download(), Assistant(), ask(), csv(), EXAMPLES
+### Community 134 - "CLI entry and reporting tests"
+Cohesion: 0.40
+Nodes (4): test_NFR_07_rpt_views_hold_no_premise_ids_or_personal_details(), main(), Manager dashboard data (SRS FR-UI-01, NFR-07, SDD 9.2): zone-level…, pytest
 
-### Community 135 - "Weekly report and message tests"
-Cohesion: 0.32
-Nodes (7): fake_names(), test_weekly_job_reaches_every_manager_and_supervisor(), test_weekly_report_page_explains_itself_in_both_languages(), test_weekly_summary_is_zone_level_and_region_limited(), test_weekly_summary_pdf_and_message(), test_SRS_5_2_dispatch_messages_hold_no_customer_details(), Weekly manager summary: region-limited, zone-level, no personal details, PDF…
+### Community 135 - "Route planner tests"
+Cohesion: 0.40
+Nodes (3): test_FR_AG_02_team_route_with_navigation_and_limits(), Route planner (supports FR-AG-02): visiting order, navigation links, and who…, AI agents and RAG (SDD 8). Agents act on VoltGuard's results; they never make…
 
 ### Community 136 - "Demo guide and reset"
-Cohesion: 0.13
-Nodes (21): cmd_demo(), accounts(), guide_config(), reset(), reset_time(), status(), reset_rehearsal(), predraft_demo_report() (+13 more)
+Cohesion: 0.11
+Nodes (25): cmd_demo(), accounts(), guide_config(), reset(), reset_time(), status(), prewarm(), print_script() (+17 more)
 
-### Community 137 - "API app, scheduler and lifespan"
-Cohesion: 0.08
-Nodes (27): lifespan(), close_pools(), register(), _safe(), start(), stop(), start_polling(), stop_polling() (+19 more)
+### Community 137 - "Monitoring and alerts"
+Cohesion: 0.06
+Nodes (47): test_unusual_access_alert(), lifespan(), create_cases(), demo_reset(), admin_connection(), _pool(), _run(), running() (+39 more)
 
 ### Community 138 - "Feeder schematic"
 Cohesion: 0.46
@@ -729,8 +732,8 @@ Cohesion: 0.33
 Nodes (5): 1. What to add (in this order on the page), 2. Chart and writing rules, 3. Telegram delivery, 4. Tests and done, VoltGuard R0: make the weekly summary report self-explanatory
 
 ### Community 142 - "Traceability and setup scripts"
-Cohesion: 0.47
-Nodes (5): expand(), main(), requirements(), Generate TRACEABILITY.md: every SRS requirement mapped to the code and tests…, collections
+Cohesion: 0.21
+Nodes (8): expand(), main(), requirements(), Create .env from .env.example and fill in generated secrets (used by `make…, Generate TRACEABILITY.md: every SRS requirement mapped to the code and tests…, re, secrets, sys
 
 ### Community 143 - "UI and weekly report change log"
 Cohesion: 0.20
@@ -744,13 +747,9 @@ Nodes (6): NEM (Net Energy Metering), SelCo (self-consumption), Solar ATAP, Sour
 Cohesion: 0.50
 Nodes (3): Order of work, Rules kept, UI upgrade plan (`VoltGuard_UI_Upgrade_Prompt.md`)
 
-### Community 149 - "Agent guardrails"
-Cohesion: 0.18
-Nodes (11): OutputBlocked, ToolNotAllowed, asks_forbidden_action(), check_output(), check_document(), Exception, Agent guardrails (SDD 8.4, FR-AG-06, NFR-15). * Fixed tool list per agent. No…, Block personal details in anything an agent returns (placeholders such as… (+3 more)
-
 ### Community 151 - "Learning and monitoring tests"
 Cohesion: 0.25
-Nodes (5): test_FR_ML_01_FR_ML_02_retrain_records_version_with_both_hit_rates(), test_unusual_access_alert(), Learning and monitoring (SRS FR-ML-01-03, FR-IW-04)., Test accounts: one per role and region from config/demo.yaml, plus the pipeline…, psycopg
+Nodes (4): test_FR_ML_01_FR_ML_02_retrain_records_version_with_both_hit_rates(), Learning and monitoring (SRS FR-ML-01-03, FR-IW-04)., Test accounts: one per role and region from config/demo.yaml, plus the pipeline…, psycopg
 
 ### Community 154 - "Telegram tables"
 Cohesion: 0.50
@@ -759,22 +758,22 @@ Nodes (3): app_user, telegram_link_code, telegram_state
 ## Knowledge Gaps
 - **664 isolated node(s):** `Template`, `DONE`, `TITLES`, `FILTER_LABEL`, `FILTERS` (+659 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Caller` connect `Case API routes and My work` to `Configuration loader`, `Weekly report and message tests`, `API app, scheduler and lifespan`, `Case workflow and notifications`, `Dataset ingest`, `Local test stack and browser tests`, `Background job runner (one heavy job at a time)`, `Inspection route planner`, `Telegram API routes`, `UI upgrade API (meta, demo, back-test)`, `Case report agent and approvals`, `Weekly summary report`, `Agent API routes`, `Database connections and Telegram dispatch bot`, `RAG indexing (rag.py)`, `Audit chain and daily anchor`, `Active sources and dataset versions`, `Model API and retraining`, `Case workflow tests`, `Analyst chatbot (query templates)`, `API security and UI upgrade tests`, `Zone API routes`, `Test fixtures and seeded users`, `RAG indexing (rag.py)`, `Sign-in, sessions and file storage`, `Agent safety tests and PDF export`?**
-  _High betweenness centrality (0.041) - this node is a cross-community bridge._
-- **Why does `login()` connect `API security and UI upgrade tests` to `Telegram bot tests`, `Database connections and Telegram dispatch bot`, `RAG indexing (rag.py)`, `Weekly report and message tests`, `RAG indexing (rag.py)`, `Audit chain and daily anchor`, `Detection and solar tests`, `Agent safety tests and PDF export`, `Case workflow tests`, `Learning and monitoring tests`, `Test fixtures and seeded users`, `Zone simulator`, `Weekly summary report`?**
-  _High betweenness centrality (0.011) - this node is a cross-community bridge._
-- **Why does `ZoneInput` connect `Detection engine (balance, features, zone input)` to `Back-test script`, `Autoencoder and model training`, `Network loss model and zone inputs`?**
-  _High betweenness centrality (0.010) - this node is a cross-community bridge._
+- **Why does `Caller` connect `Case API routes and My work` to `Configuration loader`, `Monitoring and alerts`, `Case workflow and notifications`, `Local test stack and browser tests`, `Inspection route planner`, `Admin API (datasets, sources, audit)`, `Case report agent and approvals`, `Weekly summary report`, `Agent API routes`, `Telegram dispatch bot`, `Threshold settings (admin overrides)`, `Active sources and dataset versions`, `UI upgrade API (meta, demo, back-test)`, `Case workflow tests`, `Analyst chatbot (query templates)`, `API security and UI upgrade tests`, `Zone API routes`, `Test fixtures and seeded users`, `Telegram bot tests`, `RAG indexing`, `Sign-in, sessions and file storage`, `Agent safety tests and PDF export`?**
+  _High betweenness centrality (0.042) - this node is a cross-community bridge._
+- **Why does `login()` connect `API security and UI upgrade tests` to `Telegram bot tests`, `Route planner tests`, `Monitoring and alerts`, `Audit chain and daily anchor`, `Sign-in, sessions and file storage`, `Detection and solar tests`, `Case workflow tests`, `Agent safety tests and PDF export`, `Zone API routes`, `Learning and monitoring tests`, `Demo-mode test config`, `Test fixtures and seeded users`, `Zone simulator`?**
+  _High betweenness centrality (0.013) - this node is a cross-community bridge._
+- **Why does `run_zones()` connect `Detection engine (balance, features, zone input)` to `Pattern model and autoencoder`, `Data layer tests`, `Rooftop solar checks (FR-PS-10)`, `Scoring and reasons`?**
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
 - **Are the 102 inferred relationships involving `Caller` (e.g. with `LocalStack` and `ask()`) actually correct?**
   _`Caller` has 102 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Template`, `DONE`, `TITLES` to the rest of the system?**
   _664 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Test Postgres server` be split into smaller, more focused modules?**
+  _Cohesion score 0.1380952380952381 - nodes in this community are weakly interconnected._
 - **Should `Web data loading (cases, dispatch)` be split into smaller, more focused modules?**
-  _Cohesion score 0.09061224489795919 - nodes in this community are weakly interconnected._
-- **Should `SDD: software design document` be split into smaller, more focused modules?**
-  _Cohesion score 0.05 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08748114630467571 - nodes in this community are weakly interconnected._
