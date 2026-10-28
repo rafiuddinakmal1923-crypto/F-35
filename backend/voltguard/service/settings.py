@@ -19,6 +19,7 @@ EDITABLE = {
     "dispatch": {"reminder_hours", "escalation_hours", "demo_reminder_minutes", "demo_escalation_minutes"},
     "route": {"road_factor", "speed_kmh", "visit_minutes"},
     "monitoring": {"min_interval_completeness", "drift_psi_alert"},
+    "weekly": {"day_of_week", "hour", "minute", "send_pdf", "include_supervisors", "min_random_checks"},
 }
 
 

@@ -26,10 +26,18 @@ SELECT c.region, t.district, c.transformer_id AS zone, c.status, c.origin, date_
 FROM inspection_case c JOIN transformer t USING (transformer_id)
 GROUP BY 1, 2, 3, 4, 5, 6;
 
+-- Built on the base tables, not on training_label: that view runs with the caller's rights (region
+-- limits for app users), which the Power BI role does not have on the tables below it.
 CREATE OR REPLACE VIEW rpt_outcomes AS
+WITH labels AS (
+  SELECT c.region, c.transformer_id, c.origin, o.outcome, o.recorded_at
+  FROM inspection_outcome o JOIN inspection_case c USING (case_id) WHERE o.outcome <> 'no_access'
+  UNION ALL
+  SELECT p.region, p.transformer_id, coalesce(h.origin, 'model'), h.outcome, h.recorded_at
+  FROM historic_outcome h JOIN premise p USING (premise_id) WHERE h.outcome <> 'no_access')
 SELECT l.region, t.district, CASE WHEN l.origin = 'random_sample' THEN 'random sample' ELSE 'model-ranked' END AS inspections,
        l.outcome, date_trunc('month', l.recorded_at)::date AS month, count(*) AS outcomes
-FROM training_label l JOIN transformer t USING (transformer_id)
+FROM labels l JOIN transformer t USING (transformer_id)
 GROUP BY 1, 2, 3, 4, 5;
 
 -- Fairness monitoring (NFR-11): flag rate by area. Housing tenure (owner or renter) is not in the

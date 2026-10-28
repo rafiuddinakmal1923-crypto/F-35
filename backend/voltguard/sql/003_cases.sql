@@ -7,7 +7,9 @@ GRANT USAGE, SELECT ON SEQUENCE case_seq, report_seq TO voltguard_app;
 
 -- Every outcome except No access is a training label; `origin` lets training weights correct for
 -- how each case was chosen (SDD 5.4) and keeps random-sample hit rates separate (FR-ML-02).
-CREATE OR REPLACE VIEW training_label AS
+-- security_invoker: the view runs with the caller's rights, so row-level security limits it to the
+-- caller's region (FR-AD-01); without it a view runs as its owner and showed every region's labels.
+CREATE OR REPLACE VIEW training_label WITH (security_invoker = true) AS
 SELECT o.case_id, o.visit_no, c.premise_id, c.transformer_id, c.region, c.origin, o.outcome, o.reason_tag,
        (o.outcome = 'confirmed_theft') AS is_theft, o.recorded_at, 'live'::text AS source
 FROM inspection_outcome o JOIN inspection_case c USING (case_id)

@@ -94,11 +94,20 @@ def telegram_call(method: str, payload: dict, timeout: float = 8) -> dict:
     return r.json()
 
 
+def telegram_document(chat_id: str, filename: str, data: bytes, caption: str = "", timeout: float = 30) -> dict:
+    """sendDocument (multipart). Only for documents that passed the output check, e.g. the zone-level weekly PDF."""
+    r = httpx.post(f"https://api.telegram.org/bot{token()}/sendDocument", data={"chat_id": chat_id, "caption": caption[:1000]},
+                   files={"document": (filename, data, "application/pdf")}, timeout=timeout)
+    r.raise_for_status()
+    return r.json()
+
+
 def send(conn: psycopg.Connection, kind: str, case_id: str | None, region: str, recipient: str, extra: str = "",
-         buttons: list[dict] | None = None) -> dict:
+         buttons: list[dict] | None = None, document: tuple[str, bytes] | None = None) -> dict:
     """Record one message (shown in the in-app chat) and send it to Telegram when a bot is configured.
 
-    `recipient` is a team or user ID. `buttons` default to the kind's buttons (BUTTONS).
+    `recipient` is a team or user ID. `buttons` default to the kind's buttons (BUTTONS). `document`
+    (filename, bytes) is attached on Telegram after the text; the caller has already checked it.
     """
     text = compose(kind, case_id, extra)
     output_check(text, extra)
@@ -116,9 +125,13 @@ def send(conn: psycopg.Connection, kind: str, case_id: str | None, region: str, 
             try:
                 msg = telegram_call("sendMessage", {"chat_id": chat, "text": text, **({"reply_markup": markup} if markup else {})})
                 sent.append({"chat_id": chat, "message_id": msg["result"]["message_id"]})
+                if document:
+                    doc = telegram_document(chat, document[0], document[1])
+                    sent.append({"chat_id": chat, "message_id": doc["result"]["message_id"], "document": document[0]})
             except httpx.HTTPError as exc:
                 status = f"failed: {exc.__class__.__name__}"
         conn.execute("UPDATE notification SET channel = %s, status = %s, telegram_messages = %s WHERE notification_id = %s",
                      (channel, status, Jsonb(sent), nid))
     log.info("[notify %s -> %s] %s", channel, recipient, text.replace("\n", " | "))
-    return {"notification_id": nid, "channel": channel, "status": status, "text": text, "buttons": buttons}
+    return {"notification_id": nid, "channel": channel, "status": status, "text": text, "buttons": buttons,
+            "document": document[0] if document else None}

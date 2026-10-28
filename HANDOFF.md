@@ -132,6 +132,21 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
     lock** (now plain functions everywhere, with a guard test);
   - laptop setup: Debian 12 base image, `DB_HOST_PORT` and `WEB_PORT`, map tiles sending the origin.
 
+## Laptop round (2026-10-28)
+
+- **Ollama on the GPU**: `docker-compose.gpu.yml`, added automatically by `make.ps1`/`Makefile` when
+  `nvidia-smi` exists (`VG_GPU=0` forces CPU); models in the `ollama_models` volume. Qwen2.5-7B answers in
+  2–3 s, so `REPORT_MODE=live` fits the demo. The live report model gets finished figures with units
+  (`report.live_facts`); the Assistant labels any valid model reply as live and cleans the model's parameters.
+- **Weekly report upgrade** (`VoltGuard_Report_Upgrade_Prompt.md`): `service/digest.py` (figures) +
+  `service/digest_render.py` (rules, charts, HTML, PDF, EN/BM), `/weekly/html?lang=`, PDF on Telegram after an
+  output check, schedule in Settings (`weekly.*`), tariff in `config/tariffs.yaml`. Before/after in
+  `reports/ui/` with `CHANGES.md`.
+- **Fixed**: `training_label` ran as its owner, so hit rates counted every region (now `security_invoker`).
+- Windows: database tests run against a throwaway `timescale/timescaledb-ha:pg16` container via
+  `TEST_DATABASE_URL` (126 pass).
+- Not done: the UI upgrade brief (`VoltGuard_UI_Upgrade_Prompt.md`).
+
 ## Known issues
 
 - NFR-09 holds for ranked zones (18/18) but not overall (18/24): partial bypasses of about 1% of

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
-from fastapi.responses import Response
+from fastapi import APIRouter, Depends, Query
+from fastapi.responses import HTMLResponse, Response
 
 from voltguard import db
 from voltguard.api.deps import connection, not_found, require
@@ -39,25 +39,44 @@ def acknowledge(alert_id: int, c: Caller = Depends(require("data_scientist", "ad
     return row
 
 
+LANGS = Query("en", pattern="^(en|ms)$", description="Report language: en or ms (Bahasa Melayu)")
+
+
 @router.get("/weekly")
 def weekly(c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
-    """Weekly summary of the caller's region: zone-level energy, cases, outcomes and hit rates."""
+    """Weekly summary of the caller's region: zone-level energy, cases, outcomes and hit rates (figures)."""
     d = digest.build(conn, c)
     db.audit(conn, c.user_id, "digest.view", f"region:{c.region}", None)
     return d
 
 
-@router.get("/weekly/pdf")
-def weekly_pdf(c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
+@router.get("/weekly/html")
+def weekly_html(lang: str = LANGS, c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
+    """The self-explanatory report page, as shown in the app and printed to PDF."""
     d = digest.build(conn, c)
-    db.audit(conn, c.user_id, "digest.download", f"region:{c.region}", None)
-    name = f"voltguard-weekly-{c.region}-{d.get('work_window', {}).get('to', 'empty')}.pdf"
-    return Response(digest.pdf_bytes(d), media_type="application/pdf",
+    db.audit(conn, c.user_id, "digest.view", f"region:{c.region}", {"lang": lang})
+    return HTMLResponse(digest.render_html(d, lang), headers={"Cache-Control": "no-store"})
+
+
+@router.get("/weekly/pdf")
+def weekly_pdf(lang: str = LANGS, c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
+    d = digest.build(conn, c)
+    db.audit(conn, c.user_id, "digest.download", f"region:{c.region}", {"lang": lang})
+    name = f"{d.get('report_id', 'voltguard-weekly')}{'-ms' if lang == 'ms' else ''}.pdf"
+    return Response(digest.pdf_bytes(d, lang), media_type="application/pdf",
                     headers={"Content-Disposition": f'attachment; filename="{name}"', "Cache-Control": "no-store"})
 
 
 @router.post("/weekly/send")
-def weekly_send(c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
-    """Send this week's summary line to the caller now (Telegram if linked, and the in-app chat)."""
+def weekly_send(lang: str = LANGS, c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
+    """Send this week's summary to the caller now: headline and link, plus the PDF on Telegram when Settings
+    allow it (weekly.send_pdf). Both pass the output check first."""
+    from voltguard.service import digest_render, settings
+
     d = digest.build(conn, c)
-    return notify.send(conn, "weekly", None, c.region, c.user_id, digest.headline(d), buttons=[])
+    document = None
+    if not d.get("empty") and int(settings.thresholds(conn).get("weekly", {}).get("send_pdf", 1)):
+        data = digest_render.pdf_bytes(d, lang)
+        digest_render.check_document(data)
+        document = (f"{d['report_id']}.pdf", data)
+    return notify.send(conn, "weekly", None, c.region, c.user_id, digest_render.headline(d, lang), buttons=[], document=document)

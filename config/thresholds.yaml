@@ -72,3 +72,11 @@ route:                         # inspector visiting order (agents/route.py)
 monitoring:
   min_interval_completeness: 0.90  # SRS 5.3
   drift_psi_alert: 0.2
+
+weekly:                        # weekly summary report delivered to Telegram (service/digest.py)
+  day_of_week: 0               # 0 = Monday ... 6 = Sunday, Malaysia time
+  hour: 8                      # 08:00 MYT
+  minute: 0
+  send_pdf: 1                  # 1 = attach the PDF (zone-level only); 0 = text and link only
+  include_supervisors: 1       # 1 = supervisors of the region also get the message; managers always do
+  min_random_checks: 10        # below this many random routine checks, the report asks for more
