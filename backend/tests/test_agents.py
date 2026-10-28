@@ -213,6 +213,33 @@ def test_FR_AG_03_live_model_choice_is_cleaned_and_labelled(monkeypatch):
     assert chatbot.parse("hi") == ("", {}, "mock")
 
 
+def test_FR_AG_04_field_assistant_mode_says_who_answered(monkeypatch):
+    """"Not found" for a greeting is the online assistant refusing to guess, not a mock answer."""
+    from voltguard import db
+    from voltguard.agents import rag
+    from voltguard.db import Caller
+
+    passage = rag.Passage("c1", "field_evidence_checklist", "Field evidence checklist", "At the meter", "1", "approved", "document",
+                          "Photograph the meter seal and the cabling before touching anything.", 0.9)
+    monkeypatch.setattr(db, "audit", lambda *a, **k: None)
+    monkeypatch.setattr(llm, "available", lambda: True)
+    caller = Caller("inspector.b", "inspector", "CEN", "T-CEN-B")
+
+    monkeypatch.setattr(rag, "search", lambda conn, q, **k: [])
+    assert rag.answer(None, caller, "hi") == {"answer": rag.NOT_FOUND, "sources": [], "mode": "ollama", "refused": False}
+    monkeypatch.setattr(llm, "available", lambda: False)
+    assert rag.answer(None, caller, "hi")["mode"] == "mock"
+
+    monkeypatch.setattr(llm, "available", lambda: True)
+    monkeypatch.setattr(rag, "search", lambda conn, q, **k: [passage])
+    monkeypatch.setattr(llm, "complete", lambda *a, **k: llm.Completion("Photograph the meter seal first [1].", "ollama", "qwen"))
+    live = rag.answer(None, caller, "What should I photograph at the meter seal?")
+    assert live["mode"] == "ollama" and live["sources"][0]["doc_id"] == "field_evidence_checklist"
+    monkeypatch.setattr(llm, "complete", lambda *a, **k: llm.Completion("Sure! Take photos.", "ollama", "qwen"))   # no citation
+    quoted = rag.answer(None, caller, "What should I photograph at the meter seal?")
+    assert quoted["mode"] == "extractive" and "meter seal" in quoted["answer"]
+
+
 def test_FR_UI_05_pdf_fallback_without_a_browser(monkeypatch):
     """Without Chromium (e.g. a minimal image) the export still produces a PDF with every line."""
     from pypdf import PdfReader
