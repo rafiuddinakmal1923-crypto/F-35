@@ -194,30 +194,30 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.py)
 
-- Generated: 2026-10-28T13:21
-- Branch: `claude/ui-upgrade`; last commit: `12966aa Rooftop solar: close the scoring loophole and add the missing checks (FR-PS-10)`
-- Tests collected: 147 tests
+- Generated: 2026-10-28T14:25
+- Branch: `claude/ui-upgrade`; last commit: `80a50e3 Solar wrap-up: API tests, report figures, demo step, deviations; zone and login fixes`
+- Tests collected: 151 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
   query with `graphify query "<question>"` or `graphify explain "<name>"`)
 
 ### Graph summary
 
-- 2600 nodes · 5779 edges · 149 communities (142 shown, 7 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 185 edges (avg confidence: 0.93)
+- 2661 nodes · 5925 edges · 154 communities (147 shown, 7 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 186 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
-1. `Caller` - 141 edges
-2. `t()` - 97 edges
-3. `login()` - 66 edges
-4. `audit()` - 45 edges
-5. `get()` - 42 edges
-6. `admin_connection()` - 41 edges
+1. `Caller` - 142 edges
+2. `t()` - 105 edges
+3. `login()` - 70 edges
+4. `audit()` - 46 edges
+5. `admin_connection()` - 42 edges
+6. `get()` - 42 edges
 7. `useLoad()` - 33 edges
 8. `shot()` - 32 edges
 9. `request()` - 30 edges
-10. `run_detection()` - 29 edges
+10. `render_html()` - 29 edges
 
 ### File tree
 
@@ -233,7 +233,7 @@ Most connected (core abstractions):
 - `backend/voltguard/service/`: __init__.py, cases.py, commands.py, data_health.py, demo.py, demo_guide.py, digest.py, digest_render.py, explain.py, jobs.py, learning.py, monitoring.py, ... (+9)
 - `backend/voltguard/sql/`: 001_core.sql, 002_security.sql, 003_cases.sql, 004_reporting.sql, 005_telegram.sql, 006_solar.sql
 - `config/`: data_sources.yaml, demo.yaml, tariffs.yaml, thresholds.yaml, tuned_weights.yaml
-- `data/docs_rag/`: README.md, field_evidence_checklist.md, report_template.md, sources.yaml, voltguard_guide.md
+- `data/docs_rag/`: README.md, field_evidence_checklist.md, report_template.md, rooftop_solar_schemes.md, sources.yaml, voltguard_guide.md
 - `data/uploads/`: README.md, column_map.example.yaml, schema.yaml
 - `data/uploads/templates/`: account_event.csv, customer_pii.csv, district_weather.csv, duty_roster.csv, inspection_outcome.csv, meter.csv, meter_monthly_reading.csv, meter_reading.csv, premise.csv, transformer.csv, transformer_reading.csv
 - `deploy/airflow/dags/`: voltguard_nightly.py
@@ -245,14 +245,15 @@ Most connected (core abstractions):
 - `powerbi/snapshot/`: rpt_case_counts.csv, rpt_flag_rates.csv, rpt_network_kpis.csv, rpt_outcomes.csv, rpt_zone_daily.csv, rpt_zone_latest.csv
 - `reports/`: backtest_replay.json, backtest_report.md, simulation_report.md, simulation_summary.json
 - `reports/ui/`: CHANGES.md, PLAN.md, weekly_report_after.html, weekly_report_after.pdf, weekly_report_after_ms.html, weekly_report_after_ms.pdf, weekly_report_before.html, weekly_report_before.pdf
+- `reports/ui/after/`: assistant_desktop.png, assistant_phone.png, audit_desktop.png, audit_phone.png, backtest_desktop.png, backtest_phone.png, case_desktop.png, case_phone.png, cases_desktop.png, cases_phone.png, data_manager_desktop.png, data_manager_phone.png, ... (+26)
 - `reports/ui/before/`: assistant_desktop.png, assistant_phone.png, audit_desktop.png, audit_phone.png, case_desktop.png, case_phone.png, cases_desktop.png, cases_phone.png, data_manager_desktop.png, data_manager_phone.png, dispatch_desktop.png, dispatch_phone.png, ... (+18)
-- `scripts/`: backtest.py, e2e_use_cases.py, fetch_datasets.py, fetch_docs.py, handoff.py, handoff.sh, setup_env.py, traceability.py, tunnel.sh, ui_screenshots.py
+- `scripts/`: backtest.py, e2e_use_cases.py, fetch_datasets.py, fetch_docs.py, handoff.py, handoff.sh, setup_env.py, traceability.py, tunnel.sh, ui_check.py, ui_screenshots.py
 - `web/`: .dockerignore, .gitignore, Dockerfile, index.html, nginx.conf, package-lock.json, package.json, vite.config.js
 - `web/public/`: icon.svg, manifest.webmanifest, sw.js
 - `web/src/`: App.jsx, api.js, i18n.js, main.jsx, styles.css, theme.js
-- `web/src/components/`: BaseTiles.jsx, Charts.jsx, Common.jsx, DemoGuide.jsx, EvidenceTimeline.jsx, FeederSchematic.jsx, PremiseDetail.jsx, RouteMap.jsx, TelegramChat.jsx, Waterfall.jsx, WhyCleared.jsx, ZoneMap.jsx, ... (+1)
+- `web/src/components/`: BaseTiles.jsx, Charts.jsx, Common.jsx, DemoGuide.jsx, EvidenceTimeline.jsx, FeederSchematic.jsx, PremiseDetail.jsx, RouteMap.jsx, SolarCheck.jsx, TelegramChat.jsx, Waterfall.jsx, WhyCleared.jsx, ... (+2)
 - `web/src/field/`: FieldApp.jsx, secureStore.js
-- `web/src/lib/`: format.js, schematic.js, waterfall.js
+- `web/src/lib/`: format.js, schematic.js, solar.js, waterfall.js
 - `web/src/pages/`: Assistant.jsx, Audit.jsx, Backtest.jsx, Case.jsx, Cases.jsx, DataManager.jsx, Dispatch.jsx, LandlordConcept.jsx, Login.jsx, Models.jsx, Overview.jsx, Premise.jsx, ... (+6)
-- `web/tests/`: i18n.test.js, lib.test.js
+- `web/tests/`: i18n.test.js, lib.test.js, solar.test.js
 <!-- auto:end -->
