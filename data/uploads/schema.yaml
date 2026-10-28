@@ -237,6 +237,19 @@ tables:
       event_date:
         type: date
         required: true
+      capacity_kwp:
+        type: float
+        required: false
+        unit: kWp
+        min: 0.1
+        max: 100
+        description: 'solar_registration only: installed panel capacity, for the energy-budget
+          check (FR-PS-10)'
+      has_battery:
+        type: bool
+        required: false
+        description: 'solar_registration only: a home battery can move solar energy
+          into the evening (FR-PS-10)'
   district_weather:
     key:
     - district

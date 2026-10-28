@@ -166,8 +166,9 @@ def read_canonical(conn: psycopg.Connection, transformer_ids: list[str]) -> dict
     tx_read = with_ts(copy_out(conn, f"SELECT transformer_id, {epoch}, kwh_supplied, voltage_v FROM transformer_reading "
                                      f"WHERE transformer_id = ANY({ids})",
                                {"ts_us": pl.Int64, "kwh_supplied": pl.Float64, "voltage_v": pl.Float64}))
-    events = copy_out(conn, f"SELECT event_id, premise_id, event_type, event_date FROM account_event WHERE premise_id IN {pids}",
-                      {"event_date": pl.Date})
+    events = copy_out(conn, f"SELECT event_id, premise_id, event_type, event_date, capacity_kwp, has_battery::int AS has_battery "
+                            f"FROM account_event WHERE premise_id IN {pids}",
+                      {"event_date": pl.Date, "capacity_kwp": pl.Float64, "has_battery": pl.Int64})
     weather = copy_out(conn, "SELECT district, date, temperature_c, sunshine_hours FROM district_weather",
                        {"date": pl.Date, "temperature_c": pl.Float64, "sunshine_hours": pl.Float64})
     return {"transformer": tx, "premise": premise, "meter": meter, "meter_reading": readings, "meter_monthly_reading": monthly,

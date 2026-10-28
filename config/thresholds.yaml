@@ -49,6 +49,18 @@ penalties:
   solar: 0.10
   vacancy: 0.10
 
+solar:                         # rooftop-solar check (FR-PS-10, AS-9)
+  strong_night_drop: 0.25      # night use fell at least this share from its own history...
+  strong_night_below_peers: 0.30  # ...or sits this far below similar homes at night...
+  strong_night_dip_v: 1.0      # ...or the meter's night-time voltage fell this much: the solar penalty is dropped
+  budget_factor: 1.2           # daytime drop above this x the most the system can produce is unexplained
+  psh_per_sunshine_hour: 0.95  # peak-sun-hours per hour of district sunshine [to confirm with TNB/SEDA data]
+  psh_default: [3.5, 6.5]      # [peak sun hours: to confirm] range used when no weather is loaded
+  rebound_min: 0.10            # cloudy-day daytime use above sunny days by this share of past daytime use
+  timing_before_registration_days: 14  # drop this long before the registration date is a supporting reason
+  timing_near_gap_days: 3      # unregistered drop this close to the zone's gap start is a supporting reason
+  timing_points: 0.03          # its capped weight; counts only when other evidence passes tenancy.gate_other_evidence
+  midday_rise_v: 0.4           # midday voltage rise at the premise that supports solar (reverse flow)
 cases:
   case_threshold: 35           # score at or above this creates a case (OI-7)
   max_cases_per_zone: 3

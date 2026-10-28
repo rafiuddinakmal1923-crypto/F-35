@@ -26,7 +26,9 @@ from voltguard.data.simulator import Injected, Scenario
 from voltguard.detection import engine, pattern
 from voltguard.detection.features import FEATURE_NAMES
 
-LEGIT_KINDS = {"ev_charging", "metered_mining", "solar", "tenancy_only", "home_business", "vacancy"}
+LEGIT_KINDS = {"ev_charging", "metered_mining", "solar", "solar_unregistered_export", "solar_with_battery",
+               "tenancy_only", "home_business", "vacancy"}
+SOLAR_LEGIT = {"solar", "solar_unregistered_export", "solar_with_battery"}
 MAX_WEIGHT = 0.35
 
 
@@ -92,10 +94,22 @@ def summarise(ev: dict) -> dict:
         # Zone level: total stolen energy as a share of the zone's supply.
         "smallest_flagged_share": min((z["stolen_share"] for z in theft_zones if z["flagged"]), default=float("nan")),
         "largest_missed_share": max((z["stolen_share"] for z in theft_zones if not z["flagged"]), default=float("nan")),
+        # Rooftop solar (FR-PS-10): look-alikes that reached the top suspects, and theft hidden behind solar found.
+        "solar_homes": sum(1 for l in ev["legit"] if l["kind"] in SOLAR_LEGIT and l["ranked_in_pipeline"]),
+        "solar_homes_in_top5": sum(1 for l in legit_top if l["kind"] in SOLAR_LEGIT),
+        "solar_theft": sum(1 for t in in_pipeline if t["kind"] == "solar_with_theft"),
+        "solar_theft_in_top5": sum(1 for t in found if t["kind"] == "solar_with_theft"),
     }
 
 
 # --------------------------------------------------------------------------- tuning
+
+def penalised_tags(p) -> list[str]:
+    """Tags whose penalty the scorer applied: the solar penalty is dropped when the night-time evidence is
+    strong or the drop is larger than the panels can produce (FR-PS-10), so tuning must drop it too."""
+    solar = (p.details or {}).get("solar") or {}
+    return [t for t in p.tags if not (t == "solar" and not (solar.get("penalty") or {"applies": True})["applies"])]
+
 
 def _fast_scores(X: np.ndarray, tags: list[list[str]], cfg: dict) -> np.ndarray:
     w = np.array([cfg["weights"].get(name, 0.0) for name in FEATURE_NAMES])
@@ -133,7 +147,7 @@ def tune(seed: int = 1000, samples: int = 400, progress=print) -> dict:
             continue
         ids = [p.premise_id for p in zr.premises]
         X = np.array([[p.features[f] for f in FEATURE_NAMES] for p in zr.premises])
-        tags = [p.tags for p in zr.premises]
+        tags = [penalised_tags(p) for p in zr.premises]
         kinds = {c["premise_id"]: c["kind"] for c in zt["cases"]}
         zones.append((ids, X, tags, kinds, top_k(zt["n_homes"]), zr.balance.flagged or not zr.balance.balance_available))
 
@@ -211,6 +225,13 @@ MONTHLY_SHARES = (0.0, 0.25, 0.5, 0.75)
 def _num(x):
     """JSON number or null (NaN means the case did not occur, e.g. no zone flagged)."""
     return None if x is None or (isinstance(x, float) and math.isnan(x)) else round(float(x), 4)
+
+
+def _solar_demo(demo_cases: list[dict]) -> str:
+    c = next((t for t in demo_cases if t["kind"] == "solar_with_theft"), None)
+    if c is None:
+        return "n/a"
+    return f"{'yes' if c['zone_flagged'] and c['in_top'] else 'no'} (rank {c['rank']})"
 
 
 def _fmt(x, pct=False):
@@ -297,6 +318,10 @@ def simulation_report(progress=print, stress_count: int = 8) -> str:
         f"| Smallest total theft that flagged its zone (stress tests, share of zone supply) | {_fmt(smallest, True)} |",
         f"| Largest total theft that did not flag its zone (held-out settings) | {_fmt(held['largest_missed_share'], True)} |",
         f"| Clean held-out zones wrongly flagged | {held['clean_zone_false_flags']} of {held['clean_zones']} |",
+        f"| Solar homes in top suspects (held-out settings, ranked zones; plain, battery and unregistered export) | "
+        f"{held['solar_homes_in_top5']} of {held['solar_homes']} |",
+        f"| Solar + theft found in top 5% (held-out settings, ranked zones) | {held['solar_theft_in_top5']} of {held['solar_theft']} |",
+        f"| Solar + theft in the demo zone in the top 5% | {_solar_demo(demo_cases)} |",
     ]
     sections.append("## Summary (copy into the pitch deck)\n\n" + "\n".join(summary))
 
@@ -369,7 +394,9 @@ def simulation_report(progress=print, stress_count: int = 8) -> str:
                     "inspections_per_theft_random": _num(held["inspections_per_theft_random"]),
                     "clean_zone_false_flags": held["clean_zone_false_flags"], "clean_zones": held["clean_zones"],
                     "largest_missed_share": _num(held["largest_missed_share"]),
-                    "legit_in_top5": sorted({k for k, _ in held["legit_in_top5"]})},
+                    "legit_in_top5": sorted({k for k, _ in held["legit_in_top5"]}),
+                    "solar_homes": held["solar_homes"], "solar_homes_in_top5": held["solar_homes_in_top5"],
+                    "solar_theft": held["solar_theft"], "solar_theft_in_top5": held["solar_theft_in_top5"]},
         "noise_sweep": noise_sweep, "monthly_read_sweep": monthly_sweep,
         "pattern_model": {"source": pm_meta.get("source"), "holdout_auc": pm_meta.get("holdout_auc")},
         "flag_rule": {"share_of_supply": cfg["zone"]["share_of_supply"], "min_gap_kwh_per_day": cfg["zone"]["min_gap_kwh_per_day"],

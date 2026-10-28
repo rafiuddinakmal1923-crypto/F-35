@@ -14,6 +14,9 @@ supply, the technical loss and every meter's voltage. Injected cases with known 
 * ev_charging, home_business, vacancy - legitimate patterns
 * solar               - rooftop solar installed partway through, self-consumption (export=False)
                         or with export; registered in account_event for some (FR-PS-10, AS-9)
+* solar_with_theft    - solar installed, plus a night-time partial bypass or a flat 24/7 rig (theft)
+* solar_unregistered_export - solar exporting through the meter with no registration (not theft)
+* solar_with_battery  - solar with a home battery that moves energy into the evening (not theft)
 * tenancy_only        - a tenancy change with no theft
 
 Voltages come from the load-flow model because the open datasets hold kWh only: R0
@@ -35,7 +38,8 @@ from voltguard.data import fakes, profiles
 from voltguard.network import LossParams, ZoneNetwork, solve
 
 SLOTS = profiles.SLOTS_PER_DAY
-THEFT_KINDS = {"full_bypass_mining", "partial_bypass"}
+THEFT_KINDS = {"full_bypass_mining", "partial_bypass", "solar_with_theft"}
+SOLAR_KINDS = {"solar", "solar_with_theft", "solar_unregistered_export", "solar_with_battery"}
 PHASES = np.array(["A", "B", "C"])
 
 
@@ -49,6 +53,9 @@ class Injected:
     conventional: bool = False
     export: bool = True         # solar: False = self-consumption meter that never goes negative
     registered: bool = False    # solar: registration event in account_event
+    battery: bool = False       # solar: home battery (solar_with_battery)
+    theft: str = ""             # solar_with_theft: "night_bypass" (share of night load) or "rig" (kW, 24/7)
+    theft_size: float = 0.0
 
 
 @dataclass
@@ -100,6 +107,9 @@ def demo_scenario(seed: int | None = None) -> Scenario:
             Injected("tenancy_only", start_day=30),
             Injected("solar", start_day=33, size=3.0, export=False, registered=True),
             Injected("solar", start_day=41, size=4.0, export=True, registered=False),
+            # A registered solar home that also bypasses part of its night-time load (FR-PS-10).
+            Injected("solar_with_theft", start_day=35, size=3.5, export=False, registered=True,
+                     theft="night_bypass", theft_size=0.6),
         ]),
         ZoneSpec(2, "CEN", "Petaling", n_homes=80, cases=[Injected("full_bypass_mining", start_day=30, size=6.0)]),
         ZoneSpec(3, "CEN", "Klang", n_homes=60, conventional_share=0.4, cases=[Injected("home_business", size=2.0)]),
@@ -113,7 +123,26 @@ def demo_scenario(seed: int | None = None) -> Scenario:
     ], split="demo")
 
 
-def _varied_zones(rng: np.random.Generator, count: int, sizes, mining_kw, bypass_share, noise, family, region) -> list[ZoneSpec]:
+def _solar_cases(srng: np.random.Generator) -> list[Injected]:
+    """Solar look-alikes and theft hidden behind solar (FR-PS-10). Drawn from their own random
+    stream, so the zones' other cases stay the same as before these cases were added."""
+    cases = []
+    if srng.random() < 0.4:
+        mode = "rig" if srng.random() < 0.5 else "night_bypass"
+        cases.append(Injected("solar_with_theft", start_day=int(srng.integers(15, 45)), size=float(srng.uniform(2.5, 5.0)),
+                              export=bool(srng.random() < 0.5), registered=bool(srng.random() < 0.5), theft=mode,
+                              theft_size=float(srng.uniform(2.0, 4.0)) if mode == "rig" else float(srng.uniform(0.5, 0.8))))
+    if srng.random() < 0.3:
+        cases.append(Injected("solar_with_battery", start_day=int(srng.integers(15, 45)), size=float(srng.uniform(3.0, 5.0)),
+                              export=bool(srng.random() < 0.5), registered=True, battery=True))
+    if srng.random() < 0.3:
+        cases.append(Injected("solar_unregistered_export", start_day=int(srng.integers(15, 45)), size=float(srng.uniform(2.5, 5.0)),
+                              export=True, registered=False))
+    return cases
+
+
+def _varied_zones(rng: np.random.Generator, count: int, sizes, mining_kw, bypass_share, noise, family, region,
+                  srng: np.random.Generator | None = None) -> list[ZoneSpec]:
     zones = []
     for i in range(count):
         kind = ("full_bypass_mining", "partial_bypass", "both", "clean")[i % 4]
@@ -133,21 +162,23 @@ def _varied_zones(rng: np.random.Generator, count: int, sizes, mining_kw, bypass
         zones.append(ZoneSpec(
             100 + i, region, "Sim", n_homes=int(rng.integers(*sizes)), n_branches=int(rng.integers(2, 5)),
             noise=float(rng.uniform(*noise)), profile_family=family,
-            conventional_share=float(rng.uniform(0.0, 0.2)), cases=cases,
+            conventional_share=float(rng.uniform(0.0, 0.2)), cases=cases + (_solar_cases(srng) if srng is not None else []),
         ))
     return zones
 
 
 def tuning_scenario(seed: int = 1000, count: int = 24) -> Scenario:
     rng = np.random.default_rng(seed)
-    zones = _varied_zones(rng, count, (50, 90), (3.0, 7.0), (0.5, 0.8), (0.2, 0.28), "A", "CEN")
+    zones = _varied_zones(rng, count, (50, 90), (3.0, 7.0), (0.5, 0.8), (0.2, 0.28), "A", "CEN",
+                          srng=np.random.default_rng(seed + 17))
     return Scenario("tuning", seed, zones, split="tuning")
 
 
 def heldout_scenario(seed: int = 5000, count: int = 24) -> Scenario:
     """Held-out settings: different zone sizes, tap sizes, noise and household profile family."""
     rng = np.random.default_rng(seed)
-    zones = _varied_zones(rng, count, (55, 101), (2.5, 8.0), (0.45, 0.85), (0.26, 0.34), "B", "NOR")
+    zones = _varied_zones(rng, count, (55, 101), (2.5, 8.0), (0.45, 0.85), (0.26, 0.34), "B", "NOR",
+                          srng=np.random.default_rng(seed + 17))
     return Scenario("heldout", seed, zones, split="heldout")
 
 
@@ -262,13 +293,34 @@ def simulate_zone(scn: Scenario, zone: ZoneSpec) -> ZoneSim:
             weekday = ((scn.start_date.weekday() + day_of) % 7) < 5
             block = (hours >= 9) & (hours < 18) & weekday
             true_kw[i] = metered_kw[i] = base_kw[i] + case.size * block
-        elif case.kind == "solar":
+        elif case.kind in SOLAR_KINDS:
             # Generation follows the time of day and the day's sunshine; self-consumed solar lowers
             # the premise meter and the transformer meter equally, so no zone gap opens.
             daylight = np.clip(np.sin((hours - 7) / 12 * np.pi), 0, None)
-            sun = daylight * (weather["sunshine_hours"] / 8.0)[day_of] * active
-            net = base_kw[i] - case.size * sun
-            true_kw[i] = metered_kw[i] = net if case.export else np.maximum(net, 0.0)
+            gen = case.size * daylight * (weather["sunshine_hours"] / 8.0)[day_of] * active
+            load = base_kw[i].copy()
+            if case.battery:
+                # The battery stores the daytime surplus (up to 2 kWh per kWp) and gives it back
+                # from 19:00 to 23:00, so evening use from the grid falls too.
+                surplus = np.clip(gen - load, 0, None).reshape(days, SLOTS).sum(axis=1) * 0.5
+                stored = np.minimum(surplus, 2.0 * case.size)
+                evening = ((hours >= 19) & (hours < 23)).reshape(days, SLOTS)
+                discharge = (stored[:, None] * evening / (evening.sum(axis=1, keepdims=True) * 0.5)).ravel()
+                gen = gen + np.minimum(discharge, load)
+            net = load - gen
+            house = net if case.export else np.maximum(net, 0.0)
+            true_kw[i] = metered_kw[i] = house
+            if case.kind == "solar_with_theft":
+                night = (hours >= 19) | (hours < 7)
+                if case.theft == "rig":
+                    # A flat rig wired around the meter, and part of the house bypassed as well
+                    # (as for full_bypass_mining): solar hides the daytime drop, not the night one.
+                    rig = case.theft_size * (1 + rng.normal(0, 0.02, T))
+                    true_kw[i] = house + rig * active
+                    metered_kw[i] = np.where(active & (house > 0), house * 0.35, house)
+                else:
+                    metered_kw[i] = np.where(active & night & (house > 0), house * (1 - case.theft_size), house)
+                stolen_kw = true_kw[i] - metered_kw[i]
         elif case.kind == "vacancy":
             true_kw[i] = metered_kw[i] = base_kw[i] * 0.02 + 0.01
         truth_cases.append({
@@ -278,7 +330,8 @@ def simulate_zone(scn: Scenario, zone: ZoneSpec) -> ZoneSim:
             "stolen_kwh_per_day": round(float(stolen_kw[day_of >= case.start_day].sum() * 0.5 / max(days - case.start_day, 1)), 2),
             "tenancy_change": case.tenancy_change or case.kind == "tenancy_only",
             "conventional": bool(conventional[i]),
-            **({"export": case.export, "registered": case.registered} if case.kind == "solar" else {}),
+            **({"export": case.export, "registered": case.registered, "battery": case.battery, "capacity_kwp": case.size,
+                **({"theft": case.theft} if case.theft else {})} if case.kind in SOLAR_KINDS else {}),
         })
 
     # Load flow with the true loads gives supply, technical loss and meter voltages.
@@ -366,13 +419,16 @@ def simulate_zone(scn: Scenario, zone: ZoneSpec) -> ZoneSim:
         if case.tenancy_change or case.kind == "tenancy_only":
             day = max(case.start_day + int(rng.integers(-2, 3)), 1)
             events.append({"premise_id": ids[i], "event_type": "change_of_tenancy", "event_date": scn.start_date + timedelta(days=day)})
-        if case.kind == "solar" and case.registered:
-            events.append({"premise_id": ids[i], "event_type": "solar_registration", "event_date": scn.start_date + timedelta(days=max(case.start_day - 3, 0))})
+        if case.kind in SOLAR_KINDS and case.registered:
+            events.append({"premise_id": ids[i], "event_type": "solar_registration",
+                           "event_date": scn.start_date + timedelta(days=max(case.start_day - 3, 0)),
+                           "capacity_kwp": round(float(case.size), 1), "has_battery": bool(case.battery)})
     for i in rng.choice(candidates, size=min(zone.background_tenancy, len(candidates)), replace=False):
         events.append({"premise_id": ids[int(i)], "event_type": "holder_change", "event_date": scn.start_date + timedelta(days=int(rng.integers(1, days)))})
     tables["account_event"] = pl.DataFrame(
-        [{"event_id": f"AE-{tx_id}-{k + 1:03d}", **e} for k, e in enumerate(events)],
-        schema={"event_id": pl.Utf8, "premise_id": pl.Utf8, "event_type": pl.Utf8, "event_date": pl.Date},
+        [{"event_id": f"AE-{tx_id}-{k + 1:03d}", "capacity_kwp": None, "has_battery": None, **e} for k, e in enumerate(events)],
+        schema={"event_id": pl.Utf8, "premise_id": pl.Utf8, "event_type": pl.Utf8, "event_date": pl.Date,
+                "capacity_kwp": pl.Float64, "has_battery": pl.Boolean},
     )
     tables["customer_pii"] = pl.DataFrame({
         "premise_id": ids,

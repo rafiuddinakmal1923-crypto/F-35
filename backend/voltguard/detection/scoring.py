@@ -87,6 +87,33 @@ def reason_text(feature: str, d: dict, sub_reasons: list[str]) -> str:
     return TAG_TEXT.get(feature, feature)
 
 
+def solar_unexplained_text(s: dict) -> str:
+    verdict = (s.get("penalty") or {}).get("verdict")
+    if verdict == "over_budget":
+        b = s.get("budget") or {}
+        kwp = s.get("capacity_kwp") or 0
+        return (f"Solar penalty not applied: daytime use fell {b.get('drop_kwh', 0):.1f} kWh/day, more than a {kwp:g} kWp "
+                f"system can produce (about {b.get('expected_kwh', 0):.1f} kWh/day)")
+    n = s.get("night") or {}
+    parts = []
+    if n.get("drop_share") is not None and n["drop_share"] > 0:
+        parts.append(f"night-time use still fell {n['drop_share'] * 100:.0f}% from its own history")
+    if n.get("below_peers_share") is not None and n["below_peers_share"] > 0:
+        parts.append(f"is {n['below_peers_share'] * 100:.0f}% below similar homes")
+    if n.get("dip_v") is not None and n["dip_v"] >= 0.1:
+        parts.append(f"its night-time voltage fell {n['dip_v']:.1f} V")
+    detail = " and ".join(parts) if parts else "night-time evidence is strong"
+    battery = " (low confidence: home battery)" if s.get("has_battery") else ""
+    return f"Solar penalty not applied: solar explains the daytime drop only; {detail}{battery}"
+
+
+def solar_timing_text(t: dict) -> str:
+    if t.get("kind") == "before_registration":
+        return f"Use dropped {t.get('days', 0)} days before the solar registration date (supporting evidence only)"
+    return (f"Use dropped {t.get('days', 0)} day(s) from when the zone's energy gap opened, with no solar registration "
+            f"(supporting evidence only)")
+
+
 def score_premise(x: np.ndarray, tags: list[str], details: dict, sub_reasons: list[str], cfg: dict) -> Score:
     weights = cfg["weights"]
     contributions: list[Reason] = []
@@ -103,9 +130,25 @@ def score_premise(x: np.ndarray, tags: list[str], details: dict, sub_reasons: li
     if x[t_idx] > 0 and other_evidence >= cfg["tenancy"]["gate_other_evidence"]:
         tenancy = min(float(weights.get("tenancy_change", 0.0)) * float(x[t_idx]), cfg["tenancy"]["max_contribution"])
         contributions.append(Reason("tenancy_change", 100 * tenancy, reason_text("tenancy_change", details, sub_reasons)))
+    solar = details.get("solar") or {}
+    pinned: list[Reason] = []
+    if "solar" in tags:
+        timing = solar.get("timing")
+        points = float((cfg.get("solar") or {}).get("timing_points", 0.03))
+        if timing and points and other_evidence >= cfg["tenancy"]["gate_other_evidence"]:
+            # Supporting evidence only: counts when other evidence already reaches the gate (like tenancy).
+            other_evidence += points
+            contributions.append(Reason("solar_timing", 100 * points, solar_timing_text(timing)))
     penalty = 0.0
     for tag in tags:
         p = float(cfg["penalties"].get(tag, 0.0))
+        if tag == "solar" and not (solar.get("penalty") or {"applies": True})["applies"]:
+            # Solar explains a daytime drop only (FR-PS-10): with strong night-time evidence, or a drop larger
+            # than the panels can produce, the penalty is not applied and the reason says why.
+            line = Reason("solar_unexplained", 0.0, solar_unexplained_text(solar))
+            contributions.append(line)
+            pinned.append(line)
+            continue
         if p:
             penalty += p
             contributions.append(Reason(f"tag:{tag}", -100 * p, TAG_TEXT[tag]))
@@ -114,7 +157,14 @@ def score_premise(x: np.ndarray, tags: list[str], details: dict, sub_reasons: li
     exact = 100 * float(np.clip(total, 0.0, 1.0))
     score = int(round(exact))
     contributions.sort(key=lambda r: -abs(r.points))
-    top = [Reason(r.feature, round(r.points, 1), r.text) for r in contributions[:3]]
+    top_raw = contributions[:3]
+    for line in pinned:
+        # The reason a legitimate-use penalty was not applied is always shown (it explains the score).
+        if line not in top_raw:
+            top_raw = top_raw[:2] + [line]
+    rest_raw = [r for r in contributions if r not in top_raw]
+    contributions = top_raw + rest_raw
+    top = [Reason(r.feature, round(r.points, 1), r.text) for r in top_raw]
     for feature, text in ZERO_TEXT.items():
         if len(top) >= 3:
             break

@@ -41,6 +41,8 @@ class ZoneInput:
     tx_voltage: np.ndarray | None           # (T,)
     events: list[tuple[int, str, date]] = field(default_factory=list)
     sunshine: np.ndarray | None = None      # (days,) district sunshine hours, when loaded (FR-DI-07)
+    # premise index -> latest solar registration: {"date", "capacity_kwp", "has_battery"} (AS-9, FR-PS-10)
+    solar_registrations: dict[int, dict] = field(default_factory=dict)
 
     @property
     def n(self) -> int:
@@ -133,9 +135,16 @@ def build_zone_inputs(tables: dict[str, pl.DataFrame], start: date, days: int) -
                     tx_v = None
 
         zone_events = []
+        solar_regs: dict[int, dict] = {}
         if events.height:
-            for row in events.filter(pl.col("premise_id").is_in(ids)).iter_rows(named=True):
-                zone_events.append((index[row["premise_id"]], row["event_type"], row["event_date"]))
+            for row in events.filter(pl.col("premise_id").is_in(ids)).sort("event_date").iter_rows(named=True):
+                i = index[row["premise_id"]]
+                zone_events.append((i, row["event_type"], row["event_date"]))
+                if row["event_type"] == "solar_registration":
+                    kwp = row.get("capacity_kwp")
+                    solar_regs[i] = {"date": row["event_date"],
+                                     "capacity_kwp": float(kwp) if kwp is not None else None,
+                                     "has_battery": bool(row.get("has_battery") or False)}
 
         sunshine = None
         if weather.height and "sunshine_hours" in weather.columns:
@@ -160,6 +169,6 @@ def build_zone_inputs(tables: dict[str, pl.DataFrame], start: date, days: int) -
             accuracy_class=tx.get("dtm_accuracy_class"), loss_params=params,
             start=start, days=days, premise_ids=ids, premises=prem, smart=smart, meter_ids=meter_ids,
             kwh=kwh, voltage=volts, monthly=monthly, supply_kwh=supply, tx_voltage=tx_v, events=zone_events,
-            sunshine=sunshine,
+            sunshine=sunshine, solar_registrations=solar_regs,
         )
     return zones
