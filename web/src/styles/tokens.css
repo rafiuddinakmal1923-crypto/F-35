@@ -106,6 +106,20 @@
   --dur-colour: 140ms;
   --dur-move: 180ms;
 
+  /* Signature gradient and glass (user-approved exception to the ban list).
+     Login carries the full effect; other pages use it minimally, if at all.
+     Tenaga Red is deliberately excluded: it never fills backgrounds. */
+  --aurora-1: #0033a0;        /* Tenaga Blue: anchor */
+  --aurora-2: #2f7bea;        /* grid blue: bridge */
+  --aurora-3: #12a6a0;        /* current teal: energy flow */
+  --aurora-4: #ffd230;        /* signal amber: warm edge only */
+  --aurora-opacity: 0.5;
+  --aurora-blur: 36px;
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-edge: rgba(23, 23, 15, 0.08);
+  --glass-blur: 20px;
+
   /* Legacy aliases: the existing pages and charts reference these names. */
   --muted: var(--text-secondary);
   --surface-2: var(--surface-sunken);
@@ -158,6 +172,15 @@
     --series-4: #ff9a5c;
     --band: rgba(143, 176, 247, 0.18);
     --marker: #f2c94c;
+
+    --aurora-1: #3a6ad8;
+    --aurora-2: #2f7bea;
+    --aurora-3: #12a6a0;
+    --aurora-4: #e0b520;
+    --aurora-opacity: 0.42;
+    --glass-bg: rgba(26, 27, 21, 0.68);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-edge: rgba(255, 255, 255, 0.04);
 
     /* Dark mode: borders and surface steps, no shadows */
     --shadow-card: none;

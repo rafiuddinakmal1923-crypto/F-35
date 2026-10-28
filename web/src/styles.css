@@ -832,6 +832,8 @@ input[type="file"]::file-selector-button {
   margin: 0;
 }
 .login-page {
+  position: relative;
+  overflow: hidden;
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
@@ -854,6 +856,44 @@ input[type="file"]::file-selector-button {
   margin-bottom: var(--space-10);
 }
 .login-hero .logo-mark { margin-bottom: var(--space-1); }
+
+/* Signature element: one multi-colour gradient behind the sign-in panel. Its top half
+   shows clear colour above the panel; the panel's frosted glass blurs the bottom half. */
+.login-panel { position: relative; isolation: isolate; }
+.login-aurora {
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: -96px;
+  width: min(820px, 150vw);
+  height: 340px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  opacity: var(--aurora-opacity);
+  filter: blur(var(--aurora-blur));
+  background:
+    radial-gradient(34% 58% at 20% 58%, var(--aurora-1) 0%, transparent 72%),
+    radial-gradient(32% 60% at 42% 42%, var(--aurora-2) 0%, transparent 72%),
+    radial-gradient(30% 56% at 64% 56%, var(--aurora-3) 0%, transparent 72%),
+    radial-gradient(24% 46% at 84% 40%, var(--aurora-4) 0%, transparent 72%);
+}
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 0 0 1px var(--glass-edge), var(--shadow-card);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+}
+/* No backdrop support, or the user asks for less transparency: solid surface. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: var(--surface); border-color: var(--border); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass { background: var(--surface); border-color: var(--border); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .login-aurora { opacity: calc(var(--aurora-opacity) * 0.6); }
+}
+/* fields stay solid so typing is always legible over the glass */
+.glass input { background: var(--surface); }
 .login-lede { margin: 0; font-size: 17px; line-height: 1.5; color: var(--text-secondary); }
 .login-form { display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-7); }
 .login-form label { gap: var(--space-2); }
@@ -879,6 +919,7 @@ input[type="file"]::file-selector-button {
 .login-note .status-dot { transform: translateY(-1px); }
 @media (max-width: 480px) {
   .display { font-size: clamp(40px, 12.5vw, 64px); letter-spacing: -1px; }
+  .login-aurora { top: -132px; width: 130vw; height: 300px; }
   .login-page { align-items: flex-start; padding-top: calc(var(--space-12) + env(safe-area-inset-top, 0px)); }
   .login-hero { gap: var(--space-4); margin-bottom: var(--space-8); }
   .login-form { padding: var(--space-5); }
