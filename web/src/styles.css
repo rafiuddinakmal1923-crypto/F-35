@@ -260,6 +260,11 @@ main:focus { outline: none; }
 main > * { max-width: var(--content-max); }
 main > .full-width { max-width: none; }
 
+/* very narrow phones: the red mark alone stands for the product, so the language select fits */
+@media (max-width: 400px) {
+  .logo > span:not(.logo-mark) { display: none; }
+}
+
 @media (max-width: 1024px) {
   main { padding: var(--space-6) var(--space-6) var(--space-12); }
   .topbar { padding: 0 var(--space-4); }
@@ -269,8 +274,9 @@ main > .full-width { max-width: none; }
   .topbar { gap: var(--space-2); }
   .topbar-badges { display: none; }
   .logo-word-sub { display: none; }
-  .topbar select { max-width: 132px; }
-  .layout { grid-template-columns: minmax(0, 1fr); }
+  .topbar select { max-width: 160px; }
+  /* rows: nav strip, then page; without this a short page stretches the nav row */
+  .layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
   .nav {
     position: sticky;
     top: calc(var(--header-h) + var(--accent-line));
@@ -320,10 +326,10 @@ main > .full-width { max-width: none; }
   justify-content: space-between;
   gap: var(--space-4) var(--space-6);
   flex-wrap: wrap;
-  padding-bottom: var(--space-6);
-  margin-bottom: var(--space-2);
+  padding-bottom: var(--space-3);
 }
 .page-header > :first-child { min-width: 0; }
+.skeleton.context-sk { width: 280px; max-width: 70%; height: 14px; margin-top: var(--space-3); }
 .eyebrow {
   display: block;
   font-size: var(--fs-eyebrow);
@@ -384,16 +390,23 @@ main > .full-width { max-width: none; }
 }
 
 /* Metrics: a single strip with hairline dividers, not one tile per number. */
+/* hairline dividers come from the 1px grid gap showing the border colour through */
 .metric-strip {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
-  background: var(--surface);
+  gap: 1px;
+  background: var(--border);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   overflow: hidden;
 }
-.metric { padding: var(--space-5) var(--space-6); border-left: 1px solid var(--border); margin-left: -1px; }
+.metric { padding: var(--space-5) var(--space-6); background: var(--surface); min-width: 0; }
+@media (max-width: 560px) {
+  .metric-strip { grid-template-columns: 1fr 1fr; }
+  .metric { padding: var(--space-4); }
+  .metric-value { font-size: 24px; }
+}
 .metric-value, .kpi .value {
   font-size: var(--fs-metric);
   font-weight: 600;
@@ -417,7 +430,8 @@ main > .full-width { max-width: none; }
 .facts dd { margin: 0; font-size: var(--fs-table); font-weight: 500; font-variant-numeric: tabular-nums; }
 
 /* ---------------------------------------------------------------- tables */
-.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* position: relative keeps absolutely positioned content (e.g. visually-hidden labels) inside the scroller */
+.table-wrap { position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 table {
   width: 100%;
   border-collapse: collapse;
@@ -1032,3 +1046,75 @@ input[type="file"]::file-selector-button {
   }
   button:hover, .button:hover { transform: none; }
 }
+
+/* ---------------------------------------------------------------- shared bits added with Overview */
+.nowrap { white-space: nowrap; }
+td.chips { white-space: nowrap; }
+td.chips .chip:last-child { margin-right: 0; }
+.count {
+  font-size: var(--fs-label);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.footnote { font-size: var(--fs-meta); }
+.job-button { gap: var(--space-2); }
+.job-status { font-variant-numeric: tabular-nums; }
+button.primary .spinner { border-color: rgba(255, 255, 255, 0.35); border-top-color: #ffffff; }
+/* content refreshing in place: dim it rather than blank it, so nothing jumps */
+.is-updating { opacity: 0.55; transition: opacity var(--dur-colour) var(--ease-out); }
+
+/* Panels whose table runs edge to edge: header keeps the card padding. */
+.card.flush > .card-header { padding: var(--space-5) var(--space-6) var(--space-3); margin: 0; }
+.card.flush th:first-child, .card.flush td:first-child { padding-left: var(--space-6); }
+.card.flush th:last-child, .card.flush td:last-child { padding-right: var(--space-6); }
+.card.flush > .empty { margin: 0 var(--space-6) var(--space-6); }
+@media (max-width: 760px) {
+  .card.flush > .card-header { padding: var(--space-4) var(--space-4) var(--space-2); }
+  .card.flush th:first-child, .card.flush td:first-child { padding-left: var(--space-4); }
+  .card.flush th:last-child, .card.flush td:last-child { padding-right: var(--space-4); }
+  .card.flush > .empty { margin: 0 var(--space-4) var(--space-4); }
+}
+
+/* First column stays in view while a wide table scrolls sideways. */
+table.sticky-first th:first-child, table.sticky-first td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface);
+}
+table.sticky-first tbody tr:hover td:first-child { background: var(--surface-sunken); }
+
+/* ---------------------------------------------------------------- Overview */
+.overview .filters label { flex: 0 1 200px; min-width: 150px; }
+@media (max-width: 560px) { .overview .filters label { flex: 1 1 140px; min-width: 0; } }
+.overview .filters select, .overview .filters input { width: 100%; }
+.overview .filters .loading { align-self: flex-end; height: 36px; }
+.overview-grid { display: grid; gap: var(--space-4); grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1680px) {
+  .overview-grid { grid-template-columns: minmax(420px, 5fr) minmax(0, 7fr); align-items: start; }
+}
+.map-panel .map { height: 360px; }
+.map-panel > p.muted { margin: 0; padding: var(--space-8) 0; text-align: center; }
+.map-legend { margin-top: var(--space-3); }
+.map-legend span::before { width: 10px; height: 10px; border-radius: var(--radius-pill); }
+.map-legend .lg-flagged::before { background: var(--risk); }
+.map-legend .lg-balanced::before { background: var(--series-1); }
+.map-legend .lg-nometer::before { background: var(--warning); }
+.map-legend .lg-size::before { width: 12px; height: 12px; background: transparent; border: 1.5px solid var(--text-secondary); }
+@media (max-width: 760px) { .map-panel .map { height: 280px; } }
+
+/* Marker colours come from tokens: Leaflet keeps the stroke/fill attributes current,
+   so these selectors follow each marker's state as the filters change. */
+.leaflet-interactive[stroke="#c2410c"] { stroke: var(--risk); fill: var(--risk); }
+.leaflet-interactive[stroke="#2563eb"] { stroke: var(--series-1); fill: var(--series-1); }
+.leaflet-interactive[stroke="#9a6700"] { stroke: var(--warning); fill: var(--warning); }
+
+/* Loading skeleton: same shapes as the loaded page, so nothing jumps when data arrives. */
+.overview-skeleton { display: flex; flex-direction: column; gap: var(--space-5); }
+.skeleton.metric-sk { height: 28px; width: 55%; }
+.skeleton.label-sk { height: 12px; width: 80%; margin-top: var(--space-3); }
+.skeleton.heading-sk { height: 18px; width: 160px; margin-bottom: var(--space-4); }
+.skeleton.map-sk { height: 360px; }
+.skeleton.row-sk { height: 14px; margin: var(--space-4) 0; }
+@media (max-width: 760px) { .skeleton.map-sk { height: 280px; } }

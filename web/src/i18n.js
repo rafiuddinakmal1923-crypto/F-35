@@ -20,6 +20,8 @@ const LABELS = {
     confirmed_theft: "Confirmed theft", false_alarm: "False alarm", inconclusive: "Inconclusive", no_access: "No access",
     routine: "Routine meter check", address: "Address", wipeNotice: "Case data on this phone is encrypted and wiped after sync or within 24 hours.",
     mainNav: "Main navigation", signingIn: "Signing in…",
+    loading: "Loading…", noZones: "No zones match these filters.", noZonesHint: "Choose another district or clear the date.",
+    sizeIsGap: "Circle size: recent gap %",
   },
   ms: {
     signIn: "Log masuk", signOut: "Log keluar", username: "Nama pengguna", password: "Kata laluan",
@@ -39,6 +41,8 @@ const LABELS = {
     confirmed_theft: "Kecurian disahkan", false_alarm: "Penggera palsu", inconclusive: "Tidak muktamad", no_access: "Tiada akses",
     routine: "Pemeriksaan meter rutin", address: "Alamat", wipeNotice: "Data kes di telefon ini disulitkan dan dipadam selepas segerak atau dalam 24 jam.",
     mainNav: "Navigasi utama", signingIn: "Sedang log masuk…",
+    loading: "Memuatkan…", noZones: "Tiada zon yang sepadan dengan penapis ini.", noZonesHint: "Pilih daerah lain atau kosongkan tarikh.",
+    sizeIsGap: "Saiz bulatan: % jurang terkini",
   },
 };
 

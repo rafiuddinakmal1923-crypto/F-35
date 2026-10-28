@@ -12,7 +12,7 @@ export default function ZoneMap({ zones, onSelect }) {
   const zoom = spread > 1 ? 7 : spread > 0.2 ? 10 : 12;
   return (
     <div className="map">
-      <MapContainer center={[lat, lon]} zoom={zoom} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false}>
+      <MapContainer center={[lat, lon]} zoom={zoom} scrollWheelZoom={false}>
         {/* Tiles need internet; without it the circles still show on a blank map. */}
         <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
         {placed.map((z) => (

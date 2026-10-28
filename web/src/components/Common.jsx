@@ -37,7 +37,7 @@ export function Masked({ note }) {
 
 export function ErrorBox({ error }) {
   if (!error) return null;
-  return <div className="notice error">{error.message || String(error)}</div>;
+  return <div className="notice error" role="alert">{error.message || String(error)}</div>;
 }
 
 // Start a job and poll its status; one heavy job at a time, so a second click shows "queued".
@@ -59,10 +59,10 @@ export function JobButton({ path, label, onDone, className = "primary" }) {
   }
   const busy = job && (job.status === "queued" || job.status === "running");
   return (
-    <div className="row">
-      <button className={className} onClick={start} disabled={busy}>{label}</button>
-      {job ? <small>{job.status}{job.progress ? `: ${job.progress}` : ""}</small> : null}
-      {error ? <small style={{ color: "var(--risk)" }}>{error.message}</small> : null}
+    <div className="row job-button">
+      <button className={className} onClick={start} disabled={busy}>{busy ? <span className="spinner" aria-hidden="true" /> : null}{label}</button>
+      {job ? <small className="job-status" aria-live="polite">{job.status}{job.progress ? `: ${job.progress}` : ""}</small> : null}
+      {error ? <small className="field-error" role="alert">{error.message}</small> : null}
     </div>
   );
 }
