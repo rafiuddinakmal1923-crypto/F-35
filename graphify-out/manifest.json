@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1793171034.5481753,
-    "seen": 1793171047.31557,
-    "ast_hash": "ebc6276d1fa833ece29e5eed9a8f2c2d",
+    "mtime": 1793172925.1811733,
+    "seen": 1793172996.8346055,
+    "ast_hash": "923980e27f27931664ba1a5086821918",
     "semantic_hash": ""
   },
   "README.md": {
@@ -270,8 +270,8 @@
     "semantic_hash": ""
   },
   "TRACEABILITY.md": {
-    "mtime": 1793168738.266837,
-    "seen": 1793171047.3158605,
+    "mtime": 1793172895.9948025,
+    "seen": 1793172908.4065063,
     "ast_hash": "375ce5afdeccb90e73679be64c381531",
     "semantic_hash": ""
   },
@@ -1044,9 +1044,9 @@
     "semantic_hash": ""
   },
   "scripts/handoff.py": {
-    "mtime": 1793162341.217133,
-    "seen": 1793162409.8592618,
-    "ast_hash": "7333cab1d4c6d5306950b9ae8b5a4a72",
+    "mtime": 1793172660.9591708,
+    "seen": 1793172662.105533,
+    "ast_hash": "45a7e59711b1c43ca37fa420ab8cd9fb",
     "semantic_hash": ""
   },
   "scripts/ui_screenshots.py": {
@@ -2139,6 +2139,54 @@
     "mtime": 1793170349.1014009,
     "seen": 1793171047.319915,
     "ast_hash": "94e45aa613d1893c7d0023991f2d8830",
+    "semantic_hash": ""
+  },
+  "backend/voltguard/sql/001_core.sql": {
+    "mtime": 1793158224.7290199,
+    "seen": 1793171923.958154,
+    "ast_hash": "e4d93525cf08159450e90010bf2cb887",
+    "semantic_hash": ""
+  },
+  "backend/voltguard/sql/002_security.sql": {
+    "mtime": 1793158224.7290199,
+    "seen": 1793171923.9581563,
+    "ast_hash": "37c9a8fac46c2687e53c34d30ee8065e",
+    "semantic_hash": ""
+  },
+  "backend/voltguard/sql/003_cases.sql": {
+    "mtime": 1793158224.7290199,
+    "seen": 1793171923.9581575,
+    "ast_hash": "2ed18d54d83b7a5875a3fe701e44f464",
+    "semantic_hash": ""
+  },
+  "backend/voltguard/sql/004_reporting.sql": {
+    "mtime": 1793158862.1907783,
+    "seen": 1793171923.9581583,
+    "ast_hash": "cc33c59c7bca43c3addb0569f6c331ce",
+    "semantic_hash": ""
+  },
+  "backend/voltguard/sql/005_telegram.sql": {
+    "mtime": 1793158224.7290199,
+    "seen": 1793171923.9581594,
+    "ast_hash": "89f9392b5e2de46988d80044a09295ef",
+    "semantic_hash": ""
+  },
+  "backend/voltguard/sql/006_solar.sql": {
+    "mtime": 1793162901.269346,
+    "seen": 1793171923.9581602,
+    "ast_hash": "e1445f17fee6fc445bb01d7b3b1663ff",
+    "semantic_hash": ""
+  },
+  "scripts/graph_labels.json": {
+    "mtime": 1793172882.3219934,
+    "seen": 1793172893.2044582,
+    "ast_hash": "f3703b0006166ea4b40efbf1b6f9948d",
+    "semantic_hash": ""
+  },
+  "scripts/graph_labels.py": {
+    "mtime": 1793172704.2891235,
+    "seen": 1793172792.7313578,
+    "ast_hash": "ea3eec66c110150de3934e1e7ba08ad3",
     "semantic_hash": ""
   }
 }

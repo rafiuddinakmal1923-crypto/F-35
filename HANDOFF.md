@@ -168,6 +168,12 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
   `data/docs_rag/sources.yaml`.
 - **Hand-off script**: `scripts/handoff.py` (Windows and Linux; `make.ps1 handoff`) refreshes graphify,
   `TRACEABILITY.md` and this file's auto part. Run it after every finished section.
+- **graphify community names**: no LLM backend is configured, so `graphify update` names groups after their
+  busiest node ("get", "columns"). `scripts/graph_labels.py` (run by `handoff.py`, with graphify's own Python)
+  gives every group a readable name from `scripts/graph_labels.json` (rules: main file, plus a node label
+  where several groups share a file) without re-clustering. When new code forms a new group, add a rule there.
+  The graphify tool now includes SQL support (`uv tool install "graphifyy[sql]==0.9.50"`), so the database
+  tables, views and row-level security functions are in the graph.
 - **Database tests on Windows**: the throwaway container keeps its data, so create a fresh database before
   each full run: `docker exec vg-ui-pg psql -U voltguard -c "DROP DATABASE IF EXISTS vgtest WITH (FORCE)"`,
   then `CREATE DATABASE vgtest OWNER voltguard`, and set `TEST_DATABASE_URL=postgresql://voltguard@127.0.0.1:55432/vgtest`.
@@ -204,8 +210,8 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.py)
 
-- Generated: 2026-10-28T15:04
-- Branch: `claude/ui-upgrade`; last commit: `f467ada UI upgrade: after screenshots, change list, browser tests on the new layout, contrast fix`
+- Generated: 2026-10-28T15:36
+- Branch: `claude/ui-upgrade`; last commit: `aefd2c2 Refresh graphify graph, HANDOFF and traceability after the UI upgrade`
 - Tests collected: 151 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
@@ -213,8 +219,8 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 
 ### Graph summary
 
-- 2667 nodes · 5931 edges · 149 communities (142 shown, 7 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 186 edges (avg confidence: 0.93)
+- 2725 nodes · 6010 edges · 154 communities (143 shown, 11 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 188 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
@@ -222,12 +228,12 @@ Most connected (core abstractions):
 2. `t()` - 105 edges
 3. `login()` - 70 edges
 4. `audit()` - 46 edges
-5. `admin_connection()` - 42 edges
-6. `get()` - 42 edges
+5. `get()` - 42 edges
+6. `admin_connection()` - 42 edges
 7. `useLoad()` - 33 edges
 8. `shot()` - 32 edges
 9. `request()` - 30 edges
-10. `render_html()` - 29 edges
+10. `run_detection()` - 29 edges
 
 ### File tree
 
@@ -257,7 +263,7 @@ Most connected (core abstractions):
 - `reports/ui/`: CHANGES.md, PLAN.md, weekly_report_after.html, weekly_report_after.pdf, weekly_report_after_ms.html, weekly_report_after_ms.pdf, weekly_report_before.html, weekly_report_before.pdf
 - `reports/ui/after/`: assistant_desktop.png, assistant_phone.png, audit_desktop.png, audit_phone.png, backtest_desktop.png, backtest_phone.png, case_desktop.png, case_phone.png, cases_desktop.png, cases_phone.png, data_manager_desktop.png, data_manager_phone.png, ... (+102)
 - `reports/ui/before/`: assistant_desktop.png, assistant_phone.png, audit_desktop.png, audit_phone.png, case_desktop.png, case_phone.png, cases_desktop.png, cases_phone.png, data_manager_desktop.png, data_manager_phone.png, dispatch_desktop.png, dispatch_phone.png, ... (+18)
-- `scripts/`: backtest.py, e2e_use_cases.py, fetch_datasets.py, fetch_docs.py, handoff.py, handoff.sh, setup_env.py, traceability.py, tunnel.sh, ui_check.py, ui_screenshots.py
+- `scripts/`: backtest.py, e2e_use_cases.py, fetch_datasets.py, fetch_docs.py, graph_labels.json, graph_labels.py, handoff.py, handoff.sh, setup_env.py, traceability.py, tunnel.sh, ui_check.py, ... (+1)
 - `web/`: .dockerignore, .gitignore, Dockerfile, index.html, nginx.conf, package-lock.json, package.json, vite.config.js
 - `web/public/`: icon.svg, manifest.webmanifest, sw.js
 - `web/src/`: App.jsx, api.js, i18n.js, main.jsx, styles.css, theme.js

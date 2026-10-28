@@ -1,0 +1,1195 @@
+{
+ "_about": "Names for graphify communities (scripts/graph_labels.py). A rule matches a community whose main file is `file` and that contains every node label in `has`. First match wins.",
+ "rules": [
+  {
+   "name": "Schema: duty roster",
+   "file": "data/uploads/schema.yaml",
+   "has": [
+    "shift_date"
+   ]
+  },
+  {
+   "name": "Schema: inspection outcome",
+   "file": "data/uploads/schema.yaml",
+   "has": [
+    "reason_tag"
+   ]
+  },
+  {
+   "name": "Schema: meter",
+   "file": "data/uploads/schema.yaml",
+   "has": [
+    "read_frequency"
+   ]
+  },
+  {
+   "name": "Schema: account event (solar registration)",
+   "file": "data/uploads/schema.yaml",
+   "has": [
+    "event_type"
+   ]
+  },
+  {
+   "name": "Schema: customer personal details",
+   "file": "data/uploads/schema.yaml",
+   "has": [
+    "holder_name"
+   ]
+  },
+  {
+   "name": "Schema: transformer",
+   "file": "data/uploads/schema.yaml",
+   "has": [
+    "dtm_accuracy_class"
+   ]
+  },
+  {
+   "name": "Schema: premise",
+   "file": "data/uploads/schema.yaml",
+   "has": [
+    "street_seq"
+   ]
+  },
+  {
+   "name": "Schema: monthly readings",
+   "file": "data/uploads/schema.yaml",
+   "has": [
+    "meter_monthly_reading"
+   ]
+  },
+  {
+   "name": "Schema: transformer readings",
+   "file": "data/uploads/schema.yaml",
+   "has": [
+    "kwh_supplied"
+   ]
+  },
+  {
+   "name": "Schema: meter readings",
+   "file": "data/uploads/schema.yaml",
+   "has": [
+    "quality_flag"
+   ]
+  },
+  {
+   "name": "Schema: district weather",
+   "file": "data/uploads/schema.yaml",
+   "has": [
+    "sunshine_hours"
+   ]
+  },
+  {
+   "name": "Schema: distance column",
+   "file": "data/uploads/schema.yaml",
+   "has": [
+    "distance_m"
+   ]
+  },
+  {
+   "name": "Schema: table list",
+   "file": "data/uploads/schema.yaml",
+   "has": [
+    "tables"
+   ]
+  },
+  {
+   "name": "Compose: Keycloak",
+   "file": "docker-compose.yml",
+   "has": [
+    "KC_BOOTSTRAP_ADMIN_USERNAME"
+   ]
+  },
+  {
+   "name": "Compose: MinIO",
+   "file": "docker-compose.yml",
+   "has": [
+    "MINIO_ROOT_USER"
+   ]
+  },
+  {
+   "name": "Compose: token tunnel",
+   "file": "docker-compose.yml",
+   "has": [
+    "TUNNEL_TOKEN"
+   ]
+  },
+  {
+   "name": "Compose: API environment",
+   "file": "docker-compose.yml",
+   "has": [
+    "ADMIN_DATABASE_URL"
+   ]
+  },
+  {
+   "name": "Compose: named tunnel",
+   "file": "docker-compose.yml",
+   "has": [
+    "tunnel-named"
+   ]
+  },
+  {
+   "name": "Compose: Airflow",
+   "file": "docker-compose.yml",
+   "has": [
+    "airflow"
+   ]
+  },
+  {
+   "name": "Compose: MLflow",
+   "file": "docker-compose.yml",
+   "has": [
+    "mlflow"
+   ]
+  },
+  {
+   "name": "Compose: Prometheus",
+   "file": "docker-compose.yml",
+   "has": [
+    "prometheus"
+   ]
+  },
+  {
+   "name": "Compose: Ollama",
+   "file": "docker-compose.yml",
+   "has": [
+    "ollama"
+   ]
+  },
+  {
+   "name": "Compose: Caddy proxy",
+   "file": "docker-compose.yml",
+   "has": [
+    "proxy"
+   ]
+  },
+  {
+   "name": "Compose: worker and web build",
+   "file": "docker-compose.yml",
+   "has": [
+    "worker"
+   ]
+  },
+  {
+   "name": "Compose: database",
+   "file": "docker-compose.yml",
+   "has": [
+    "healthcheck"
+   ]
+  },
+  {
+   "name": "Compose: API service",
+   "file": "docker-compose.yml",
+   "has": [
+    "env_file"
+   ]
+  },
+  {
+   "name": "Compose: full-profile services",
+   "file": "docker-compose.yml",
+   "has": [
+    "services"
+   ]
+  },
+  {
+   "name": "Score weights",
+   "file": "config/thresholds.yaml",
+   "has": [
+    "gap_from_similar"
+   ]
+  },
+  {
+   "name": "Zone flag rule settings",
+   "file": "config/thresholds.yaml",
+   "has": [
+    "flat_cv"
+   ]
+  },
+  {
+   "name": "Penalties, tenancy, monitoring settings",
+   "file": "config/thresholds.yaml",
+   "has": [
+    "drift_psi_alert"
+   ]
+  },
+  {
+   "name": "Dispatch timer settings",
+   "file": "config/thresholds.yaml",
+   "has": [
+    "escalation_hours"
+   ]
+  },
+  {
+   "name": "Feature window settings",
+   "file": "config/thresholds.yaml",
+   "has": [
+    "timing_tau_days"
+   ]
+  },
+  {
+   "name": "Case job settings",
+   "file": "config/thresholds.yaml",
+   "has": [
+    "case_threshold"
+   ]
+  },
+  {
+   "name": "Voltage locator settings",
+   "file": "config/thresholds.yaml",
+   "has": [
+    "proximity_scale_m"
+   ]
+  },
+  {
+   "name": "Pipeline batch settings",
+   "file": "config/thresholds.yaml",
+   "has": [
+    "meter_batch"
+   ]
+  },
+  {
+   "name": "Route planner settings",
+   "file": "config/thresholds.yaml",
+   "has": [
+    "road_factor"
+   ]
+  },
+  {
+   "name": "Solar check settings",
+   "file": "config/thresholds.yaml",
+   "has": [
+    "strong_night_drop"
+   ]
+  },
+  {
+   "name": "Test Postgres server",
+   "file": "backend/tests/pg_server.py",
+   "has": [
+    "pg_server.py"
+   ]
+  },
+  {
+   "name": "Web data loading (cases, dispatch)",
+   "file": "web/src/components/TelegramChat.jsx",
+   "has": [
+    "get()"
+   ]
+  },
+  {
+   "name": "SDD: software design document",
+   "file": "VoltGuard_SDD.md",
+   "has": [
+    "VoltGuard AI: Software Design Document (SDD)"
+   ]
+  },
+  {
+   "name": "Upload column map example",
+   "file": "data/uploads/column_map.example.yaml",
+   "has": [
+    "columns"
+   ]
+  },
+  {
+   "name": "SRS: requirements",
+   "file": "VoltGuard_SRS.md",
+   "has": [
+    "3. Functional requirements"
+   ]
+  },
+  {
+   "name": "Configuration loader",
+   "file": "backend/voltguard/config.py",
+   "has": [
+    "config.py"
+   ]
+  },
+  {
+   "name": "Data source selection",
+   "file": "config/data_sources.yaml",
+   "has": [
+    "tables"
+   ]
+  },
+  {
+   "name": "Build brief (R0 prompt)",
+   "file": "VoltGuard_ClaudeCode_Prompt.md",
+   "has": [
+    "Build the VoltGuard AI prototype (R0)"
+   ]
+  },
+  {
+   "name": "Data layer tests",
+   "file": "backend/tests/test_data_layer.py",
+   "has": [
+    "test_data_layer.py"
+   ]
+  },
+  {
+   "name": "End-to-end use-case script",
+   "file": "scripts/e2e_use_cases.py",
+   "has": [
+    "e2e_use_cases.py"
+   ]
+  },
+  {
+   "name": "Demo accounts, teams, regions",
+   "file": "config/demo.yaml",
+   "has": [
+    "teams"
+   ]
+  },
+  {
+   "name": "Detection and solar tests",
+   "file": "backend/tests/test_detection.py",
+   "has": [
+    "test_detection.py"
+   ]
+  },
+  {
+   "name": "Tuned weights",
+   "file": "config/tuned_weights.yaml",
+   "has": [
+    "weights"
+   ]
+  },
+  {
+   "name": "Public dataset adapters (London, SGCC, data.gov.my)",
+   "file": "backend/voltguard/data/adapters/london.py",
+   "has": [
+    "london.py"
+   ]
+  },
+  {
+   "name": "Simulation report",
+   "file": "reports/simulation_report.md",
+   "has": [
+    "Simulation report"
+   ]
+  },
+  {
+   "name": "R0 build plan",
+   "file": "PLAN.md",
+   "has": [
+    "VoltGuard AI R0: build plan"
+   ]
+  },
+  {
+   "name": "Prometheus scrape config",
+   "file": "deploy/prometheus/prometheus.yml",
+   "has": [
+    "scrape_configs"
+   ]
+  },
+  {
+   "name": "Case workflow and notifications",
+   "file": "backend/voltguard/service/cases.py",
+   "has": [
+    "cases.py"
+   ]
+  },
+  {
+   "name": "Cloudflare tunnel config",
+   "file": "deploy/cloudflared/config.example.yml",
+   "has": [
+    "config.example.yml"
+   ]
+  },
+  {
+   "name": "Dataset ingest",
+   "file": "backend/voltguard/data/ingest.py",
+   "has": [
+    "ingest.py"
+   ]
+  },
+  {
+   "name": "Local test stack and browser tests",
+   "file": "backend/tests/local_stack.py",
+   "has": [
+    "local_stack.py"
+   ]
+  },
+  {
+   "name": "Admin API and audit writes",
+   "file": "backend/voltguard/api/routes_admin.py",
+   "has": [
+    "audit()"
+   ]
+  },
+  {
+   "name": "make.ps1 tasks",
+   "file": "make.ps1",
+   "has": [
+    "make.ps1"
+   ]
+  },
+  {
+   "name": "Inspection route planner",
+   "file": "backend/voltguard/agents/route.py",
+   "has": [
+    "route.py"
+   ]
+  },
+  {
+   "name": "handoff.sh wrapper",
+   "file": "scripts/handoff.sh",
+   "has": [
+    "handoff.sh"
+   ]
+  },
+  {
+   "name": "Tunnel script",
+   "file": "scripts/tunnel.sh",
+   "has": [
+    "check_link()"
+   ]
+  },
+  {
+   "name": "Rooftop solar checks (FR-PS-10)",
+   "file": "backend/voltguard/detection/features.py",
+   "has": [
+    "_solar_checks()"
+   ]
+  },
+  {
+   "name": "Embeddings, document search and similar cases",
+   "file": "backend/voltguard/agents/embed.py",
+   "has": [
+    "embed.py"
+   ]
+  },
+  {
+   "name": "UI upgrade API (meta, demo, back-test)",
+   "file": "backend/voltguard/api/routes_ui.py",
+   "has": [
+    "routes_ui.py"
+   ]
+  },
+  {
+   "name": "Dispatch agent (suggestions, reminders)",
+   "file": "backend/voltguard/agents/dispatch.py",
+   "has": [
+    "dispatch.py"
+   ]
+  },
+  {
+   "name": "Nightly pipeline (batched load and detection)",
+   "file": "backend/voltguard/service/pipeline.py",
+   "has": [
+    "pipeline.py"
+   ]
+  },
+  {
+   "name": "Case report agent and approvals",
+   "file": "backend/voltguard/agents/report.py",
+   "has": [
+    "report.py"
+   ]
+  },
+  {
+   "name": "Weekly summary report",
+   "file": "backend/voltguard/service/digest_render.py",
+   "has": [
+    "digest_render.py"
+   ]
+  },
+  {
+   "name": "Web app shell and theme",
+   "file": "web/src/App.jsx",
+   "has": [
+    "App.jsx"
+   ]
+  },
+  {
+   "name": "Agent API routes",
+   "file": "backend/voltguard/api/routes_agents.py",
+   "has": [
+    "routes_agents.py"
+   ]
+  },
+  {
+   "name": "Detection engine (balance, features, zone input)",
+   "file": "backend/voltguard/detection/balance.py",
+   "has": [
+    "engine.py"
+   ]
+  },
+  {
+   "name": "Notes scrubber (personal details)",
+   "file": "backend/voltguard/agents/scrubber.py",
+   "has": [
+    "scrubber.py"
+   ]
+  },
+  {
+   "name": "Web dependencies",
+   "file": "web/package.json",
+   "has": [
+    "dependencies"
+   ]
+  },
+  {
+   "name": "Data manager and job buttons",
+   "file": "web/src/pages/DataManager.jsx",
+   "has": [
+    "post()"
+   ]
+  },
+  {
+   "name": "Shared UI components and labels",
+   "file": "web/src/components/ui.jsx",
+   "has": [
+    "t()"
+   ]
+  },
+  {
+   "name": "Database connections and Telegram dispatch bot",
+   "file": "backend/voltguard/service/telegram.py",
+   "has": [
+    "admin_connection()"
+   ]
+  },
+  {
+   "name": "Value at risk and tariff",
+   "file": "backend/voltguard/service/value.py",
+   "has": [
+    "value.py"
+   ]
+  },
+  {
+   "name": "Back-test script",
+   "file": "scripts/backtest.py",
+   "has": [
+    "timedelta"
+   ]
+  },
+  {
+   "name": "Tuning and simulation report code",
+   "file": "backend/voltguard/evaluation.py",
+   "has": [
+    "evaluation.py"
+   ]
+  },
+  {
+   "name": "Case API routes and My work",
+   "file": "backend/voltguard/api/routes_cases.py",
+   "has": [
+    "Caller"
+   ]
+  },
+  {
+   "name": "Encrypted file storage",
+   "file": "backend/voltguard/storage.py",
+   "has": [
+    "storage.py"
+   ]
+  },
+  {
+   "name": "Active sources and dataset versions",
+   "file": "backend/voltguard/data/sources.py",
+   "has": [
+    "sources.py"
+   ]
+  },
+  {
+   "name": "Retraining and weekly endpoints",
+   "file": "backend/voltguard/service/learning.py",
+   "has": [
+    "learning.py"
+   ]
+  },
+  {
+   "name": "Case workflow tests",
+   "file": "backend/tests/test_cases.py",
+   "has": [
+    "test_cases.py"
+   ]
+  },
+  {
+   "name": "Pattern model and autoencoder",
+   "file": "backend/voltguard/detection/pattern.py",
+   "has": [
+    "pattern.py"
+   ]
+  },
+  {
+   "name": "Power BI build guide",
+   "file": "powerbi/BUILD_WITH_CLAUDE_ON_LAPTOP.md",
+   "has": [
+    "Build the Power BI dashboard with Claude on your laptop"
+   ]
+  },
+  {
+   "name": "Analyst chatbot (query templates)",
+   "file": "backend/voltguard/agents/chatbot.py",
+   "has": [
+    "chatbot.py"
+   ]
+  },
+  {
+   "name": "API security and UI upgrade tests",
+   "file": "backend/tests/test_api_security.py",
+   "has": [
+    "login()"
+   ]
+  },
+  {
+   "name": "Canonical schema and upload validation",
+   "file": "backend/voltguard/data/validation.py",
+   "has": [
+    "ValidationReport"
+   ]
+  },
+  {
+   "name": "Zone API routes",
+   "file": "backend/voltguard/api/routes_zones.py",
+   "has": [
+    "routes_zones.py"
+   ]
+  },
+  {
+   "name": "Household load profiles",
+   "file": "backend/voltguard/data/profiles.py",
+   "has": [
+    "profiles.py"
+   ]
+  },
+  {
+   "name": "Inspector app and API client",
+   "file": "web/src/field/FieldApp.jsx",
+   "has": [
+    "api.js"
+   ]
+  },
+  {
+   "name": "Inspector encrypted offline store",
+   "file": "web/src/field/secureStore.js",
+   "has": [
+    "secureStore.js"
+   ]
+  },
+  {
+   "name": "Network loss model and zone inputs",
+   "file": "backend/voltguard/network.py",
+   "has": [
+    "LossParams"
+   ]
+  },
+  {
+   "name": "Review and test report",
+   "file": "docs/REVIEW_AND_TEST_REPORT.md",
+   "has": [
+    "VoltGuard AI R0: review and end-to-end test report"
+   ]
+  },
+  {
+   "name": "Test fixtures and seeded users",
+   "file": "backend/tests/conftest.py",
+   "has": [
+    "conftest.py"
+   ]
+  },
+  {
+   "name": "Zone simulator",
+   "file": "backend/voltguard/data/simulator.py",
+   "has": [
+    "simulator.py"
+   ]
+  },
+  {
+   "name": "Overview and Validation pages",
+   "file": "web/src/lib/format.js",
+   "has": [
+    "Overview.jsx"
+   ]
+  },
+  {
+   "name": "UI/UX design requirements",
+   "file": "docs/UI_UX_DESIGN_REQUIREMENTS.md",
+   "has": [
+    "VoltGuard AI: UI and UX design requirements (R0 → R1 redesign)"
+   ]
+  },
+  {
+   "name": "Reason waterfall",
+   "file": "web/src/lib/waterfall.js",
+   "has": [
+    "Waterfall.jsx"
+   ]
+  },
+  {
+   "name": "How to run and README",
+   "file": "HOW_TO_RUN.md",
+   "has": [
+    "How to run VoltGuard AI (and share it with a public link)"
+   ]
+  },
+  {
+   "name": "Telegram bot tests",
+   "file": "backend/tests/test_telegram.py",
+   "has": [
+    "test_telegram.py"
+   ]
+  },
+  {
+   "name": "UI upgrade brief",
+   "file": "VoltGuard_UI_Upgrade_Prompt.md",
+   "has": [
+    "3. New features"
+   ]
+  },
+  {
+   "name": "Screenshot scripts",
+   "file": "scripts/ui_screenshots.py",
+   "has": [
+    "ui_screenshots.py"
+   ]
+  },
+  {
+   "name": "Service worker",
+   "file": "web/public/sw.js",
+   "has": [
+    "SHELL"
+   ]
+  },
+  {
+   "name": "e2e package marker",
+   "file": "backend/tests/e2e/__init__.py",
+   "has": [
+    "e2e/__init__.py"
+   ]
+  },
+  {
+   "name": "Labels (EN/BM) and solar wording",
+   "file": "web/src/lib/solar.js",
+   "has": [
+    "i18n.js"
+   ]
+  },
+  {
+   "name": "Database tables and reporting views",
+   "file": "backend/voltguard/sql/001_core.sql",
+   "has": [
+    "001_core.sql"
+   ]
+  },
+  {
+   "name": "RAG indexing",
+   "file": "backend/voltguard/agents/rag.py",
+   "has": [
+    "rag.py"
+   ]
+  },
+  {
+   "name": "Power BI dashboard layout",
+   "file": "powerbi/POWERBI.md",
+   "has": [
+    "Manager dashboard in Power BI (R0)"
+   ]
+  },
+  {
+   "name": "Sign-in, roles and API dependencies",
+   "file": "backend/voltguard/api/deps.py",
+   "has": [
+    "voltguard/__init__.py"
+   ]
+  },
+  {
+   "name": "Upload area guide",
+   "file": "data/uploads/README.md",
+   "has": [
+    "Upload area: bring your own datasets"
+   ]
+  },
+  {
+   "name": "Language model, seed and demo command",
+   "file": "backend/voltguard/agents/llm.py",
+   "has": [
+    "llm.py"
+   ]
+  },
+  {
+   "name": "Agent safety tests and PDF export",
+   "file": "backend/tests/test_agents.py",
+   "has": [
+    "test_agents.py"
+   ]
+  },
+  {
+   "name": "Traceability and setup scripts",
+   "file": "scripts/traceability.py",
+   "has": [
+    "pathlib"
+   ]
+  },
+  {
+   "name": "Public RAG document list",
+   "file": "data/docs_rag/sources.yaml",
+   "has": [
+    "documents"
+   ]
+  },
+  {
+   "name": "Field assistant guide",
+   "file": "data/docs_rag/voltguard_guide.md",
+   "has": [
+    "voltguard_guide.md"
+   ]
+  },
+  {
+   "name": "CLI commands and audit chain",
+   "file": "backend/voltguard/service/commands.py",
+   "has": [
+    "command()"
+   ]
+  },
+  {
+   "name": "Hand-off script",
+   "file": "scripts/handoff.py",
+   "has": [
+    "handoff.py"
+   ]
+  },
+  {
+   "name": "Field evidence checklist",
+   "file": "data/docs_rag/field_evidence_checklist.md",
+   "has": [
+    "field_evidence_checklist.md"
+   ]
+  },
+  {
+   "name": "RAG documents README",
+   "file": "data/docs_rag/README.md",
+   "has": [
+    "Documents for the field assistant and the report agent (RAG)"
+   ]
+  },
+  {
+   "name": "Premise view, why cleared, solar check API",
+   "file": "backend/voltguard/service/explain.py",
+   "has": [
+    "premise_view()"
+   ]
+  },
+  {
+   "name": "Report template",
+   "file": "data/docs_rag/report_template.md",
+   "has": [
+    "report_template.md"
+   ]
+  },
+  {
+   "name": "Deviations from the SDD",
+   "file": "DEVIATIONS.md",
+   "has": [
+    "Deviations from the SDD"
+   ]
+  },
+  {
+   "name": "Data health",
+   "file": "backend/voltguard/service/data_health.py",
+   "has": [
+    "data_health.py"
+   ]
+  },
+  {
+   "name": "Monitoring and alerts",
+   "file": "backend/voltguard/service/monitoring.py",
+   "has": [
+    "monitoring.py"
+   ]
+  },
+  {
+   "name": "Traceability matrix",
+   "file": "TRACEABILITY.md",
+   "has": [
+    "Traceability"
+   ]
+  },
+  {
+   "name": "Hand-off notes",
+   "file": "HANDOFF.md",
+   "has": [
+    "Hand-off: VoltGuard AI R0 build"
+   ]
+  },
+  {
+   "name": "Demo script",
+   "file": "DEMO.md",
+   "has": [
+    "VoltGuard AI demo script (R0)"
+   ]
+  },
+  {
+   "name": "Models and licences",
+   "file": "MODELS.md",
+   "has": [
+    "MODELS.md"
+   ]
+  },
+  {
+   "name": "Back-test report",
+   "file": "reports/backtest_report.md",
+   "has": [
+    "Back-test report (simulated data)"
+   ]
+  },
+  {
+   "name": "Dataset and document download scripts",
+   "file": "scripts/fetch_datasets.py",
+   "has": [
+    "os"
+   ]
+  },
+  {
+   "name": "CLI entry and reporting tests",
+   "file": "backend/tests/test_reporting.py",
+   "has": [
+    "cli.py"
+   ]
+  },
+  {
+   "name": "Scoring and reasons",
+   "file": "backend/voltguard/detection/scoring.py",
+   "has": [
+    "scoring.py"
+   ]
+  },
+  {
+   "name": "Assistant page and query charts",
+   "file": "web/src/pages/Assistant.jsx",
+   "has": [
+    "Assistant.jsx"
+   ]
+  },
+  {
+   "name": "Weekly report and message tests",
+   "file": "backend/tests/test_digest.py",
+   "has": [
+    "psycopg"
+   ]
+  },
+  {
+   "name": "Demo guide and reset",
+   "file": "backend/voltguard/service/demo_guide.py",
+   "has": [
+    "demo_guide.py"
+   ]
+  },
+  {
+   "name": "API app, scheduler and lifespan",
+   "file": "backend/voltguard/service/scheduler.py",
+   "has": [
+    "db.py"
+   ]
+  },
+  {
+   "name": "Feeder schematic",
+   "file": "web/src/lib/schematic.js",
+   "has": [
+    "FeederSchematic.jsx"
+   ]
+  },
+  {
+   "name": "Solar brief",
+   "file": "VoltGuard_Solar_Prompt.md",
+   "has": [
+    "VoltGuard R0: finish the rooftop-solar handling (FR-PS-10) and show it"
+   ]
+  },
+  {
+   "name": "Weekly report brief",
+   "file": "VoltGuard_Report_Upgrade_Prompt.md",
+   "has": [
+    "VoltGuard R0: make the weekly summary report self-explanatory"
+   ]
+  },
+  {
+   "name": "Route planner tests",
+   "file": "backend/tests/test_route.py",
+   "has": [
+    "test_route.py"
+   ]
+  },
+  {
+   "name": "UI and weekly report change log",
+   "file": "reports/ui/CHANGES.md",
+   "has": [
+    "UI upgrade: before and after"
+   ]
+  },
+  {
+   "name": "Rooftop solar schemes explainer (RAG)",
+   "file": "data/docs_rag/rooftop_solar_schemes.md",
+   "has": [
+    "rooftop_solar_schemes.md"
+   ]
+  },
+  {
+   "name": "UI upgrade plan",
+   "file": "reports/ui/PLAN.md",
+   "has": [
+    "UI upgrade plan (`VoltGuard_UI_Upgrade_Prompt.md`)"
+   ]
+  },
+  {
+   "name": "Vite dev proxy",
+   "file": "web/vite.config.js",
+   "has": [
+    "apiProxy"
+   ]
+  },
+  {
+   "name": "Detection run and solar fixtures",
+   "file": "backend/voltguard/detection/engine.py",
+   "has": [
+    "run_tables()"
+   ]
+  },
+  {
+   "name": "Chatbot chart tests",
+   "file": "backend/tests/test_agents.py",
+   "has": [
+    "test_FR_AG_03_answers_carry_a_chart_and_a_sentence_from_the_rows()"
+   ]
+  },
+  {
+   "name": "Agent guardrails",
+   "file": "backend/voltguard/agents/guardrails.py",
+   "has": [
+    "guardrails.py"
+   ]
+  },
+  {
+   "name": "Threshold settings (admin overrides)",
+   "file": "backend/voltguard/service/settings.py",
+   "has": [
+    "thresholds()"
+   ]
+  },
+  {
+   "name": "Learning and monitoring tests",
+   "file": "backend/tests/test_learning.py",
+   "has": [
+    "test_learning.py"
+   ]
+  },
+  {
+   "name": "Row-level security",
+   "file": "backend/voltguard/sql/002_security.sql",
+   "has": [
+    "002_security.sql"
+   ]
+  },
+  {
+   "name": "Demo-mode test config",
+   "file": "backend/tests/test_ui_upgrade.py",
+   "has": [
+    "config_copy()"
+   ]
+  },
+  {
+   "name": "Telegram tables",
+   "file": "backend/voltguard/sql/005_telegram.sql",
+   "has": [
+    "005_telegram.sql"
+   ]
+  },
+  {
+   "name": "Reporting case fixture",
+   "file": "backend/tests/test_agents.py",
+   "has": [
+    "reporting_case()"
+   ]
+  },
+  {
+   "name": "Solar registration columns",
+   "file": "backend/voltguard/sql/006_solar.sql",
+   "has": [
+    "006_solar.sql"
+   ]
+  },
+  {
+   "name": "doc_chunk table",
+   "file": "",
+   "has": [
+    "doc_chunk"
+   ]
+  },
+  {
+   "name": "notification table",
+   "file": "",
+   "has": [
+    "notification"
+   ]
+  },
+  {
+   "name": "PDF export",
+   "file": "backend/voltguard/pdf.py",
+   "has": []
+  },
+  {
+   "name": "Audit chain and daily anchor",
+   "file": "backend/voltguard/audit.py",
+   "has": []
+  },
+  {
+   "name": "Model API and retraining",
+   "file": "backend/voltguard/api/routes_models.py",
+   "has": []
+  },
+  {
+   "name": "Autoencoder and model training",
+   "file": "backend/voltguard/detection/anomaly.py",
+   "has": []
+  },
+  {
+   "name": "Sign-in, sessions and file storage",
+   "file": "backend/voltguard/auth.py",
+   "has": []
+  },
+  {
+   "name": "Graph naming and traceability scripts",
+   "file": "scripts/graph_labels.py",
+   "has": []
+  },
+  {
+   "name": "Admin API (datasets, sources, audit)",
+   "file": "backend/voltguard/api/routes_admin.py",
+   "has": []
+  },
+  {
+   "name": "Airflow nightly DAG",
+   "file": "deploy/airflow/dags/voltguard_nightly.py",
+   "has": []
+  },
+  {
+   "name": "API app, scheduler and lifespan",
+   "file": "backend/voltguard/api/main.py",
+   "has": []
+  },
+  {
+   "name": "Background job runner (one heavy job at a time)",
+   "file": "backend/voltguard/service/jobs.py",
+   "has": []
+  },
+  {
+   "name": "Telegram API routes",
+   "file": "backend/voltguard/api/routes_telegram.py",
+   "has": []
+  },
+  {
+   "name": "Database connections and jobs",
+   "file": "backend/voltguard/db.py",
+   "has": []
+  },
+  {
+   "name": "Telegram dispatch bot",
+   "file": "backend/voltguard/service/telegram.py",
+   "has": []
+  },
+  {
+   "name": "Notifications (Telegram or console)",
+   "file": "backend/voltguard/service/notify.py",
+   "has": []
+  }
+ ]
+}
