@@ -169,17 +169,17 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.py)
 
-- Generated: 2026-10-28T12:40
-- Branch: `claude/ui-upgrade`; last commit: `e8d30d3 UI upgrade: design system, redesigned pages and new pages (checkpoint)`
-- Tests collected: 136 tests
+- Generated: 2026-10-28T13:21
+- Branch: `claude/ui-upgrade`; last commit: `12966aa Rooftop solar: close the scoring loophole and add the missing checks (FR-PS-10)`
+- Tests collected: 147 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
   query with `graphify query "<question>"` or `graphify explain "<name>"`)
 
 ### Graph summary
 
-- 2562 nodes · 5669 edges · 147 communities (139 shown, 8 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 180 edges (avg confidence: 0.93)
+- 2600 nodes · 5779 edges · 149 communities (142 shown, 7 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 185 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
@@ -198,7 +198,7 @@ Most connected (core abstractions):
 
 - `./`: .dockerignore, .env.example, .gitignore, DEMO.md, DEVIATIONS.md, HANDOFF.md, HOW_TO_RUN.md, MODELS.md, Makefile, PLAN.md, README.md, TRACEABILITY.md, ... (+13)
 - `backend/`: Dockerfile, pytest.ini, requirements.txt
-- `backend/tests/`: conftest.py, local_stack.py, pg_server.py, test_agents.py, test_api_security.py, test_cases.py, test_data_layer.py, test_detection.py, test_digest.py, test_digest_render.py, test_learning.py, test_pipeline_batches.py, ... (+5)
+- `backend/tests/`: conftest.py, local_stack.py, pg_server.py, test_agents.py, test_api_security.py, test_cases.py, test_data_layer.py, test_detection.py, test_digest.py, test_digest_render.py, test_learning.py, test_pipeline_batches.py, ... (+6)
 - `backend/tests/e2e/`: __init__.py, test_demo_rehearsal.py, test_web_flow.py
 - `backend/voltguard/`: __init__.py, __main__.py, audit.py, auth.py, cli.py, config.py, db.py, evaluation.py, network.py, pdf.py, storage.py
 - `backend/voltguard/agents/`: __init__.py, chatbot.py, dispatch.py, embed.py, guardrails.py, llm.py, rag.py, report.py, route.py, scrubber.py
@@ -206,7 +206,7 @@ Most connected (core abstractions):
 - `backend/voltguard/data/`: __init__.py, adapters/__init__.py, adapters/datagovmy.py, adapters/london.py, adapters/sgcc.py, canonical.py, fakes.py, ingest.py, profiles.py, simulator.py, sources.py, validation.py
 - `backend/voltguard/detection/`: __init__.py, anomaly.py, balance.py, engine.py, features.py, pattern.py, scoring.py, voltage.py, zone_input.py
 - `backend/voltguard/service/`: __init__.py, cases.py, commands.py, data_health.py, demo.py, demo_guide.py, digest.py, digest_render.py, explain.py, jobs.py, learning.py, monitoring.py, ... (+9)
-- `backend/voltguard/sql/`: 001_core.sql, 002_security.sql, 003_cases.sql, 004_reporting.sql, 005_telegram.sql
+- `backend/voltguard/sql/`: 001_core.sql, 002_security.sql, 003_cases.sql, 004_reporting.sql, 005_telegram.sql, 006_solar.sql
 - `config/`: data_sources.yaml, demo.yaml, tariffs.yaml, thresholds.yaml, tuned_weights.yaml
 - `data/docs_rag/`: README.md, field_evidence_checklist.md, report_template.md, sources.yaml, voltguard_guide.md
 - `data/uploads/`: README.md, column_map.example.yaml, schema.yaml
