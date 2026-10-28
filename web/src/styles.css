@@ -823,10 +823,66 @@ input[type="file"]::file-selector-button {
 }
 
 /* ---------------------------------------------------------------- login */
-.login { max-width: 400px; margin: 10vh auto; }
-.login form { display: flex; flex-direction: column; gap: var(--space-4); }
-.login button.primary { height: 48px; min-height: 48px; font-size: 15px; }
-.login input { min-height: 44px; }
+/* The one "hero" composition in the product: centred, sparse, display-size name. */
+.display {
+  font-size: var(--fs-display);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -1.3px;
+  margin: 0;
+}
+.login-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding:
+    calc(var(--space-16) + env(safe-area-inset-top, 0px))
+    calc(var(--space-5) + env(safe-area-inset-right, 0px))
+    calc(var(--space-12) + env(safe-area-inset-bottom, 0px))
+    calc(var(--space-5) + env(safe-area-inset-left, 0px));
+  background: var(--bg);
+}
+.login { width: 100%; max-width: 420px; display: flex; flex-direction: column; }
+.login-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-5);
+  margin-bottom: var(--space-10);
+}
+.login-hero .logo-mark { margin-bottom: var(--space-1); }
+.login-lede { margin: 0; font-size: 17px; line-height: 1.5; color: var(--text-secondary); }
+.login-form { display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-7); }
+.login-form label { gap: var(--space-2); }
+.login-form input { min-height: 44px; font-size: 15px; padding: 10px 12px; }
+.login-form button.primary { width: 100%; margin-top: var(--space-1); }
+.login-form button.primary:hover { transform: none; }
+/* busy, not unavailable: keep full colour so the wait reads as progress */
+.login-form button.primary:disabled { opacity: 1; cursor: progress; background: var(--primary-fill-hover); border-color: var(--primary-fill-hover); }
+.spinner.on-primary { border-color: rgba(255, 255, 255, 0.35); border-top-color: #ffffff; }
+.login-foot {
+  margin-top: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+  font-size: var(--fs-meta);
+  color: var(--text-secondary);
+}
+.login-foot p { margin: 0; }
+.login-foot code { white-space: nowrap; }
+.login-note { display: inline-flex; align-items: baseline; gap: var(--space-2); text-align: left; }
+.login-note .status-dot { transform: translateY(-1px); }
+@media (max-width: 480px) {
+  .display { font-size: clamp(40px, 12.5vw, 64px); letter-spacing: -1px; }
+  .login-page { align-items: flex-start; padding-top: calc(var(--space-12) + env(safe-area-inset-top, 0px)); }
+  .login-hero { gap: var(--space-4); margin-bottom: var(--space-8); }
+  .login-form { padding: var(--space-5); }
+}
 
 /* ---------------------------------------------------------------- inspector app: phone first */
 .field {
