@@ -228,7 +228,8 @@ switch ($Target) {
         Invoke-Py @("-m", "voltguard", "snapshot") }
     "backtest" { # Day-by-day back-test on simulated history
         Invoke-Py @("/app/scripts/backtest.py") }
-    "handoff" { # Rebuild the graphify graph and HANDOFF.md (needs Git Bash or WSL)
-        bash scripts/handoff.sh }
+    "handoff" { # Rebuild the graphify graph, TRACEABILITY.md and HANDOFF.md
+        $py = if (Test-Path .\.venv\Scripts\python.exe) { ".\.venv\Scripts\python.exe" } else { "python" }
+        & $py scripts\handoff.py }
     default { throw "Unknown target '$Target'. Run .\make.ps1 help" }
 }
