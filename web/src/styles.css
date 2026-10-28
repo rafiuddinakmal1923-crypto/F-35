@@ -892,8 +892,8 @@ input[type="file"]::file-selector-button {
   background-size: 180px 180px;
   mix-blend-mode: overlay;
   opacity: var(--grain-opacity);
-  -webkit-mask-image: radial-gradient(ellipse 46% 44% at 50% 52%, #000 35%, transparent 100%);
-  mask-image: radial-gradient(ellipse 46% 44% at 50% 52%, #000 35%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 52% 50% at 50% 52%, #000 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 52% 50% at 50% 52%, #000 40%, transparent 100%);
 }
 .glass {
   position: relative;
