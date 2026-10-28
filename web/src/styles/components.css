@@ -1,0 +1,326 @@
+/* Shared components: layout primitives, panels, buttons, forms, tables, chips, badges, notices,
+   loading and empty states, metrics. Class names match the ones the pages already use. */
+
+/* ---------------------------------------------------------------- layout primitives */
+.stack { display: flex; flex-direction: column; gap: var(--space-4); }
+.stack-sm { display: flex; flex-direction: column; gap: var(--space-2); }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
+.row-between { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
+
+.grid { display: grid; gap: var(--space-4); }
+.grid.two { grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); }
+.grid.kpis { grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); }
+
+/* Page heading row: title and meta on the left, actions on the right. */
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.page-header h1 { margin: 0; }
+.page-meta { color: var(--text-muted); font-size: var(--text-sm); margin-top: var(--space-1); }
+
+/* ---------------------------------------------------------------- panels
+   Flat surfaces with a 1 px border; no shadows. Use them for distinct work areas, not for every element. */
+.card {
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+.card > h2:first-child,
+.card > .row:first-child > h2 { font-size: var(--text-base); }
+.card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.card-header h2 { margin: 0; font-size: var(--text-base); }
+.section-title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+/* ---------------------------------------------------------------- buttons */
+button,
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-h);
+  padding: 0 var(--space-4);
+  font: inherit;
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  line-height: 1.2;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--duration) var(--ease), border-color var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+button:hover,
+.button:hover { background: var(--surface-2); text-decoration: none; }
+button:active,
+.button:active { background: var(--border); }
+
+button.primary,
+.button.primary {
+  color: var(--on-brand);
+  background: var(--brand-solid);
+  border-color: var(--brand-solid);
+}
+button.primary:hover,
+.button.primary:hover { background: var(--brand-solid-hover); border-color: var(--brand-solid-hover); }
+
+button.danger,
+.button.danger {
+  color: var(--on-risk);
+  background: var(--risk-solid);
+  border-color: var(--risk-solid);
+}
+button.danger:hover { filter: brightness(0.94); }
+
+button.quiet,
+.button.quiet { background: transparent; border-color: transparent; color: var(--brand); }
+button.quiet:hover { background: var(--brand-soft); }
+
+button.small,
+.button.small { min-height: 28px; padding: 0 var(--space-3); font-size: var(--text-sm); }
+
+button:disabled,
+button[aria-disabled="true"] {
+  color: var(--text-disabled);
+  background: var(--surface-2);
+  border-color: var(--border);
+  cursor: not-allowed;
+  filter: none;
+}
+
+/* ---------------------------------------------------------------- forms */
+label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text);
+}
+
+input,
+select,
+textarea {
+  min-height: var(--control-h);
+  padding: 0 var(--space-3);
+  font: inherit;
+  font-size: var(--text-md);
+  font-weight: var(--weight-regular);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--duration) var(--ease);
+}
+input::placeholder,
+textarea::placeholder { color: var(--text-muted); opacity: 1; }
+input:hover,
+select:hover,
+textarea:hover { border-color: var(--text-muted); }
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible { border-color: var(--focus-ring); }
+input[aria-invalid="true"],
+select[aria-invalid="true"],
+textarea[aria-invalid="true"] { border-color: var(--risk); }
+input:disabled,
+select:disabled,
+textarea:disabled { color: var(--text-disabled); background: var(--surface-2); border-color: var(--border); cursor: not-allowed; }
+
+textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: var(--space-2) var(--space-3);
+  line-height: var(--leading-normal);
+  resize: vertical;
+}
+
+select { padding-right: var(--space-2); cursor: pointer; }
+
+input[type="checkbox"],
+input[type="radio"] { min-height: auto; width: 16px; height: 16px; accent-color: var(--brand-solid); }
+
+input[type="file"] { min-height: auto; padding: var(--space-1); border-style: dashed; }
+input[type="file"]::file-selector-button {
+  margin-right: var(--space-3);
+  min-height: 28px;
+  padding: 0 var(--space-3);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.field-hint { font-size: var(--text-sm); font-weight: var(--weight-regular); color: var(--text-muted); }
+.field-error { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--risk); }
+
+/* Larger targets on touch screens (WCAG 2.5.8, 44 px for comfortable use). */
+@media (pointer: coarse) {
+  button, .button, input, select { min-height: var(--touch-h); }
+  button.small, .button.small { min-height: 36px; }
+}
+
+/* ---------------------------------------------------------------- tables */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-md);
+  font-variant-numeric: tabular-nums;
+}
+caption { text-align: left; font-size: var(--text-sm); color: var(--text-muted); padding-bottom: var(--space-2); }
+th,
+td {
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+thead th {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border-bottom-color: var(--border);
+  white-space: nowrap;
+}
+tbody tr:last-child td { border-bottom: 0; }
+td.num,
+th.num { text-align: right; font-variant-numeric: tabular-nums; }
+/* A flagged row gets a risk bar on its first cell; the row also carries a text chip, so colour is never alone. */
+tr.flagged td:first-child { box-shadow: inset 3px 0 0 var(--risk); }
+td:first-child,
+td:first-child a { white-space: nowrap; }
+.card > .table-wrap:last-child,
+.card > table:last-child { margin-bottom: calc(var(--space-2) * -1); }
+
+/* ---------------------------------------------------------------- chips (status labels, not buttons) */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 22px;
+  margin: 0 var(--space-1) 2px 0;
+  padding: 0 var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  vertical-align: middle;
+}
+.chip.risk { color: var(--risk); background: var(--risk-soft); border-color: color-mix(in srgb, var(--risk) 35%, transparent); }
+.chip.warn { color: var(--warning); background: var(--warning-soft); border-color: color-mix(in srgb, var(--warning) 35%, transparent); }
+.chip.ok { color: var(--success); background: var(--success-soft); border-color: color-mix(in srgb, var(--success) 35%, transparent); }
+.chip.info { color: var(--info); background: var(--info-soft); border-color: color-mix(in srgb, var(--info) 35%, transparent); }
+
+/* ---------------------------------------------------------------- badges (environment and mode labels) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: 1.2;
+  white-space: nowrap;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-sm);
+}
+
+/* ---------------------------------------------------------------- notices (inline alerts)
+   Status is carried by the left rule, the soft background and the text itself; body text stays full contrast. */
+.notice {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-md);
+  color: var(--text);
+  background: var(--info-soft);
+  border: 1px solid color-mix(in srgb, var(--info) 30%, transparent);
+  border-left: 3px solid var(--info);
+  border-radius: var(--radius-sm);
+}
+.notice.warn { background: var(--warning-soft); border-color: color-mix(in srgb, var(--warning) 30%, transparent); border-left-color: var(--warning); }
+.notice.error { background: var(--risk-soft); border-color: color-mix(in srgb, var(--risk) 30%, transparent); border-left-color: var(--risk); }
+.notice.ok { background: var(--success-soft); border-color: color-mix(in srgb, var(--success) 30%, transparent); border-left-color: var(--success); }
+.notice > :last-child { margin-bottom: 0; }
+.notice-title { display: block; font-weight: var(--weight-semibold); margin-bottom: var(--space-1); }
+
+/* Personal details hidden by the masking rules. */
+.masked {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-md);
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+/* ---------------------------------------------------------------- loading, empty and error states
+   Honest and static: a plain message, no spinners or shimmer. */
+.state {
+  padding: var(--space-5) var(--space-4);
+  text-align: left;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+}
+.state-title { display: block; margin-bottom: var(--space-1); font-weight: var(--weight-semibold); color: var(--text); }
+.state.error { border-style: solid; border-color: color-mix(in srgb, var(--risk) 40%, transparent); background: var(--risk-soft); }
+.skeleton {
+  display: block;
+  height: 12px;
+  margin: var(--space-2) 0;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+.skeleton.w-60 { width: 60%; }
+.skeleton.w-40 { width: 40%; }
+[aria-busy="true"] { cursor: progress; }
+
+/* ---------------------------------------------------------------- metrics */
+.kpi { display: flex; flex-direction: column; gap: var(--space-1); }
+.kpi .value {
+  font-size: var(--text-metric);
+  font-weight: var(--weight-semibold);
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.kpi .label { font-size: var(--text-sm); color: var(--text-muted); }
+
+/* ---------------------------------------------------------------- disclosure */
+details > summary {
+  cursor: pointer;
+  color: var(--brand);
+  font-weight: var(--weight-medium);
+  border-radius: var(--radius-sm);
+}
+details[open] > summary { margin-bottom: var(--space-2); }

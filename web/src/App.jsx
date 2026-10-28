@@ -38,23 +38,31 @@ function Shell({ children }) {
   return (
     <>
       <header className="topbar">
-        <span className="logo"><img src="/icon.svg" alt="" width="22" height="22" /> VoltGuard AI</span>
-        {health?.llm_mode === "mock" ? <span className="badge-mode" title="Agents use deterministic templates">mock</span> : null}
-        <span className="badge-mode" style={{ background: "transparent", color: "inherit", border: "1px solid rgba(255,255,255,.4)" }}>R0 · simulated data</span>
+        <span className="logo"><img src="/icon.svg" alt="" width="24" height="24" /> VoltGuard AI</span>
+        <span className="env-badges">
+          {health?.llm_mode === "mock" ? <span className="badge badge-mode" title={t("mockModeHint")}>{t("mockMode")}</span> : null}
+          <span className="badge">{t("envSimulated")}</span>
+        </span>
         <span className="spacer" />
-        <select value={lang} onChange={(e) => setLang(e.target.value)} aria-label="Language">
+        <select value={lang} onChange={(e) => setLang(e.target.value)} aria-label={t("language")}>
+          {/* Language names stay in their own language so each reader can find theirs. */}
           <option value="en">English</option><option value="ms">Bahasa Melayu</option>
         </select>
         {user ? <button onClick={signOut}>{t("signOut")}</button> : null}
       </header>
       <div className="layout">
-        <nav className="nav">
-          <div className="who">{user?.user_id}<br />{user?.role} · {user?.region}{user?.team ? ` · ${user.team}` : ""}</div>
-          {NAV.filter((n) => n.roles.includes(user?.role)).map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.to === "/"}>{t(n.key)}</NavLink>
-          ))}
+        <nav className="nav" aria-label={t("mainNavigation")}>
+          <div className="who">
+            <span className="who-id">{user?.user_id}</span>
+            <span className="who-meta">{user?.role} · {user?.region}{user?.team ? ` · ${user.team}` : ""}</span>
+          </div>
+          <div className="nav-links">
+            {NAV.filter((n) => n.roles.includes(user?.role)).map((n) => (
+              <NavLink key={n.to} to={n.to} end={n.to === "/"}>{t(n.key)}</NavLink>
+            ))}
+          </div>
         </nav>
-        <main>{children}</main>
+        <main id="main">{children}</main>
       </div>
     </>
   );
@@ -68,6 +76,8 @@ function Guarded({ children }) {
 }
 
 export default function App() {
+  const lang = useLang();
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]); // approved exception: screen readers read the chosen language
   return (
     <HashRouter>
       <Routes>

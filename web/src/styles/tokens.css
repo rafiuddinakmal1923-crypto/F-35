@@ -1,0 +1,160 @@
+/* VoltGuard design tokens: colour (light + dark), type, spacing, radius, elevation, motion.
+   Every text/background pair below was checked against WCAG 2.2 AA; ratios are noted beside them.
+   Components and pages use these variables only, never raw hex values. */
+
+:root {
+  color-scheme: light dark;
+
+  /* ---------------------------------------------------------------- type */
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  --text-xs: 12px;      /* chart axes, captions: the minimum size */
+  --text-sm: 13px;      /* meta lines, chips, table headers */
+  --text-md: 14px;      /* desktop UI default: tables, forms, navigation */
+  --text-base: 16px;    /* reading text; the field app default */
+  --text-lg: 18px;      /* panel titles (h2) */
+  --text-xl: 22px;      /* page titles (h1) */
+  --text-metric: 28px;  /* KPI values and risk scores */
+
+  --leading-tight: 1.3;
+  --leading-normal: 1.5;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* ---------------------------------------------------------------- spacing (4 px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* ---------------------------------------------------------------- shape */
+  --radius-sm: 4px;     /* controls, chips */
+  --radius-md: 6px;     /* panels */
+  --radius-lg: 8px;     /* map, dialogs: the maximum */
+
+  /* ---------------------------------------------------------------- elevation
+     Level 0 is flat with a 1 px border. Level 1 is for floating layers only (menus, popovers). */
+  --elevation-1: 0 2px 8px rgb(16 24 40 / 0.12);
+
+  /* ---------------------------------------------------------------- motion */
+  --duration-fast: 120ms;
+  --duration: 150ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ---------------------------------------------------------------- sizes */
+  --control-h: 36px;         /* desktop buttons and inputs */
+  --touch-h: 44px;           /* coarse pointers and the field app */
+  --header-h: 52px;
+  --nav-w: 232px;
+  --focus-width: 2px;
+  --focus-offset: 2px;
+
+  /* ---------------------------------------------------------------- colour: light */
+  --bg: #F4F5F7;
+  --surface: #FFFFFF;
+  --surface-2: #EDF0F3;
+  --text: #161B22;            /* 17.3:1 on surface, 15.1:1 on surface-2 */
+  --text-muted: #4F5967;      /* 7.1:1 on surface, 6.2:1 on surface-2 */
+  --text-disabled: #7D8796;   /* disabled controls (exempt from contrast rules) */
+  --border: #D5DAE1;          /* dividers and panel edges (decorative) */
+  --border-strong: #7D8796;   /* input outlines: 3.6:1 on surface */
+
+  /* Tenaga Blue (Pantone 286 C) */
+  --brand: #0033A0;           /* links, active navigation: 10.6:1 on surface */
+  --brand-solid: #0033A0;     /* primary button fill; white text 10.6:1 */
+  --brand-solid-hover: #002A85; /* white text 12.6:1 */
+  --brand-soft: #E8EEF9;      /* active navigation background; brand text 9.1:1 */
+  --on-brand: #FFFFFF;
+  --header: #0033A0;          /* top bar; white text 10.6:1 */
+  --header-text: #FFFFFF;
+  --header-control-border: #8DA2D6; /* 4.2:1 on the header */
+
+  /* Tenaga Red (Pantone 1795 C): brand accent only, never a status colour */
+  --brand-red: #D22630;       /* 5.2:1 on surface */
+
+  --focus-ring: #0033A0;      /* 10.6:1 on surface */
+
+  /* Semantic status colours. Risk is burnt orange (hue ~25 deg), kept away from Tenaga Red (~356 deg),
+     so theft risk never reads as branding. Errors share the risk colour: both mean "needs attention". */
+  --risk: #B54708;            /* 5.4:1 on surface, 4.8:1 on risk-soft */
+  --risk-soft: #FDEEE3;
+  --risk-solid: #B54708;      /* filled danger button; white text 5.4:1 */
+  --on-risk: #FFFFFF;
+  --warning: #8A5A00;         /* 5.9:1 on surface, 5.4:1 on warning-soft */
+  --warning-soft: #FFF3D1;
+  --success: #17713F;         /* 6.1:1 on surface, 5.3:1 on success-soft */
+  --success-soft: #E3F4E9;
+  --info: #0B6584;            /* teal, not brand blue, so notices never look like links: 6.5:1, 5.7:1 on info-soft */
+  --info-soft: #E2F1F7;
+
+  /* Chart series (each >= 3:1 against the surface; never the only carrier of meaning) */
+  --series-1: #1F5FBF;        /* 6.1:1 */
+  --series-2: #0E7C7B;        /* 5.0:1 */
+  --series-3: #5B6575;        /* 5.9:1 */
+  --series-4: var(--risk);
+  --band: rgb(31 95 191 / 0.14);
+  --chart-marker: var(--warning); /* markers such as "gap opens" and the estimated tap: 5.9:1 */
+
+  /* Legacy names still used by existing pages and inline chart props. Kept as aliases so every page
+     keeps working until its own redesign stage; removed in the final consistency pass. */
+  --muted: var(--text-muted);
+  --accent: var(--chart-marker);
+  --ok: var(--success);
+  --ok-soft: var(--success-soft);
+  --warn: var(--warning);
+  --warn-soft: var(--warning-soft);
+  --radius: var(--radius-md);
+  --shadow: none;
+}
+
+/* ---------------------------------------------------------------- colour: dark
+   Brand colours are re-derived for dark surfaces: Tenaga Blue #0033A0 would be ~1.6:1 here. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0D1117;
+    --surface: #151A21;
+    --surface-2: #1D232C;
+    --text: #E6EAEF;            /* 14.5:1 on surface, 13.1:1 on surface-2 */
+    --text-muted: #A2ACB9;      /* 7.6:1 on surface, 6.9:1 on surface-2 */
+    --text-disabled: #6B7584;
+    --border: #2A313B;
+    --border-strong: #5E6875;   /* 3.1:1 on surface */
+
+    --brand: #8FB0FF;           /* links, active navigation: 8.2:1 on surface */
+    --brand-solid: #3563D8;     /* primary button fill; white text 5.4:1 */
+    --brand-solid-hover: #2A52BE; /* white text 6.9:1 */
+    --brand-soft: #1B2638;      /* active navigation background; brand text 7.1:1 */
+    --on-brand: #FFFFFF;
+    --header: #0A2A6E;          /* white text 13.4:1 */
+    --header-text: #FFFFFF;
+    --header-control-border: #7C93C9; /* 4.4:1 on the header */
+
+    --brand-red: #FF7A82;       /* 7.0:1 on surface */
+
+    --focus-ring: #8FB0FF;      /* 8.2:1 on surface */
+
+    --risk: #F59A57;            /* 8.0:1 on surface, 6.7:1 on risk-soft */
+    --risk-soft: #3A2416;
+    --risk-solid: #F59A57;      /* filled danger button; dark text 8.7:1 */
+    --on-risk: #0D1117;
+    --warning: #E8B94A;         /* 9.6:1, 7.5:1 on warning-soft */
+    --warning-soft: #362C12;
+    --success: #5CC98A;         /* 8.5:1, 6.9:1 on success-soft */
+    --success-soft: #14301F;
+    --info: #5EC2E8;            /* 8.6:1, 6.8:1 on info-soft */
+    --info-soft: #12303D;
+
+    --series-1: #7FA6F5;        /* 7.2:1 */
+    --series-2: #3FC1B8;        /* 7.9:1 */
+    --series-3: #A2ACB9;        /* 7.6:1 */
+    --band: rgb(127 166 245 / 0.18);
+
+    --elevation-1: 0 2px 8px rgb(0 0 0 / 0.4);
+  }
+}
