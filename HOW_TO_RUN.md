@@ -136,8 +136,11 @@ Public link: https://some-random-words.trycloudflare.com  (written to PUBLIC_BAS
 
 - Open that link on any device. The phone app is at `https://some-random-words.trycloudflare.com/#/field`.
 - Case links in messages (and in Telegram) now use this address.
+- The command checks the link from your laptop before saying **OK: the public link works**.
 - **Keep it running.** Every restart gives a new random address, which breaks phone sign-ins and links
-  already sent. The command refuses to restart a running quick tunnel for that reason.
+  already sent. The command keeps a running quick tunnel; if its link is broken, `.\make.ps1 tunnel -New`
+  replaces it.
+- `.\make.ps1 demo` prints the live address, and clears it if the quick tunnel has stopped.
 - No uptime guarantee. It is fine for testing; for judging use Option B.
 
 ### Option B: stable link on your own domain (best for judging)
@@ -209,6 +212,7 @@ The app keeps running on the laptop; the public link stops working and case link
 | Image download is very slow (`ollama`) | It's about 2 GB; let it finish, or stop it with Ctrl+C and run again (it resumes) |
 | Map area is grey or says *Map background unavailable* | The laptop can't reach the map servers (CARTO, OpenStreetMap or Esri). Check the internet, VPN or firewall. Zones and routes are still shown |
 | Phone app says the data was wiped | It was signed out remotely, or the data was older than 24 hours. Sign in again |
+| Browser: *Hmmm… can't reach this page*, `DNS_PROBE_FINISHED_NXDOMAIN` on a `trycloudflare.com` link | The address is stale or not known yet. Run `.\make.ps1 tunnel`: it checks the link and says which problem it is. If it says the tunnel isn't connected, run `.\make.ps1 tunnel -New` for a fresh address. If it says this network's DNS doesn't know it, run `ipconfig /flushdns`, wait a minute, try a phone on mobile data, or turn off antivirus "web protection" for a moment |
 | `No tunnel address yet` | Run `docker compose --profile tunnel logs tunnel` and check the laptop is online. Office networks sometimes block Cloudflare tunnels; try a phone hotspot |
 | Public link opens but case links in messages show `localhost` | Restart the tunnel command; it writes `PUBLIC_BASE_URL` in `.env` and restarts the API |
 | Anything else | `.\make.ps1 logs` and send a screenshot of the red error lines |

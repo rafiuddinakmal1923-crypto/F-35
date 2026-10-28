@@ -6,11 +6,13 @@
   .\make.ps1 demo
   .\make.ps1 ingest -Dataset tnb_extract_2026_10
   .\make.ps1 test -Local          # run with .\.venv instead of the api container
+  .\make.ps1 tunnel -New          # replace a broken quick tunnel with a fresh address
 #>
 param(
     [Parameter(Position = 0)][string]$Target = "help",
     [string]$Dataset = "",
-    [switch]$Local
+    [switch]$Local,
+    [switch]$New
 )
 
 $ErrorActionPreference = "Stop"
@@ -63,11 +65,61 @@ function Invoke-Setup {
     Write-Host "DATA_ROOT ready at $root"
 }
 
+# Open the public link from this laptop the way a visitor would, and say plainly why it fails if it does.
+function Test-PublicLink([string]$Url) {
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    $hostName = ([Uri]$Url).Host
+    Write-Host "Checking that $Url answers from the internet (up to 90 s; new addresses take a moment)..."
+    foreach ($i in 1..45) {
+        try {
+            $r = Invoke-WebRequest -Uri "$Url/health" -UseBasicParsing -TimeoutSec 5
+            if ($r.StatusCode -eq 200) { Write-Host "OK: the public link works." -ForegroundColor Green; return $true }
+        } catch { }
+        Start-Sleep -Seconds 2
+    }
+    $public = $null
+    try { $public = Resolve-DnsName $hostName -Server 1.1.1.1 -ErrorAction Stop } catch { }
+    $local = $null
+    try { $local = Resolve-DnsName $hostName -ErrorAction Stop } catch { }
+    if (-not $public) {
+        Write-Warning "The address $hostName does not exist on the internet: the tunnel is not connected. See: docker compose --profile tunnel logs --tail 30 tunnel. Then try: .\make.ps1 tunnel -New"
+    } elseif (-not $local) {
+        Write-Warning "The internet knows $hostName, but this laptop's network does not (DNS cache, router or antivirus web protection). Try: ipconfig /flushdns, wait a minute, use a phone on mobile data, or set the laptop's DNS to 1.1.1.1."
+    } else {
+        Write-Warning "$hostName resolves but the app did not answer through it. Check: docker compose ps (proxy, api and web running) and docker compose --profile tunnel logs --tail 30 tunnel."
+    }
+    return $false
+}
+
+# A quick tunnel gets a new address whenever it restarts: keep PUBLIC_BASE_URL in .env pointing at
+# the live one (or clear it when no tunnel runs), so printed and messaged links are never stale.
+function Sync-QuickTunnelUrl {
+    $text = Get-Content .env -Raw
+    if ($text -notmatch "(?m)^PUBLIC_BASE_URL=https://[a-z0-9-]+\.trycloudflare\.com") { return }
+    $running = docker compose ps --status running --services 2>$null | Where-Object { $_.Trim() -eq "tunnel" }
+    $url = ""
+    if ($running) {
+        $url = (docker compose --profile tunnel logs tunnel 2>&1 | Select-String -Pattern "https://[a-z0-9-]+\.trycloudflare\.com" -AllMatches |
+                ForEach-Object { $_.Matches.Value } | Select-Object -Last 1)
+    }
+    if (-not $url) { Write-Warning "The quick tunnel is not running, so the public link in .env is cleared. Start one with: .\make.ps1 tunnel" }
+    $updated = $text -replace "(?m)^PUBLIC_BASE_URL=.*$", "PUBLIC_BASE_URL=$url"
+    if ($updated -ne $text) {
+        Set-Content .env $updated -NoNewline
+        docker compose up -d api | Out-Null      # case links in messages follow the live address
+    }
+}
+
 function Invoke-Tunnel([string]$Mode) {
     if ($Mode -eq "quick") {
         $running = docker compose ps --status running --services 2>$null | Where-Object { $_.Trim() -eq "tunnel" }
+        if ($running -and $New) {
+            Write-Warning "Replacing the running quick tunnel: the old address, saved phone sign-ins and links already sent stop working."
+            docker compose --profile tunnel rm -sf tunnel | Out-Null
+            $running = $null
+        }
         if ($running) {
-            Write-Warning "A quick tunnel is already running. Restarting it would change the address and break saved phone sign-ins, offline cases and every Telegram link already sent. Not restarting."
+            Write-Warning "A quick tunnel is already running; keeping its address (restarting would break saved phone sign-ins and links already sent). If the link is broken, run: .\make.ps1 tunnel -New"
         } else {
             docker compose --profile tunnel up -d tunnel
         }
@@ -79,6 +131,11 @@ function Invoke-Tunnel([string]$Mode) {
             Start-Sleep -Seconds 2
         }
         if (-not $url) { throw "No tunnel address yet; check: docker compose --profile tunnel logs tunnel" }
+        # Quick tunnels print a new address each time cloudflared starts: wait until this one is registered.
+        foreach ($i in 1..20) {
+            if (docker compose --profile tunnel logs tunnel 2>&1 | Select-String -SimpleMatch "Registered tunnel connection") { break }
+            Start-Sleep -Seconds 2
+        }
     } elseif ($Mode -eq "token") {
         $token = ((Get-Content .env | Where-Object { $_ -match "^TUNNEL_TOKEN=" }) -replace "^TUNNEL_TOKEN=", "" -replace "\s+#.*$", "").Trim()
         if (-not $token) { throw "Set TUNNEL_TOKEN in .env first (Cloudflare dashboard -> Zero Trust -> Networks -> Tunnels; see HOW_TO_RUN.md)." }
@@ -97,6 +154,8 @@ function Invoke-Tunnel([string]$Mode) {
     Set-Content .env $text -NoNewline
     docker compose up -d api | Out-Null
     Write-Host "Public link: $url  (written to PUBLIC_BASE_URL; api restarted so case links use it)"
+    Write-Host "Phone (inspector app): $url/#/field"
+    Test-PublicLink $url | Out-Null
 }
 
 switch ($Target) {
@@ -146,8 +205,9 @@ switch ($Target) {
         Invoke-Setup
         docker compose up -d --build
         Invoke-Py @("-m", "voltguard", "migrate")
+        Sync-QuickTunnelUrl
         Invoke-Py @("-m", "voltguard", "demo") }
-    "tunnel" { # Quick Cloudflare tunnel; writes PUBLIC_BASE_URL
+    "tunnel" { # Quick Cloudflare tunnel; writes PUBLIC_BASE_URL (-New replaces a broken one)
         Invoke-Tunnel "quick" }
     "tunnel-named" { # Named Cloudflare tunnel with a stable hostname
         Invoke-Tunnel "named" }
