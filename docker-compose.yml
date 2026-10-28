@@ -50,10 +50,14 @@ services:
       context: ./web
     restart: unless-stopped
 
+  # Runs on the CPU here; docker-compose.gpu.yml gives it an NVIDIA GPU (make.ps1 and the Makefile
+  # add that file automatically when nvidia-smi is present). Models live in a named volume inside
+  # Docker's disk image (on D: once its location is moved there): a ~5 GB model loads slowly
+  # through a Windows-drive bind mount.
   ollama:
     image: ollama/ollama:0.6.8
     volumes:
-      - ${OLLAMA_MODELS:-./.data/models/ollama}:/root/.ollama
+      - ollama_models:/root/.ollama
     restart: unless-stopped
 
   proxy:
@@ -166,4 +170,5 @@ services:
 
 volumes:
   pgdata:
+  ollama_models:
   minio:

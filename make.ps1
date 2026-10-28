@@ -18,6 +18,11 @@ param(
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 
+# Give Ollama the GPU when an NVIDIA driver is present (VG_GPU=0 forces CPU).
+if ($env:VG_GPU -ne "0" -and (Get-Command nvidia-smi -ErrorAction SilentlyContinue)) {
+    $env:COMPOSE_FILE = "docker-compose.yml;docker-compose.gpu.yml"
+}
+
 function Invoke-Py([string[]]$CliArgs) {
     if ($Local) {
         $CliArgs = $CliArgs | ForEach-Object { $_ -replace '^/app/', '../' }
@@ -58,7 +63,7 @@ function Invoke-Setup {
     }
     Set-Content .env $text -NoNewline
     $root = ((Get-Content .env | Where-Object { $_ -match "^DATA_ROOT=" }) -replace "^DATA_ROOT=", "" -replace "\s+#.*$", "").Trim()
-    foreach ($sub in "raw\london", "raw\sgcc", "raw\datagovmy", "processed", "uploads", "simulated", "photos", "pdfs", "logs", "audit_anchor", "mlruns", "models\ollama", "models\hf") {
+    foreach ($sub in "raw\london", "raw\sgcc", "raw\datagovmy", "processed", "uploads", "simulated", "photos", "pdfs", "logs", "audit_anchor", "mlruns", "models\hf") {
         New-Item -ItemType Directory -Force -Path (Join-Path $root $sub) | Out-Null
     }
     Copy-Item data\uploads\README.md (Join-Path $root "uploads\README.md") -Force

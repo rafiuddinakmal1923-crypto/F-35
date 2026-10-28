@@ -39,12 +39,21 @@ that anyone stole electricity, and people decide after inspection.
    are generated into `.env`, which is never committed). If another program already uses port 8080
    (for example an Oracle database listener) or 15432, set `WEB_PORT` or `DB_HOST_PORT` in `.env`. `.\make.ps1 help` lists every target; the
    same targets exist in the `Makefile` for Git Bash, WSL or Linux.
-4. Optional language model: `.\make.ps1 models` pulls `LLM_MODEL` (Qwen2.5-7B-Instruct) into
-   `D:\VoltGuard\models\ollama` and the embedding model into `D:\VoltGuard\models\hf`; then set
-   `LLM_MODE=ollama` in `.env`. Without it the app runs in mock mode (a "mock" badge shows).
+4. Optional language model: `.\make.ps1 models` pulls `LLM_MODEL` (Qwen2.5-7B-Instruct, about
+   4.7 GB) into the `ollama_models` Docker volume and the embedding model into
+   `D:\VoltGuard\models\hf`; then set `LLM_MODE=ollama` in `.env`. Without it the app runs in mock
+   mode (a "mock" badge shows).
+5. Optional GPU: with an NVIDIA GPU and a current driver, `make.ps1` (and the `Makefile`) add
+   `docker-compose.gpu.yml` automatically, so Ollama runs on the GPU; check with
+   `docker compose exec ollama nvidia-smi`, and set `VG_GPU=0` to force CPU. When you run
+   `docker compose` by hand, add `-f docker-compose.yml -f docker-compose.gpu.yml`. On a GPU the
+   live model drafts the report assessment fast enough for the demo, so `REPORT_MODE=live` works,
+   with `predrafted` as the fallback.
 
 All bulky files live under `DATA_ROOT` (default `D:/VoltGuard`): datasets, uploads, photos, PDFs,
-logs, the audit anchor, MLflow runs and models. PostgreSQL sits in a named Docker volume.
+logs, the audit anchor, MLflow runs and the pattern models. PostgreSQL and the Ollama models sit
+in named Docker volumes, which are on D: once Docker's disk image is there (a ~5 GB model loads
+slowly through a Windows-drive bind mount).
 
 | Service (lite profile, default) | Role |
 | --- | --- |

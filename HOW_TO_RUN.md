@@ -93,18 +93,20 @@ the laptop itself.
 | Start everything (data is kept) | `.\make.ps1 up` |
 | Stop everything (data is kept) | `.\make.ps1 down` |
 | Reset the demo and print the steps and passwords again | `.\make.ps1 demo` |
-| Get the latest code | `git stash` then `git pull origin claude/practical-clarke-t5uwrc` then `docker compose up -d --build` |
+| Get the latest code | `git stash` then `git pull origin claude/practical-clarke-t5uwrc` then `.\make.ps1 build` then `.\make.ps1 up` |
 | See what the server is doing | `.\make.ps1 logs` |
 | List all commands | `.\make.ps1 help` |
 | Run the automated tests | `.\make.ps1 test` |
 
-Useful settings in `.env` (edit with Notepad, then run `docker compose up -d`):
+Useful settings in `.env` (edit with Notepad, then run `.\make.ps1 up`; it gives the AI model the
+graphics card when the laptop has an NVIDIA GPU, which plain `docker compose up -d` does not):
 
 | Setting | Use |
 | --- | --- |
 | `WEB_PORT=8080` | Change it (e.g. `8081`) if another program already uses 8080, then open `http://localhost:8081` |
 | `DB_HOST_PORT=15432` | Database port for Power BI; change it if it is taken |
 | `LLM_MODE=mock` or `ollama` | `mock` = no AI model needed. For `ollama`, first run `.\make.ps1 models` (about 5 GB) |
+| `REPORT_MODE=predrafted` or `live` | `live` = the AI writes the report assessment during the demo; use it only with a GPU, and keep `predrafted` as the fallback |
 | `TELEGRAM_BOT_TOKEN=` | Optional real Telegram bot (README "Telegram dispatch bot"). Without it the bot runs inside the app |
 
 ---

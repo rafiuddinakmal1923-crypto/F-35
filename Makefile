@@ -2,7 +2,9 @@
 # Commands run inside the api container by default; LOCAL=1 runs them with ./.venv instead.
 
 SHELL := /bin/bash
-COMPOSE := docker compose
+# Give Ollama the GPU when an NVIDIA driver is present (VG_GPU=0 forces CPU).
+GPU_FILE := $(if $(filter 0,$(VG_GPU)),,$(if $(shell command -v nvidia-smi 2>/dev/null),-f docker-compose.gpu.yml,))
+COMPOSE := docker compose -f docker-compose.yml $(GPU_FILE)
 DATASET ?=
 ifeq ($(LOCAL),1)
 PY := cd backend && ../.venv/bin/python
