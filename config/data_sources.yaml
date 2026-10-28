@@ -26,7 +26,7 @@ london:
 # Scale profiles to Malaysian monthly consumption seasonality: none | datagovmy
 rescale: none
 # Pattern model training data: synthetic | sgcc
-pattern_training: synthetic
+pattern_training: sgcc
 
 # Simulation run used when a table's source is `simulated`
 simulation:

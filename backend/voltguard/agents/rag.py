@@ -288,7 +288,14 @@ def answer(conn: psycopg.Connection, caller: Caller, question: str, agent: str =
                 text, used = extractive_answer(question, passages)
                 if used:
                     mode = "extractive"
-        text = guardrails.check_output(text)
+        # Answers come from approved documents only (never case notes or customer records), and the question
+        # was checked before it reached the model: the pattern check (IC numbers, phones, addresses) applies,
+        # while Presidio's name guesses do not; they read capitalised Malay statute text as people's names.
+        # Anything still blocked becomes "not found" rather than an error for the inspector.
+        try:
+            text = guardrails.check_output(text, presidio=False)
+        except guardrails.OutputBlocked:
+            text, used = NOT_FOUND, []
         result = {"answer": text, "sources": [passages[i].citation() for i in used] if text != NOT_FOUND else [], "mode": mode,
                   "refused": False}
     db.audit(conn, caller.user_id, f"agent.{agent}.answer", None,

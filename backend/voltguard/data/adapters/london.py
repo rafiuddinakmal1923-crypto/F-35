@@ -16,6 +16,7 @@ Outputs:
 
 from __future__ import annotations
 
+import re
 from datetime import date
 
 import polars as pl
@@ -39,32 +40,49 @@ def _pick(columns: list[str], options: tuple[str, ...]) -> str | None:
     return None
 
 
+def _natural(path) -> list:
+    return [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", str(path))]
+
+
+def half_hourly_files() -> list:
+    """Every CSV under raw/london (subfolders too) that holds half-hourly readings: the full Kaggle extract
+    also has daily, weather and household-information CSVs, which are skipped."""
+    found = []
+    for path in sorted(adapters.raw_dir("london").rglob("*.csv"), key=_natural):
+        header = pl.read_csv(path, n_rows=0, encoding="utf8-lossy").columns   # some extract files are not UTF-8
+        if _pick(header, ID_COLUMNS) and _pick(header, TIME_COLUMNS) and _pick(header, KWH_COLUMNS):
+            found.append(path)
+    return found
+
+
 def read_raw(households: int) -> pl.DataFrame | None:
-    files = sorted(adapters.raw_dir("london").glob("*.csv"))
+    files = half_hourly_files()
     if not files:
         return None
-    frames = []
+    frames, seen = [], set()
     for path in files:
         header = pl.read_csv(path, n_rows=0).columns
         hid, tcol, kcol = _pick(header, ID_COLUMNS), _pick(header, TIME_COLUMNS), _pick(header, KWH_COLUMNS)
-        if not (hid and tcol and kcol):
-            raise ValueError(f"{path.name}: expected LCLid, a time column and a half-hourly kWh column; got {header}")
-        frames.append(pl.scan_csv(path, infer_schema=False).select(
+        frame = pl.scan_csv(path, infer_schema=False).select(
             pl.col(hid).str.strip_chars().alias("household"),
             pl.col(tcol).str.slice(0, 19).str.to_datetime("%Y-%m-%d %H:%M:%S", strict=False).alias("ts"),
             pl.col(kcol).str.strip_chars().cast(pl.Float64, strict=False).alias("kwh"),
-        ))
-    lazy = pl.concat(frames).drop_nulls()
+        ).drop_nulls().collect()
+        frames.append(frame)
+        seen.update(frame["household"].unique().to_list())
+        if households and len(seen) >= households:
+            break           # the 112 Kaggle blocks hold ~5,500 homes: read only as many blocks as the subset needs
+    raw = pl.concat(frames)
     if households:
-        chosen = lazy.select("household").unique().sort("household").head(households).collect()["household"]
-        lazy = lazy.filter(pl.col("household").is_in(chosen.to_list()))
-    return lazy.collect()
+        chosen = sorted(seen)[:households]
+        raw = raw.filter(pl.col("household").is_in(chosen))
+    return raw
 
 
 def convert(force: bool = False) -> dict | None:
     cfg = config.data_sources().get("london", {}) or {}
     households = int(cfg.get("households", 300))
-    files = sorted(adapters.raw_dir("london").glob("*.csv"))
+    files = half_hourly_files()
     profiles_path = adapters.processed("london_profiles.parquet")
     canon = config.data_root() / "processed" / "london_canonical"
     outputs = [profiles_path, canon / "meter_reading.parquet"]

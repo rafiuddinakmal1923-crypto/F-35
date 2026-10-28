@@ -239,6 +239,15 @@ def test_FR_AG_04_field_assistant_mode_says_who_answered(monkeypatch):
     quoted = rag.answer(None, caller, "What should I photograph at the meter seal?")
     assert quoted["mode"] == "extractive" and "meter seal" in quoted["answer"]
 
+    # Statute text: capitalised Malay words are not people's names; it is answered, not blocked.
+    statute = ("Menurut Akta Bekalan Elektrik 1990, Mana-Mana Orang Yang mengganggu pepasangan melakukan suatu kesalahan [1].")
+    monkeypatch.setattr(llm, "complete", lambda *a, **k: llm.Completion(statute, "ollama", "qwen"))
+    assert rag.answer(None, caller, "What should I photograph at the meter seal?")["answer"] == statute
+    # A real personal detail in the model's answer is still withheld, as "not found" rather than an error.
+    monkeypatch.setattr(llm, "complete", lambda *a, **k: llm.Completion("Call 012-345 6789 at the meter seal [1].", "ollama", "qwen"))
+    leaked = rag.answer(None, caller, "What should I photograph at the meter seal?")
+    assert leaked["answer"] == rag.NOT_FOUND and leaked["sources"] == []
+
 
 def test_FR_UI_05_pdf_fallback_without_a_browser(monkeypatch):
     """Without Chromium (e.g. a minimal image) the export still produces a PDF with every line."""

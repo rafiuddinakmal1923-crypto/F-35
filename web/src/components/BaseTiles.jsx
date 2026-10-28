@@ -1,6 +1,5 @@
-// Map background with automatic fallback. OpenStreetMap's own tile servers refuse many requests
-// from apps on localhost (they answer with an "Access blocked" picture), so CARTO's free basemap
-// is tried first, then OpenStreetMap, then Esri. When a provider's tiles keep failing, the next one
+// Map background with automatic fallback, no API key needed. Esri's grey canvas basemap is tried
+// first, then OpenStreetMap (its servers refuse many requests from localhost), then Esri streets. When a provider's tiles keep failing, the next one
 // is used; when none load (no internet), the zones still show and a short note says why.
 import { useEffect, useMemo, useState } from "react";
 import { TileLayer } from "react-leaflet";
@@ -8,14 +7,17 @@ import { TileLayer } from "react-leaflet";
 const dark = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches;
 
 export const PROVIDERS = [
-  { name: "CARTO", url: `https://{s}.basemaps.cartocdn.com/${dark() ? "dark_all" : "rastertiles/voyager"}/{z}/{x}/{y}{r}.png`, subdomains: "abcd",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>' },
+  // CARTO's basemaps now need an API key (they return "API KEY REQUIRED" pictures that load
+  // without an error, so the fallback below cannot catch them); Esri's canvas maps need no key.
+  { name: "Esri Canvas", maxZoom: 16,
+    url: `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/${dark() ? "World_Dark_Gray_Base" : "World_Light_Gray_Base"}/MapServer/tile/{z}/{y}/{x}`,
+    attribution: "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors" },
   { name: "OpenStreetMap", url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png", referrerPolicy: "strict-origin",
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' },
   { name: "Esri", url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
     attribution: "Tiles &copy; Esri" },
 ];
-const KEY = "vg_tiles";
+const KEY = "vg_tiles2";  // new key so browsers that saved the old CARTO choice start again
 const MAX_ERRORS = 4;
 
 function startIndex() {
@@ -50,6 +52,6 @@ export default function BaseTiles({ onUnavailable }) {
 
   return (
     <TileLayer key={provider.name} url={provider.url} attribution={provider.attribution} subdomains={provider.subdomains || "abc"}
-      referrerPolicy={provider.referrerPolicy || "strict-origin"} eventHandlers={handlers} maxZoom={19} />
+      referrerPolicy={provider.referrerPolicy || "strict-origin"} eventHandlers={handlers} maxNativeZoom={provider.maxZoom || 19} maxZoom={19} />
   );
 }
