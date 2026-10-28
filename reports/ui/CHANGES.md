@@ -96,7 +96,7 @@ fixed rules on those numbers, not from the language model. Code: `backend/voltgu
 | Limits and steps | None | Assumptions and limits (switched on by the data), up to three rule-based next steps with the "not written by the language model" note, glossary, footer with data and model versions |
 | Language | English only | English or Bahasa Melayu (`?lang=en|ms`); the web page follows the interface language |
 | Telegram | Headline text at a fixed time (Mon 07:45 server time) | Headline with the top action, plus the PDF (`sendDocument`) after an output check on the PDF's own text; day, time, PDF on/off and supervisor copies set in Settings (`weekly.*`, MYT), applied without a restart |
-| Web page | Separate React charts | Shows the report itself (same HTML as the PDF), with Download PDF and Send to my chat |
+| Web page | Separate React charts | A dashboard of the week: the summary paragraph and actions, six KPI tiles, daily energy with the margin band, zone bars with margin and threshold, hit rates with 95% ranges, cases and outcomes, next steps, data and model. Sentences come from the same rules as the PDF (`GET /weekly?lang=` returns them as `text`). Download PDF gives the full report; Send to my chat sends it |
 
 ## Fixed on the way
 

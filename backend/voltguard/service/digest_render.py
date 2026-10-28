@@ -542,6 +542,24 @@ def value_text(d: dict, lang: str = "en") -> str:
                              above=num(v["kwh_per_month_above_threshold"]), rm_above=rm_above)
 
 
+def dashboard_text(d: dict, lang: str = "en") -> dict:
+    """The report's rule-based sentences as plain text, for the in-app dashboard: same rules as the PDF."""
+    t = tr(lang)
+    if d.get("empty"):
+        return {"empty": t["empty"]}
+
+    def plain(s: str) -> str:
+        return html.unescape(re.sub(r"<[^>]+>", "", s))
+
+    para, actions = summary(d, lang)
+    return {"banner": t["banner_sim"] if d["data_mode"]["simulated"] else None,
+            "summary": [plain(s) for s in para], "actions": [plain(a) for a in actions],
+            "energy": plain(energy_takeaway(d, lang)), "zones": plain(zones_takeaway(d, lang)),
+            "hits": plain(hits_takeaway(d, lang)), "value": plain(value_text(d, lang)),
+            "why_two_dates": plain(why_two_dates(d, lang)),
+            "next_steps": [plain(step_text(rule, figs, d, lang)) for rule, figs in next_steps(d)]}
+
+
 def headline(d: dict, lang: str = "en") -> str:
     """Telegram text: headline numbers and the top action; zone-level counts only."""
     t = tr(lang)

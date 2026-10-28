@@ -43,11 +43,14 @@ LANGS = Query("en", pattern="^(en|ms)$", description="Report language: en or ms 
 
 
 @router.get("/weekly")
-def weekly(c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
-    """Weekly summary of the caller's region: zone-level energy, cases, outcomes and hit rates (figures)."""
+def weekly(lang: str = LANGS, c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
+    """Weekly summary of the caller's region: zone-level energy, cases, outcomes and hit rates (figures), plus the
+    report's rule-based sentences in `lang` for the dashboard."""
+    from voltguard.service import digest_render
+
     d = digest.build(conn, c)
     db.audit(conn, c.user_id, "digest.view", f"region:{c.region}", None)
-    return d
+    return {**d, "text": digest_render.dashboard_text(d, lang)}
 
 
 @router.get("/weekly/html")

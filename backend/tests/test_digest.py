@@ -66,6 +66,12 @@ def test_weekly_report_page_explains_itself_in_both_languages(api, pg):
         for heading in HEADINGS[lang]:
             assert heading in page.text, (lang, heading)
         assert "P-CEN-" not in page.text and not any(n in page.text for n in fake_names(pg[0]))
+    # The dashboard shows the report's own rule-based sentences, as plain text, in either language.
+    for lang, word in (("en", "kWh a day"), ("ms", "kWh sehari")):
+        text = api.get(f"/weekly?lang={lang}", headers=manager).json()["text"]
+        assert text["banner"] and len(text["summary"]) >= 3 and word in text["summary"][0] and text["next_steps"]
+        assert all("<" not in s for s in text["summary"] + text["actions"] + text["next_steps"] + [text["energy"], text["zones"], text["hits"]])
+        assert "P-CEN-" not in str(text) and not any(n in str(text) for n in fake_names(pg[0]))
     assert api.get("/weekly/html?lang=fr", headers=manager).status_code == 422
     assert api.get("/weekly/html", headers=login(api, "analyst.cen")).status_code == 403
 

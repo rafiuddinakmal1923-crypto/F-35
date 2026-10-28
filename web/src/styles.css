@@ -679,11 +679,54 @@ button.wf-row:hover { background: var(--panel-2); }
 .chips button { white-space: nowrap; border-radius: 99px; font-size: 0.8rem; padding: 5px 12px; min-height: 30px; }
 @media (max-width: 760px) { .chat-input { bottom: 64px; } }
 
-/* Weekly report frame (the report itself is the server-rendered page) */
-.report-frame { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; display: flex; justify-content: center; }
-.report-frame iframe { width: 100%; max-width: 900px; min-height: 600px; border: 0; border-radius: 4px; background: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 12px 28px rgba(0,0,0,0.25); }
-@media (max-width: 760px) { .report-frame { padding: 6px; } }
+/* Weekly dashboard (the full report is the PDF) */
+.wk-id { font-size: 0.9rem; font-weight: 500; }
+.wk-kpis { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.wk-windows { display: flex; align-items: center; gap: 4px; margin-top: 4px; position: relative; }
+.wk-summary { padding: 16px 18px; box-shadow: inset 4px 0 0 var(--accent); }
+.wk-summary h2 { margin: 0 0 6px; font-size: 1rem; color: var(--accent); }
+.wk-summary p { margin: 0 0 8px; font-size: 1rem; line-height: 1.55; }
+.wk-summary ol { margin: 0 0 8px; padding-left: 20px; }
+.wk-summary li { margin: 3px 0; }
+.wk-takeaway { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0 0; padding: 9px 11px; border-radius: 8px; background: var(--panel-2); font-size: 0.86rem; }
+.wk-takeaway svg { flex: none; margin-top: 2px; color: var(--muted); }
+.wk-block { display: block; margin-top: 6px; }
+.wk-track { position: relative; height: 18px; border-radius: 4px; background: var(--panel-2); }
+.wk-zones, .wk-hits { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.wk-zones li { display: grid; grid-template-columns: 110px minmax(0, 1fr) 120px; gap: 4px 12px; align-items: center; }
+.wk-zone-name .zid { font-family: var(--font-display); font-weight: 600; display: block; }
+.wk-zone-figs { text-align: right; font-size: 0.78rem; color: var(--muted); }
+.wk-zone-figs b { color: var(--text); font-family: var(--font-display); font-size: 1rem; font-variant-numeric: tabular-nums; }
+.wk-zone-figs small { display: block; }
+.wk-zone-tags { grid-column: 2 / span 2; gap: 4px; flex-wrap: wrap; }
+.wk-bar { position: absolute; left: 0; top: 2px; bottom: 2px; border-radius: 3px; }
+.wk-bar.risk { background: var(--accent); }
+.wk-bar.ok { background: var(--ok); opacity: 0.75; }
+.wk-whisker { position: absolute; top: 8px; height: 2px; background: var(--text); opacity: 0.7; }
+.wk-threshold { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: var(--text); }
+.wk-hits li { display: grid; grid-template-columns: 130px minmax(0, 1fr) 120px; gap: 12px; align-items: center; }
+.wk-hits li > span:first-child small { display: block; }
+.wk-range { position: absolute; top: 4px; bottom: 4px; border-radius: 4px; background: var(--band); }
+.wk-dot { position: absolute; top: 3px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; border: 2px solid var(--panel); }
+.wk-dot.risk { background: var(--accent); }
+.wk-dot.neutral { background: var(--neutral); }
+.wk-hit-figs { text-align: right; }
+.wk-hit-figs b { font-family: var(--font-display); font-size: 1.05rem; }
+.wk-hit-figs small { display: block; }
+.wk-table { table-layout: fixed; }
+.wk-table th, .wk-table td { overflow-wrap: anywhere; }
+.wk-table th.num { width: 24%; }
+.wk-table + .wk-table { margin-top: 14px; }
+.wk-steps { margin: 0 0 8px; padding-left: 20px; }
+.wk-steps li { margin: 6px 0; }
+.wk-facts { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin: 0; font-size: 0.88rem; }
+.wk-facts dt { color: var(--muted); }
+.wk-facts dd { margin: 0; font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) {
+  .wk-zones li, .wk-hits li { grid-template-columns: 1fr auto; }
+  .wk-zones .wk-track, .wk-hits .wk-track { grid-column: 1 / -1; grid-row: 2; }
+  .wk-zone-tags { grid-column: 1 / -1; }
+}
 
 /* Solar check (FR-PS-10) and the zone's "Cleared as legitimate" list */
 .solar-checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 0.88rem; }
