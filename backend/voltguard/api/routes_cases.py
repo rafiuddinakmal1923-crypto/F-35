@@ -9,9 +9,10 @@ from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from voltguard import db, storage
-from voltguard.api.deps import ApiError, connection, not_found, require
+from voltguard.agents import route
+from voltguard.api.deps import ApiError, connection, forbidden, not_found, require
 from voltguard.db import Caller
-from voltguard.service import cases, jobs
+from voltguard.service import cases, jobs, work
 
 router = APIRouter(tags=["cases"])
 
@@ -98,15 +99,20 @@ def assign(case_id: str, body: Assignment, c: Caller = Depends(require("supervis
 
 
 @router.post("/cases/{case_id}/photos")
-async def upload_photo(case_id: str, file: UploadFile = File(...), c: Caller = Depends(require("inspector")), conn=Depends(connection)):
-    data = await file.read()
+def upload_photo(case_id: str, file: UploadFile = File(...), c: Caller = Depends(require("inspector")), conn=Depends(connection)):
+    # A plain def runs in the worker threads: an async endpoint that touches the database blocks the event
+    # loop, and while it waits for the audit lock no other request can commit and release it (deadlock).
+    data = file.file.read()
     key = _call(cases.add_photo, conn, c, case_id, data, file.content_type or "")
     return {"photo_key": key}
 
 
 @router.get("/cases/{case_id}/photos/{key}")
-def get_photo(case_id: str, key: str, c: Caller = Depends(require("supervisor", "analyst", "inspector")), conn=Depends(connection)):
+def get_photo(case_id: str, key: str, c: Caller = Depends(require("supervisor", "analyst", "inspector", "manager")), conn=Depends(connection)):
     detail = _call(cases.case_detail, conn, c, case_id)
+    # A manager sees the evidence only to give the second (export) approval of a report.
+    if c.role == "manager" and not any(r["status"] in ("content_approved", "export_approved") for r in detail["reports"]):
+        raise forbidden("Managers see evidence photos when a report waits for their export approval")
     if not any(key in (o["photo_keys"] or []) for o in detail["outcomes"]) and not any(
             (e["detail"] or {}).get("photo_key") == key for e in detail["events"]):
         raise not_found("No such photo on this case")
@@ -140,3 +146,26 @@ def case_version(case_id: str, c: Caller = Depends(require("supervisor", "analys
     if not row:
         raise ApiError(404, "not_found", "Case not found in your region")
     return row
+
+
+@router.get("/route")
+def my_route(team: str | None = None, c: Caller = Depends(require("inspector", "supervisor")), conn=Depends(connection)):
+    """Today's visiting order: an inspector gets their own team's route; a supervisor names a team in their region."""
+    if c.role == "inspector":
+        if team and team != c.team:
+            raise forbidden("Inspectors see their own team's route")
+        team = c.team
+    if not team:
+        raise ApiError(400, "bad_request", "Name a team")
+    try:
+        result = route.plan(conn, c, team)
+    except LookupError as exc:
+        raise not_found(str(exc)) from exc
+    db.audit(conn, c.user_id, "route.plan", f"team:{team}", {"stops": len(result["stops"])})
+    return result
+
+
+@router.get("/work")
+def my_work(c: Caller = Depends(require("analyst", "supervisor", "manager")), conn=Depends(connection)):
+    """What this person should act on next (role home page and menu badges)."""
+    return work.for_caller(conn, c)

@@ -1,18 +1,54 @@
-# Public documents fetched by scripts/fetch_docs.py into DATA_ROOT/docs_rag/ (not committed).
-# If a URL moves, update it here; on failure the script prints manual download steps.
+# Public documents for RAG, kept in DATA_ROOT/docs_rag/ (not committed). scripts/fetch_docs.py downloads the
+# ones with a URL; the others are saved by hand. `file` is the path inside DATA_ROOT/docs_rag/ when it is not
+# simply <id>.pdf. If a URL moves, update it here; on failure the script prints manual download steps.
+# Only files with a text layer can be indexed: scanned PDFs are skipped with a warning until they are OCR'd.
 documents:
   - id: esa_1990
     title: Electricity Supply Act 1990 (Act 447)
     owner: Attorney General's Chambers of Malaysia (public law text)
+    language: ms           # the copy in DATA_ROOT is the Bahasa Melayu reprint (Akta Bekalan Elektrik 1990)
     role_scope: [inspector, analyst, supervisor, manager]
     url: ""   # direct PDF links change with each reprint; add a verified link here to automate the download
-    manual: Laws of Malaysia Online (https://lom.agc.gov.my), search "Act 447", download the English PDF.
+    manual: Laws of Malaysia Online (https://lom.agc.gov.my), search "Act 447", download the PDF.
   - id: penal_code
     title: Penal Code (Act 574)
     owner: Attorney General's Chambers of Malaysia (public law text)
+    language: en
     role_scope: [analyst, supervisor, manager]
     url: ""
     manual: Laws of Malaysia Online (https://lom.agc.gov.my), search "Act 574", download the English PDF.
+  - id: st_wiring_residential_2008
+    title: Guidelines for Electrical Wiring in Residential Buildings (2008 edition)
+    owner: Suruhanjaya Tenaga (Energy Commission), public guideline
+    language: en
+    file: "Suruhanjaya Tenaga Guidelines/Microsoft Word - BUKU PANDUAN PENDAWAIAN 2008 _English_.doc.pdf"
+    role_scope: [inspector, analyst, supervisor, manager]
+    url: ""
+    manual: Download from https://www.st.gov.my (Guidelines) and save under DATA_ROOT/docs_rag/Suruhanjaya Tenaga Guidelines/.
+  - id: st_equipment_approval_2024
+    title: Guidelines for the Approval of Electrical Equipment (GP/ST/No.37/2024)
+    owner: Suruhanjaya Tenaga (Energy Commission), public guideline
+    language: en
+    file: "Suruhanjaya Tenaga Guidelines/Guidelines-for-the-Approval-of-Electrical-Equipment-(2024-Edition).pdf"
+    role_scope: [inspector, analyst, supervisor, manager]
+    url: ""
+    manual: Download from https://www.st.gov.my (Guidelines) and save under DATA_ROOT/docs_rag/Suruhanjaya Tenaga Guidelines/.
+  - id: st_licensing_procedure_2015
+    title: Garis Panduan Tatacara Perlesenan Pembekalan Elektrik 2015
+    owner: Suruhanjaya Tenaga (Energy Commission), public guideline
+    language: ms
+    file: "Suruhanjaya Tenaga Guidelines/Garis Panduan Tatacara Perlesenan Pembekalan Elektrik 2015.pdf"
+    role_scope: [analyst, supervisor, manager]
+    url: ""
+    manual: Scanned PDF without a text layer; save an OCR'd copy (e.g. ocrmypdf) under the same name to index it.
+  - id: st_licence_application_2022
+    title: Guidelines on Licence Application (4 March 2022)
+    owner: Suruhanjaya Tenaga (Energy Commission), public guideline
+    language: en
+    file: "Suruhanjaya Tenaga Guidelines/Guidelines_on_Licence_Application_-_4_March_2022.pdf"
+    role_scope: [analyst, supervisor, manager]
+    url: ""
+    manual: Scanned PDF without a text layer; save an OCR'd copy (e.g. ocrmypdf) under the same name to index it.
   - id: st_guidance
     title: Energy Commission (Suruhanjaya Tenaga) guidance on electricity theft and tampering
     owner: Suruhanjaya Tenaga (public guidance)

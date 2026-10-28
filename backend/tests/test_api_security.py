@@ -196,8 +196,24 @@ def test_sign_in_rejects_wrong_password_and_throttles(api):
     for _ in range(5):
         assert api.post("/auth/token", json={"username": "manager.nor", "password": "wrong"}).status_code == 401
     assert api.post("/auth/token", json={"username": "manager.nor", "password": "wrong"}).status_code == 429
+    from voltguard import auth
+
+    auth._failures.pop("manager.nor", None)       # the throttle lasts five minutes; later tests sign in as this user
 
 
 def test_health_and_metrics(api):
     assert api.get("/health").json()["status"] == "ok"
     assert "voltguard_requests_total" in api.get("/metrics").text
+
+
+def test_NFR_03_no_endpoint_blocks_the_event_loop():
+    """Endpoints that touch the database must be plain functions (run in worker threads). An async endpoint
+    waiting for the audit lock blocked the event loop, so the request holding that lock could never commit."""
+    import inspect
+
+    from fastapi.routing import APIRoute
+
+    from voltguard.api.main import create_app
+
+    async_routes = [r.path for r in create_app().routes if isinstance(r, APIRoute) and inspect.iscoroutinefunction(r.endpoint)]
+    assert not async_routes, async_routes

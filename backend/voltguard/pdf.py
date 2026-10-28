@@ -18,8 +18,12 @@ def _chromium() -> str | None:
     return str(found[-1]) if found else None
 
 
-def html_to_pdf(document: str) -> tuple[bytes, str]:
-    """Returns (pdf bytes, engine). Playwright first; fpdf2 text rendering if no browser is available."""
+def html_to_pdf(document: str, footer: str | None = None, page_label: str = "page {page} of {total}") -> tuple[bytes, str]:
+    """Returns (pdf bytes, engine). Playwright first; fpdf2 text rendering if no browser is available.
+
+    `footer`: plain text printed at the foot of every page, with `page_label` ("page {page} of {total}",
+    or its translation) on the right (the weekly report).
+    """
     try:
         from playwright.sync_api import sync_playwright
 
@@ -33,7 +37,15 @@ def html_to_pdf(document: str) -> tuple[bytes, str]:
                 browser = p.chromium.launch(executable_path=path)
             page = browser.new_page()
             page.set_content(document, wait_until="load")
-            data = page.pdf(format="A4", print_background=True, margin={"top": "16mm", "bottom": "16mm", "left": "14mm", "right": "14mm"})
+            options: dict = {"format": "A4", "print_background": True,
+                             "margin": {"top": "16mm", "bottom": "18mm" if footer else "16mm", "left": "14mm", "right": "14mm"}}
+            if footer:
+                options.update(display_header_footer=True, header_template="<span></span>", footer_template=(
+                    "<div style='width:100%;font-size:7.5pt;color:#5B6676;padding:0 14mm;display:flex;justify-content:space-between;"
+                    f"font-family:Arial,sans-serif'><span>{html.escape(footer)}</span>"
+                    "<span>" + html.escape(page_label).replace("{page}", "<span class='pageNumber'></span>")
+                    .replace("{total}", "<span class='totalPages'></span>") + "</span></div>"))
+            data = page.pdf(**options)
             browser.close()
             return data, "playwright"
     except Exception as exc:  # no browser on this machine: plain text PDF rather than no PDF

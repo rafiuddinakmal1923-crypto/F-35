@@ -8,9 +8,9 @@ stay in the web app behind the API.
 
 ## Connect Power BI Desktop
 
-1. Start VoltGuard (`.\make.ps1 up`). The database listens on `127.0.0.1:5432` on the laptop only.
+1. Start VoltGuard (`.\make.ps1 up`). The database listens on `127.0.0.1:15432` on the laptop only (`DB_HOST_PORT` in `.env`).
 2. Power BI Desktop -> Get data -> PostgreSQL database.
-   - Server: `localhost:5432`, Database: `voltguard`, Data connectivity mode: Import.
+   - Server: `localhost:15432`, Database: `voltguard`, Data connectivity mode: Import.
    - Advanced: leave the SQL statement empty.
 3. Credentials: Database, user `voltguard_powerbi`, password `POWERBI_DB_PASSWORD` from `.env`.
    (Power BI may ask about encryption on localhost; the connection never leaves the laptop.)

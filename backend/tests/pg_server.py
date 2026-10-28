@@ -35,7 +35,7 @@ class TempPostgres:
     def __init__(self):
         self.dir = Path(tempfile.mkdtemp(prefix="vg-pg-"))
         self.port = _free_port()
-        self.as_postgres = os.geteuid() == 0
+        self.as_postgres = getattr(os, "geteuid", lambda: 1)() == 0
 
     def _run(self, args: list[str]) -> None:
         if self.as_postgres:
@@ -69,3 +69,43 @@ class TempPostgres:
             self._run([_bin("pg_ctl"), "-D", str(self.dir / "data"), "-m", "immediate", "stop"])
         finally:
             shutil.rmtree(self.dir, ignore_errors=True)
+
+
+class ExternalPostgres:
+    """A fresh database on the server named by TEST_DATABASE_URL (Windows: a throwaway container)."""
+
+    def __init__(self, owner_url: str):
+        import uuid
+
+        self.owner_url = owner_url
+        self.name = f"vg_{uuid.uuid4().hex[:10]}"
+        self.dir = Path(tempfile.mkdtemp(prefix="vg-pg-"))
+
+    def start(self) -> str:
+        import psycopg
+
+        with psycopg.connect(self.owner_url, autocommit=True) as conn:
+            conn.execute(f"CREATE DATABASE {self.name}")
+        return self.url("voltguard")
+
+    def url(self, user: str) -> str:
+        from urllib.parse import urlsplit, urlunsplit
+
+        parts = urlsplit(self.owner_url)
+        netloc = parts.netloc.split("@", 1)[-1]
+        return urlunsplit((parts.scheme, f"{user}@{netloc}", f"/{self.name}", parts.query, ""))
+
+    def stop(self) -> None:
+        import psycopg
+
+        try:
+            with psycopg.connect(self.owner_url, autocommit=True) as conn:
+                conn.execute(f"DROP DATABASE IF EXISTS {self.name} WITH (FORCE)")
+        finally:
+            shutil.rmtree(self.dir, ignore_errors=True)
+
+
+def make_postgres():
+    """Throwaway database: on TEST_DATABASE_URL's server when set, else a local temporary cluster."""
+    url = os.environ.get("TEST_DATABASE_URL")
+    return ExternalPostgres(url) if url else TempPostgres()

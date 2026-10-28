@@ -1,0 +1,5 @@
+# Tariff used only for the weekly report's value-at-risk estimate (RM = kWh x tariff).
+# Leave rm_per_kwh empty until TNB supplies the figure: the report then shows
+# "[TNB tariff: to be supplied]" and no RM amount. Never fill in a guessed number.
+rm_per_kwh:
+source:            # where the figure came from, e.g. "TNB revenue protection, Nov 2026"

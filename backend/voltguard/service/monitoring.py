@@ -43,31 +43,40 @@ def _alert(conn, kind: str, message: str, detail: dict, region: str = "*", sever
     log.warning("[alert:%s] %s", kind, message)
 
 
-def after_detection(run, summary: dict) -> list[str]:
-    """Called by the pipeline after each run. Returns the alert kinds raised."""
+def collect(run, into: dict | None = None) -> dict:
+    """What monitoring needs from a detection run, small enough to keep across zone batches."""
+    into = into if into is not None else {"daily_use": [], "scores": [], "flags": {}, "silent_meters": [], "region": {}}
+    for tx, z in run.zones.items():
+        into["region"][tx] = z.zone.region
+        if z.zone.smart.any():
+            into["daily_use"].append(np.nansum(z.zone.kwh.reshape(z.zone.n, z.zone.days, 48), axis=2)[z.zone.smart, -7:].ravel())
+        into["scores"].extend(p.score for p in z.premises)
+        if z.quality_flags:
+            into["flags"][tx] = list(z.quality_flags)
+        if z.zone.supply_kwh is not None and np.isnan(z.zone.supply_kwh[-48:]).all():
+            into["silent_meters"].append(tx)
+    return into
+
+
+def after_detection(run_or_inputs, summary: dict) -> list[str]:
+    """Called by the pipeline after each run (a DetectionRun, or inputs from collect()). Returns the alert kinds raised."""
+    inputs = run_or_inputs if isinstance(run_or_inputs, dict) else collect(run_or_inputs)
     raised = []
     cfg = config.thresholds()["monitoring"]
     state_path = config.data_root() / STATE
     previous = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
-    daily_use = np.concatenate([np.nansum(z.zone.kwh.reshape(z.zone.n, z.zone.days, 48), axis=2)[z.zone.smart, -7:].ravel()
-                                for z in run.zones.values() if z.zone.smart.any()] or [np.array([])])
-    scores = np.array([p.score for z in run.zones.values() for p in z.premises], dtype=float)
+    daily_use = np.concatenate(inputs["daily_use"] or [np.array([])])
+    scores = np.array(inputs["scores"], dtype=float)
     with db.admin_connection() as conn:
         with conn.transaction():
-            by_zone: dict[str, list] = {}
-            for tx, zr in run.zones.items():
-                for f in zr.quality_flags:
-                    by_zone.setdefault(tx, []).append(f)
-            for tx, flags in by_zone.items():
-                zr = run.zones[tx]
+            for tx, flags in inputs["flags"].items():
                 _alert(conn, "data_quality", f"{tx}: {len(flags)} meter-day(s) below {cfg['min_interval_completeness']:.0%} of intervals",
                        {"zone": tx, "meters": sorted({f['meter_id'] for f in flags})[:20], "days": sorted({str(f['date']) for f in flags})[:10]},
-                       zr.zone.region)
+                       inputs["region"][tx])
                 raised.append("data_quality")
-            for tx, zr in run.zones.items():
-                if zr.zone.supply_kwh is not None and np.isnan(zr.zone.supply_kwh[-48:]).all():
-                    _alert(conn, "data_quality", f"{tx}: transformer meter sent no data on the last day", {"zone": tx}, zr.zone.region)
-                    raised.append("data_quality")
+            for tx in inputs["silent_meters"]:
+                _alert(conn, "data_quality", f"{tx}: transformer meter sent no data on the last day", {"zone": tx}, inputs["region"][tx])
+                raised.append("data_quality")
             for name, current in (("daily_use", daily_use), ("scores", scores)):
                 if name in previous and len(current):
                     value = psi(np.array(previous[name]), current)

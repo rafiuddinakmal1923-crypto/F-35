@@ -14,7 +14,7 @@ import io
 import json
 import math
 from datetime import date, datetime
-from typing import Callable
+from typing import Callable, Iterable, Iterator
 
 import numpy as np
 import polars as pl
@@ -47,14 +47,16 @@ def _csv(frame: pl.DataFrame) -> bytes:
     return out.write_csv(include_header=False, null_value="").encode("utf-8")
 
 
+COPY_ROWS = 250_000   # rows turned into CSV at a time, so a big table never becomes one huge string
+
+
 def copy_in(conn: psycopg.Connection, table: str, frame: pl.DataFrame) -> int:
     if not frame.height:
         return 0
     cols = ", ".join(frame.columns)
     with conn.cursor().copy(f"COPY {table} ({cols}) FROM STDIN WITH (FORMAT csv, NULL '')") as cp:
-        data = _csv(frame)
-        for start in range(0, len(data), 8 << 20):
-            cp.write(data[start:start + (8 << 20)])
+        for offset in range(0, frame.height, COPY_ROWS):
+            cp.write(_csv(frame.slice(offset, COPY_ROWS)))
     return frame.height
 
 
@@ -84,8 +86,13 @@ def copy_out(conn: psycopg.Connection, query: str, schema: dict) -> pl.DataFrame
 
 # --------------------------------------------------------------------------- 1. ingest into the database
 
-def load_into_db(conn: psycopg.Connection, tables: dict[str, pl.DataFrame], progress: Progress = print) -> dict[str, int]:
-    """Write canonical tables into the database (owner connection). Readings are replaced."""
+def load_into_db(conn: psycopg.Connection, tables: dict[str, pl.DataFrame], progress: Progress = print,
+                 readings: Iterable[pl.DataFrame] | None = None) -> dict[str, int]:
+    """Write canonical tables into the database (owner connection). Readings are replaced.
+
+    `readings` streams the interval readings in batches (the nightly run); without it they come
+    from tables["meter_reading"].
+    """
     from voltguard.agents import scrubber
 
     counts: dict[str, int] = {}
@@ -105,9 +112,11 @@ def load_into_db(conn: psycopg.Connection, tables: dict[str, pl.DataFrame], prog
                              ["meter_id"])
 
     conn.execute("TRUNCATE meter_reading, meter_monthly_reading, transformer_reading, account_event, district_weather, duty_roster")
-    progress(f"Loading {tables['meter_reading'].height:,} meter readings...")
-    counts["meter_reading"] = copy_in(conn, "meter_reading", tables["meter_reading"].with_columns(
-        pl.col("quality_flag").fill_null(0)).select("meter_id", "ts", "kwh", "voltage_v", "quality_flag"))
+    counts["meter_reading"] = 0
+    for batch in (readings if readings is not None else [tables["meter_reading"]]):
+        counts["meter_reading"] += copy_in(conn, "meter_reading", batch.with_columns(
+            pl.col("quality_flag").fill_null(0)).select("meter_id", "ts", "kwh", "voltage_v", "quality_flag"))
+        progress(f"Loaded {counts['meter_reading']:,} meter readings...")
     for name in ("meter_monthly_reading", "transformer_reading", "account_event", "district_weather"):
         if name in tables:
             counts[name] = copy_in(conn, name, tables[name].select(TABLES[name].names))
@@ -157,8 +166,9 @@ def read_canonical(conn: psycopg.Connection, transformer_ids: list[str]) -> dict
     tx_read = with_ts(copy_out(conn, f"SELECT transformer_id, {epoch}, kwh_supplied, voltage_v FROM transformer_reading "
                                      f"WHERE transformer_id = ANY({ids})",
                                {"ts_us": pl.Int64, "kwh_supplied": pl.Float64, "voltage_v": pl.Float64}))
-    events = copy_out(conn, f"SELECT event_id, premise_id, event_type, event_date FROM account_event WHERE premise_id IN {pids}",
-                      {"event_date": pl.Date})
+    events = copy_out(conn, f"SELECT event_id, premise_id, event_type, event_date, capacity_kwp, has_battery::int AS has_battery "
+                            f"FROM account_event WHERE premise_id IN {pids}",
+                      {"event_date": pl.Date, "capacity_kwp": pl.Float64, "has_battery": pl.Int64})
     weather = copy_out(conn, "SELECT district, date, temperature_c, sunshine_hours FROM district_weather",
                        {"date": pl.Date, "temperature_c": pl.Float64, "sunshine_hours": pl.Float64})
     return {"transformer": tx, "premise": premise, "meter": meter, "meter_reading": readings, "meter_monthly_reading": monthly,
@@ -292,43 +302,116 @@ def ensure_models(progress: Progress = print) -> None:
         anomaly.train_from_simulation()
 
 
+def _chunks(items: list, size: int) -> Iterator[list]:
+    for i in range(0, len(items), max(size, 1)):
+        yield items[i:i + size]
+
+
+def reading_batches(scan: pl.LazyFrame, meter_ids: list[str], size: int, report: ValidationReport,
+                    context: dict[str, pl.DataFrame], progress: Progress = print) -> Iterator[pl.DataFrame]:
+    """Interval readings in meter batches, each validated before it is loaded (memory stays flat, NFR-01).
+
+    Readings whose meter is in no batch (unknown meters) are counted at the end and stop the run.
+    """
+    seen = 0
+    report.rows["meter_reading"] = 0
+    for ids in _chunks(meter_ids, size):
+        raw = scan.filter(pl.col("meter_id").is_in(ids)).collect()
+        seen += raw.height
+        errors_before = sum(i.level == "error" for i in report.issues)
+        rows_before = report.rows["meter_reading"]
+        frame = validate({"meter_reading": raw}, report, context)["meter_reading"]
+        report.rows["meter_reading"] = rows_before + frame.height
+        if sum(i.level == "error" for i in report.issues) > errors_before:
+            errors = [f"{i.table}.{i.column or '-'} {i.check}: {i.message}" for i in report.issues if i.level == "error"]
+            raise PipelineError("Meter readings failed validation: " + "; ".join(errors[:5]))
+        yield frame
+    total = scan.select(pl.len()).collect().item()
+    if total != seen:
+        raise PipelineError(f"{total - seen:,} meter reading(s) belong to meters missing from the meter table")
+
+
+def detect_in_batches(conn: psycopg.Connection, tx_ids: list[str], start: date, days: int, cfg: dict, run_id: int,
+                      model_label: Callable[[str], str], batch: int, progress: Progress = print):
+    """Detection zone batch by zone batch, read back from the database; results are written per batch.
+
+    Zones with network parameters go first, so zones without them (AS-8) borrow the median loss
+    share of every clean zone seen so far. With one batch this is exactly the single-run result.
+    Returns the merged summary and the monitoring inputs; no batch's raw readings are kept.
+    """
+    from voltguard.service import monitoring
+
+    with_params = {r["transformer_id"] for r in conn.execute(
+        "SELECT transformer_id FROM transformer WHERE transformer_id = ANY(%s) AND loss_params IS NOT NULL", (tx_ids,)).fetchall()}
+    ordered = sorted(tx_ids, key=lambda tx: (tx not in with_params, tx))
+    shares: list[float] = []
+    summary: dict | None = None
+    inputs = None
+    run_date = model_version = None
+    for n, ids in enumerate(_chunks(ordered, batch), start=1):
+        progress(f"Detection: zones {(n - 1) * batch + 1}-{(n - 1) * batch + len(ids)} of {len(ordered)}...")
+        canonical = read_canonical(conn, ids)
+        fallback = float(np.median(shares)) if shares else None
+        run = engine.run_tables(canonical, start, days, cfg, fallback_loss_share=fallback, loss_shares=shares)
+        del canonical
+        run.model_version = model_label(run.model_version)
+        part = write_results(conn, run, run_id)
+        inputs = monitoring.collect(run, inputs)
+        run_date, model_version = run.run_date, run.model_version
+        if summary is None:
+            summary = part
+        else:
+            for key in ("flagged_zones", "no_balance_zones"):
+                summary[key] = summary[key] + part[key]
+            for key in ("zones", "premises_scored", "data_quality_flags"):
+                summary[key] += part[key]
+        del run
+    return summary, inputs, run_date, model_version
+
+
 def run_detection(actor: str = "pipeline", progress: Progress = print) -> dict:
-    """Steps 1-4 of the nightly pipeline. Creates no cases."""
+    """Steps 1-4 of the nightly pipeline. Creates no cases.
+
+    Readings are read, validated and loaded in meter batches, and detection runs in zone batches
+    read back from the database, so memory does not grow with the network (config `pipeline`).
+    """
     ensure_simulated(progress)
     ensure_models(progress)
     active = sources.active_sources()
     progress("Loading active sources...")
-    tables = sources.load_active_tables(active)
+    tables = sources.load_active_tables(active, skip=("meter_reading",))
     report = ValidationReport("pipeline", datetime.now().strftime("%Y%m%d-%H%M%S"))
     tables = validate(tables, report)
     if not report.ok:
         errors = [f"{i.table}.{i.column or '-'} {i.check}: {i.message}" for i in report.issues if i.level == "error"]
         raise PipelineError("Active sources failed validation: " + "; ".join(errors[:5]))
+    scan = sources.scan_readings(active.get("meter_reading", "simulated"))
+    start, days = sources.scan_period(scan)
     tx_ids = tables["transformer"]["transformer_id"].to_list()
-    start, days = sources.period(tables)
+    batches = config.thresholds().get("pipeline", {"meter_batch": 2000, "zone_batch": 50})
+    meter_ids = tables["meter"].join(tables["premise"].select("premise_id", "transformer_id"), on="premise_id", how="left") \
+        .sort("transformer_id", "meter_id")["meter_id"].to_list()
     with db.admin_connection() as conn:
         with conn.transaction():
-            counts = load_into_db(conn, tables, progress)
+            counts = load_into_db(conn, tables, progress, readings=reading_batches(
+                scan, meter_ids, int(batches["meter_batch"]), report, {"meter": tables["meter"]}, progress))
             run_id = conn.execute("INSERT INTO detection_run (run_date, data_sources, data_snapshot) VALUES (%s, %s, %s) RETURNING run_id",
                                   (start, Jsonb(active), snapshot_id(active))).fetchone()["run_id"]
-        progress("Reading canonical tables from the data store...")
-        canonical = read_canonical(conn, tx_ids)
         cfg = settings.thresholds(conn)
-        progress("Running detection (zone balance, voltage locator, features, scoring)...")
-        run = engine.run_tables(canonical, start, days, cfg)
-        active = conn.execute("SELECT version_id FROM model_version WHERE active ORDER BY trained_at DESC LIMIT 1").fetchone()
+        label = conn.execute("SELECT version_id FROM model_version WHERE active ORDER BY trained_at DESC LIMIT 1").fetchone()
         # R0 scores are the additive sum; the pattern model is one input; an active label model is recorded alongside.
-        run.model_version = f"r0-additive/{run.model_version}" + (f"/{active['version_id']}" if active else "")
+        model_label = lambda base: f"r0-additive/{base}" + (f"/{label['version_id']}" if label else "")  # noqa: E731
         with conn.transaction():
-            summary = write_results(conn, run, run_id)
+            summary, inputs, run_date, model_version = detect_in_batches(
+                conn, tx_ids, start, days, cfg, run_id, model_label, int(batches["zone_batch"]), progress)
             summary.update({"run_id": run_id, "loaded": counts, "warnings": sum(i.level == "warning" for i in report.issues)})
             conn.execute("UPDATE detection_run SET run_date = %s, finished_at = now(), status = 'done', model_version = %s, summary = %s "
-                         "WHERE run_id = %s", (run.run_date, run.model_version, Jsonb(summary), run_id))
+                         "WHERE run_id = %s", (run_date, model_version, Jsonb(summary), run_id))
             db.audit(conn, actor, "job.run_detection", f"run:{run_id}", {"flagged_zones": summary["flagged_zones"]})
     try:
         from voltguard.service import monitoring
 
-        summary["alerts"] = monitoring.after_detection(run, summary)
+        summary["alerts"] = monitoring.after_detection(inputs, summary)
     except Exception as exc:  # monitoring must never fail the detection run; the failure is logged
         import logging
 

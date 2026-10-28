@@ -43,3 +43,9 @@ users:
 # so the case job always opens a case for it and the pre-drafted report is keyed to it.
 demo_zone: TX-CEN-001
 demo_seed: 20261027
+
+# Demo guide (DEMO_MODE on): pass criteria of the 7 live steps (SDD 10.5) for the fixed seed above.
+demo_guide:
+  taps: [P-CEN-001-054, P-CEN-001-049]          # injected thefts: both in the top 3 (step 2)
+  legitimate: [P-CEN-001-051, P-CEN-001-048]    # EV charging and tenancy-only homes: not in the top 5% (step 2)
+  inspector: inspector.b                        # nearest on-duty team for the demo case (step 5)

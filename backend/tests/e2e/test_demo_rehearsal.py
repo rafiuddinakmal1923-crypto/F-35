@@ -27,6 +27,10 @@ def stack():
 
 def sign_in(page, url, user):
     page.goto(f"{url}/#/login")
+    # With DEMO_MODE on, the role cards come first and the password form opens from a link.
+    page.wait_for_selector("input[autocomplete=username], [data-manual-sign-in]")
+    if page.locator("[data-manual-sign-in]").count():
+        page.click("[data-manual-sign-in]")
     page.fill("input[autocomplete=username]", user)
     page.fill("input[type=password]", PASSWORD)
     page.click("button.primary")
@@ -54,34 +58,37 @@ def test_demo_live_steps_1_to_7(stack):
         run_job_and_wait(desk, "Run detection")
         sign_in(desk, url, "analyst.cen")
         desk.goto(f"{url}/#/")
-        row = desk.locator("tr", has_text="TX-CEN-001")
+        # The "Leaking zones" leaderboard beside the map (UI brief 2.1).
+        row = desk.locator("ol.leaderboard li", has_text="TX-CEN-001")
         row.wait_for()
-        assert "flagged" in row.inner_text() and "since data start" in row.inner_text() and "flat 24/7" in row.inner_text()
-        assert "2026-08-31" in desk.locator("tr", has_text="TX-CEN-002").inner_text()
+        assert "Flagged" in row.inner_text() and "Flat 24/7" in row.inner_text()
+        assert "Flagged" in desk.locator("ol.leaderboard li", has_text="TX-CEN-002").inner_text()
+        analyst = {"Authorization": "Bearer " + httpx.post(f"{url}/api/auth/token", json={"username": "analyst.cen", "password": PASSWORD}).json()["access_token"]}
+        zones = {z["transformer_id"]: z for z in httpx.get(f"{url}/api/zones", headers=analyst).json()["zones"]}
+        assert zones["TX-CEN-002"]["gap_start"] == "2026-08-31" and zones["TX-CEN-001"]["gap_since_start"]
         timings[1] = time.time() - t0
 
         # 2. Ranked suspects: both taps in the top 3; EV and tenancy-only homes not among the top suspects.
         t = time.time()
-        desk.click("text=TX-CEN-001")
+        desk.locator("ol.leaderboard li", has_text="TX-CEN-001").locator("a").click()
         desk.wait_for_selector("text=Ranked suspects")
-        desk.wait_for_selector("td >> text=P-CEN-001-054")
+        assert "Gap started: since data start" in desk.inner_text("main")          # tap present from day one
+        desk.wait_for_selector("button.suspect >> text=P-CEN-001-054")
         ranks = {}
-        for r in desk.locator("table").last.locator("tbody tr").all():
-            cells = r.locator("td").all_inner_texts()
-            if len(cells) > 2 and cells[1].startswith("P-"):
-                ranks[cells[1].split("\n")[0]] = int(cells[0])
+        for card in desk.locator("button.suspect").all():
+            ranks[card.locator(".pid").inner_text().strip()] = int(card.locator(".rank").inner_text())
         assert ranks["P-CEN-001-054"] <= 3 and ranks["P-CEN-001-049"] <= 3
         top_k = 4                                   # top 5% of 72 homes
         for legit in ("P-CEN-001-051", "P-CEN-001-048"):
             assert ranks.get(legit, 99) > top_k, legit
         timings[2] = time.time() - t
 
-        # 3. Top premise: reasons add up, voltage strip, details masked.
+        # 3. Top premise (in the right-hand drawer): reasons add up, voltage strip, details masked.
         t = time.time()
-        desk.click("text=P-CEN-001-054")
-        desk.wait_for_selector("text=Lines add up to")
-        body = desk.inner_text("main")
-        assert "= score" in body and "Personal details hidden" in body and "Neighbour voltage" in body
+        desk.locator("button.suspect", has_text="P-CEN-001-054").click()
+        desk.wait_for_selector("text=The bars add up exactly to the score")
+        body = desk.inner_text("body")
+        assert "Personal details hidden" in body and "Neighbour voltage" in body and "Risk score" in body
         timings[3] = time.time() - t
 
         # 4. Case job; the analyst claims while the suggestion waits; the supervisor approves.
@@ -137,7 +144,7 @@ def test_demo_live_steps_1_to_7(stack):
         draft = desk.inner_text("pre")
         assert "{{HOLDER_NAME}}" in draft and "Electricity Supply Act 1990 (Act 447), Section 37" in draft and "FAKE" not in draft
         desk.click("button:has-text('Approve content')")
-        desk.wait_for_selector("text=content approved")
+        desk.wait_for_selector("button:has-text('Approve content')", state="detached")
         mgr = browser.new_context(viewport={"width": 1366, "height": 900}, accept_downloads=True).new_page()
         sign_in(mgr, url, "manager.cen")
         mgr.goto(f"{url}/#/cases/{case_id}")
@@ -173,7 +180,8 @@ def test_NFR_02_NFR_13_pages_load_fast_and_phone_view_in_bahasa_melayu(stack):
         browser = p.chromium.launch(executable_path=chromium_path())
         page = browser.new_page(viewport={"width": 1366, "height": 900})
         sign_in(page, url, "analyst.cen")
-        for path, ready in (("/#/zones/TX-CEN-001", "td >> text=P-CEN-001-054"), ("/#/premises/P-CEN-001-054", "text=Lines add up to")):
+        for path, ready in (("/#/zones/TX-CEN-001", "button.suspect >> text=P-CEN-001-054"),
+                            ("/#/premises/P-CEN-001-054", "text=The bars add up exactly to the score")):
             started = time.time()
             page.goto(url + path)
             page.wait_for_selector(ready)

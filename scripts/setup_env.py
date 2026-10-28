@@ -35,7 +35,6 @@ def main() -> int:
     if len(sys.argv) > 1 and sys.argv[1] == "--local":
         # Running without Docker: keep data inside the repository and use mock models.
         text = re.sub(r"^DATA_ROOT=.*$", "DATA_ROOT=./.data", text, flags=re.MULTILINE)
-        text = re.sub(r"^OLLAMA_MODELS=.*$", "OLLAMA_MODELS=./.data/models/ollama", text, flags=re.MULTILINE)
         text = re.sub(r"^HF_HOME=.*$", "HF_HOME=./.data/models/hf", text, flags=re.MULTILINE)
         text = re.sub(r"^LLM_MODE=.*$", "LLM_MODE=mock", text, flags=re.MULTILINE)
     env.write_text(text, encoding="utf-8")

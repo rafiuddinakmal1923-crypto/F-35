@@ -92,12 +92,8 @@ def _assessment(f: dict, mode: str) -> tuple[str, str]:
             return guardrails.check_output(stored["assessment"]), f"predrafted ({stored.get('model', 'model')})"
         return _assessment_mock(f), "mock (no pre-drafted report for this premise)"
     if mode == "live":
-        facts = {"zone": f["case"]["transformer_id"], "gap_kwh_per_day": f["zone"]["gap_kwh_recent"], "gap_share": f["zone"]["gap_pct_recent"],
-                 "flatness_cv": f["zone"]["flatness_cv"], "risk_score": f["score"]["score"] if f["score"] else None,
-                 "rank": f["score"]["rank"] if f["score"] else None, "reasons": [r["reason_text"] for r in f["reasons"][:3]],
-                 "outcome": [o["outcome"] for o in f["outcomes"]]}
         try:
-            completion = _live_assessment(facts)
+            completion = _live_assessment(live_facts(f))
         except llm.PromptBlocked:
             completion = None
         if completion:
@@ -109,9 +105,38 @@ def _assessment(f: dict, mode: str) -> tuple[str, str]:
     return _assessment_mock(f), "mock"
 
 
+OUTCOME_TEXT = {"confirmed_theft": "Confirmed theft", "false_alarm": "False alarm",
+                "inconclusive": "Inconclusive", "no_access": "No access"}
+
+
+def live_facts(f: dict) -> dict:
+    """Facts for the model as finished figures with units: a raw fraction such as 0.0012 was
+    misread as "0.001%", so nothing is left for the model to convert."""
+    z, s = f["zone"], f["score"]
+    cv = z["flatness_cv"]
+    if cv is None:
+        shape = "not computed"
+    elif cv < 0.2:
+        shape = f"nearly constant across the day, consistent with a continuous hidden load (variation {cv:.2f})"
+    else:
+        shape = f"varies through the day (variation {cv:.2f})"
+    gap = z["gap_kwh_recent"]
+    return {
+        "transformer_zone": f["case"]["transformer_id"],
+        "unexplained_energy_gap": "n/a" if gap is None else f"{gap:.0f} kWh per day",
+        "gap_as_share_of_supply": _pct(z["gap_pct_recent"]),
+        "daily_shape_of_the_gap": shape,
+        "premise_risk_score": f"{s['score']} out of 100 (a ranking of risk, not a probability)" if s else "not scored",
+        "premise_rank_in_zone": f"{s['rank']}" if s else "not ranked",
+        "top_reasons": [r["reason_text"] for r in f["reasons"][:3]],
+        "inspection_outcomes": [OUTCOME_TEXT.get(o["outcome"], o["outcome"]) for o in f["outcomes"]] or ["not inspected yet"],
+    }
+
+
 def _live_assessment(facts: dict):
     return llm.complete(
-            "You write the assessment paragraph of an electricity revenue-protection case report. Use only the JSON facts. "
+            "You write the assessment paragraph of an electricity revenue-protection case report. Use only the JSON facts, "
+            "and quote every figure exactly as written, with its unit; never convert or recalculate a number. "
             "Describe risk and evidence; never call anyone a thief or state guilt. 120 words at most. No names or addresses.",
             json.dumps(facts, default=str), timeout=600)
 

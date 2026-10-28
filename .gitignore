@@ -41,3 +41,6 @@ Thumbs.db
 # Local runtime data when DATA_ROOT is not set, and graphify's cache
 .data/
 graphify-out/cache/
+
+# Weekly report outputs kept for review (reports/ui/CHANGES.md)
+!reports/ui/*.pdf

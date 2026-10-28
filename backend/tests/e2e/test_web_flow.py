@@ -42,6 +42,10 @@ def api_login(stack, user):
 
 def sign_in(page, url, user):
     page.goto(f"{url}/#/login")
+    # With DEMO_MODE on, the role cards come first and the password form opens from a link.
+    page.wait_for_selector("input[autocomplete=username], [data-manual-sign-in]")
+    if page.locator("[data-manual-sign-in]").count():
+        page.click("[data-manual-sign-in]")
     page.fill("input[autocomplete=username]", user)
     page.fill("input[type=password]", PASSWORD)
     page.click("button.primary")

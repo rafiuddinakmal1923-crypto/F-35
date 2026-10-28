@@ -1,0 +1,95 @@
+{
+  "generated": "2026-10-28T14:05:50",
+  "source": "simulation",
+  "seconds": 100,
+  "heldout": {
+    "thefts": 36,
+    "thefts_ranked": 27,
+    "thefts_in_top5": 26,
+    "share_all_thefts_in_top5": 0.7222,
+    "share_ranked_thefts_in_top5": 0.963,
+    "inspections_per_theft_model": 2.0769,
+    "inspections_per_theft_random": 35.4815,
+    "clean_zone_false_flags": 0,
+    "clean_zones": 3,
+    "largest_missed_share": 0.0728,
+    "legit_in_top5": [],
+    "solar_homes": 18,
+    "solar_homes_in_top5": 0,
+    "solar_theft": 8,
+    "solar_theft_in_top5": 8
+  },
+  "noise_sweep": [
+    {
+      "noise": 0.15,
+      "smallest_flagged_share": 0.0781,
+      "theft_zone_flag_rate": 0.6667,
+      "share_all_thefts_in_top5": 0.7,
+      "clean_zone_false_flags": 0,
+      "clean_zones": 2
+    },
+    {
+      "noise": 0.3,
+      "smallest_flagged_share": 0.078,
+      "theft_zone_flag_rate": 0.6667,
+      "share_all_thefts_in_top5": 0.7,
+      "clean_zone_false_flags": 0,
+      "clean_zones": 2
+    },
+    {
+      "noise": 0.45,
+      "smallest_flagged_share": 0.0781,
+      "theft_zone_flag_rate": 0.6667,
+      "share_all_thefts_in_top5": 0.7,
+      "clean_zone_false_flags": 0,
+      "clean_zones": 2
+    },
+    {
+      "noise": 0.6,
+      "smallest_flagged_share": 0.078,
+      "theft_zone_flag_rate": 0.6667,
+      "share_all_thefts_in_top5": 0.7,
+      "clean_zone_false_flags": 0,
+      "clean_zones": 2
+    }
+  ],
+  "monthly_read_sweep": [
+    {
+      "monthly_read_share": 0.0,
+      "theft_zone_flag_rate": 0.6667,
+      "share_all_thefts_in_top5": 0.7,
+      "share_ranked_thefts_in_top5": 1.0,
+      "smallest_flagged_share": 0.0794
+    },
+    {
+      "monthly_read_share": 0.25,
+      "theft_zone_flag_rate": 0.3333,
+      "share_all_thefts_in_top5": 0.3,
+      "share_ranked_thefts_in_top5": 1.0,
+      "smallest_flagged_share": 0.1281
+    },
+    {
+      "monthly_read_share": 0.5,
+      "theft_zone_flag_rate": 0.5,
+      "share_all_thefts_in_top5": 0.4,
+      "share_ranked_thefts_in_top5": 1.0,
+      "smallest_flagged_share": 0.0832
+    },
+    {
+      "monthly_read_share": 0.75,
+      "theft_zone_flag_rate": 0.3333,
+      "share_all_thefts_in_top5": 0.3,
+      "share_ranked_thefts_in_top5": 1.0,
+      "smallest_flagged_share": 0.1244
+    }
+  ],
+  "pattern_model": {
+    "source": "sgcc",
+    "holdout_auc": 0.5542
+  },
+  "flag_rule": {
+    "share_of_supply": 0.05,
+    "min_gap_kwh_per_day": 15.0,
+    "consecutive_days": 7
+  }
+}

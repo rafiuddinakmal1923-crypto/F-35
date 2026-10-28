@@ -76,6 +76,12 @@ def _insert_case(conn, caller: Caller, premise: dict, origin: str, score: int | 
     suggestion = dispatch.suggest(conn, case_id)
     if suggestion:
         _event(conn, case, "agent:dispatch", "dispatch_suggested", suggestion)
+        # The supervisor approves or rejects from the message (Telegram or the in-app chat).
+        joint = "; joint operation with police" if suggestion["joint_operation"] else ""
+        for sup in conn.execute("SELECT user_id FROM app_user WHERE role = 'supervisor' AND region = %s AND active",
+                                (case["region"],)).fetchall():
+            notify.send(conn, "suggestion", case_id, case["region"], sup["user_id"],
+                        f"Nearest on-duty team {suggestion['suggested_team']}, {suggestion['distance_km']} km{joint}.")
     return case
 
 
@@ -156,6 +162,13 @@ def claim(conn, caller: Caller, case_id: str) -> dict:
 
 # --------------------------------------------------------------------------- assignment (supervisor only)
 
+def _close_buttons(conn, case_id: str, kinds: tuple[str, ...], actor: str, action: str) -> None:
+    """A decision taken anywhere (case page, phone, Telegram) closes the matching chat messages' buttons."""
+    conn.execute("UPDATE notification SET answered_by = %s, answered_action = %s, answered_at = now() "
+                 "WHERE case_id = %s AND kind = ANY(%s) AND answered_by IS NULL AND buttons IS NOT NULL",
+                 (actor, action, case_id, list(kinds)))
+
+
 def _assign(conn, caller: Caller, case: dict, team: str, via: str) -> dict:
     team_row = conn.execute("SELECT team_id, region FROM team WHERE team_id = %s", (team,)).fetchone()
     if not team_row or team_row["region"] != case["region"]:
@@ -167,6 +180,8 @@ def _assign(conn, caller: Caller, case: dict, team: str, via: str) -> dict:
                            escalated_at = NULL, joint_operation = %s WHERE case_id = %s RETURNING *""",
                         (team, bool(joint and joint["joint_operation"]), case["case_id"])).fetchone()
     _event(conn, case, caller.user_id, "assigned", {"team": team, "via": via})
+    if via == "direct":   # a direct assignment settles a pending suggestion's message too
+        _close_buttons(conn, case["case_id"], ("suggestion",), caller.user_id, "assigned")
     db.audit(conn, caller.user_id, "case.assign", f"case:{case['case_id']}", {"team": team, "via": via})
     notify.send(conn, "assignment", case["case_id"], case["region"], team,
                 "Joint operation with police." if case["joint_operation"] else "")
@@ -186,6 +201,7 @@ def decide_suggestion(conn, caller: Caller, case_id: str, approve: bool, team: s
                  ("approved" if approve else "rejected", caller.user_id, case_id))
     db.audit(conn, caller.user_id, "dispatch.approve" if approve else "dispatch.reject", f"case:{case_id}",
              {"suggested_team": suggestion["suggested_team"], "assigned_team": team})
+    _close_buttons(conn, case_id, ("suggestion",), caller.user_id, "approve" if approve else "reject")
     if approve:
         return _assign(conn, caller, case, team or suggestion["suggested_team"], "dispatch_suggestion")
     _event(conn, case, caller.user_id, "dispatch_rejected", None)
@@ -245,6 +261,7 @@ def record_outcome(conn, caller: Caller, case_id: str, outcome: str, notes: str 
                                                     recorded_by, client_ref) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                  (case_id, visit, case["region"], outcome, reason_tag, notes, redacted.text if redacted else None, keys, caller.user_id, client_ref))
     conn.execute("UPDATE inspection_case SET status = 'visited' WHERE case_id = %s", (case_id,))
+    _close_buttons(conn, case_id, ("assignment", "reminder"), caller.user_id, "visited")
     _event(conn, case, caller.user_id, "visited", {"visit_no": visit})
     new_status = {"confirmed_theft": "reporting", "false_alarm": "closed", "inconclusive": "closed", "no_access": "assigned"}[outcome]
     case = conn.execute("UPDATE inspection_case SET status = %s, closed_at = CASE WHEN %s = 'closed' THEN now() END, "
@@ -295,6 +312,27 @@ def list_cases(conn, caller: Caller, status: str | None = None, team: str | None
     return rows
 
 
+SOLAR_CHECKLIST = ("panels_inverter_seen", "inverter_total_vs_expected", "registration_seen", "wiring_before_meter")
+SOLAR_REASON_TAGS = {"false_alarm": "solar_confirmed_no_theft", "confirmed_theft": "solar_plus_bypass"}
+
+
+def _solar_visit(conn, premise_id: str) -> dict | None:
+    """Rooftop-solar items for the visit (Solar brief 4): the checklist keys (worded on the phone in English or
+    Bahasa Melayu), the registered capacity and the daily generation the scorer expected, for comparison with
+    the inverter's own reading. None when the home shows no sign of solar."""
+    row = conn.execute(
+        """SELECT f.tags, f.details->'solar' AS solar FROM premise_feature f
+           WHERE f.premise_id = %s ORDER BY f.run_date DESC LIMIT 1""", (premise_id,)).fetchone()
+    s = (row or {}).get("solar") or {}
+    if not row or not ("solar" in (row["tags"] or []) or s.get("registered") or s.get("export")):
+        return None
+    budget = s.get("budget") or {}
+    return {"checklist": list(SOLAR_CHECKLIST), "registered": bool(s.get("registered")),
+            "capacity_kwp": s.get("capacity_kwp"), "has_battery": bool(s.get("has_battery")),
+            "expected_kwh_per_day": budget.get("expected_kwh"), "psh_source": budget.get("psh_source"),
+            "reason_tags": SOLAR_REASON_TAGS}
+
+
 def inspector_view(conn, caller: Caller, case: dict) -> dict:
     """What the phone keeps offline: address, top reasons (model cases) and the safety checklist.
 
@@ -304,6 +342,7 @@ def inspector_view(conn, caller: Caller, case: dict) -> dict:
     view = {"case_id": case["case_id"], "premise_id": case["premise_id"], "status": case["status"],
             "joint_operation": case["joint_operation"], "contact": dict(contact) if contact else None,
             "safety_checklist": SAFETY_CHECKLIST}
+    view["solar"] = _solar_visit(conn, case["premise_id"])
     if case["origin"] == "random_sample":
         view.update({"label": ROUTINE_LABEL, "reasons": []})
     else:
@@ -328,7 +367,7 @@ def case_detail(conn, caller: Caller, case_id: str) -> dict:
                             "FROM inspection_outcome WHERE case_id = %s ORDER BY visit_no", (case_id,)).fetchall()
     suggestion = conn.execute("SELECT suggested_team, distance_km, joint_operation, rationale, status, decided_by FROM dispatch_suggestion "
                               "WHERE case_id = %s", (case_id,)).fetchone()
-    reports = conn.execute("SELECT report_id, status, created_at, content_approved_by, export_approved_by, pdf_key IS NOT NULL AS has_pdf "
+    reports = conn.execute("SELECT report_id, status, created_at, content_approved_by, content_approved_at, export_approved_by, export_approved_at, pdf_key IS NOT NULL AS has_pdf "
                            "FROM case_report WHERE case_id = %s ORDER BY created_at", (case_id,)).fetchall()
     contact = None
     if caller.role in ("analyst", "supervisor", "inspector"):

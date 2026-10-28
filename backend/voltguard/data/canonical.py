@@ -156,10 +156,14 @@ _table(Table(
         Column("event_type", "string", allowed=("holder_change", "change_of_tenancy", "solar_registration"),
                description="solar_registration = rooftop solar under net metering or a self-consumption scheme (AS-9)"),
         Column("event_date", "date"),
+        Column("capacity_kwp", "float", required=False, unit="kWp", min=0.1, max=100,
+               description="solar_registration only: installed panel capacity, for the energy-budget check (FR-PS-10)"),
+        Column("has_battery", "bool", required=False,
+               description="solar_registration only: a home battery can move solar energy into the evening (FR-PS-10)"),
     ),
     key=("event_id",),
-    examples=[["EV-0001", "P-CEN-001-014", "change_of_tenancy", "2026-09-05"],
-              ["EV-0002", "P-CEN-001-020", "solar_registration", "2026-08-20"]],
+    examples=[["EV-0001", "P-CEN-001-014", "change_of_tenancy", "2026-09-05", None, None],
+              ["EV-0002", "P-CEN-001-020", "solar_registration", "2026-08-20", 4.0, False]],
 ))
 
 _table(Table(

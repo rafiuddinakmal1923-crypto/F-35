@@ -1,5 +1,7 @@
 // Small SVG charts with no chart library: line chart with an uncertainty band, bar chart,
-// and the neighbour voltage strip. Colours come from CSS tokens so both themes work.
+// and the neighbour voltage strip. Colours come from CSS tokens so both themes work, and every chart
+// takes a `summary`: a text version of what it shows, for screen readers.
+import { t } from "../i18n.js";
 
 const W = 640;
 
@@ -22,19 +24,36 @@ function niceTicks(min, max, count = 4) {
   return ticks;
 }
 
-export function LineChart({ series, height = 220, xLabels, yLabel, markers = [] }) {
-  const pad = { l: 48, r: 12, t: 10, b: 26 };
+// Uncertainty band between low and high; days without a value (null) are left out.
+function bandPath(band, x, y) {
+  const pts = band.map(([l, h], i) => [i, l, h]).filter(([, l, h]) => l != null && h != null && isFinite(l) && isFinite(h));
+  if (pts.length < 2) return "";
+  return `M${pts.map(([i, l]) => `${x(i)},${y(l)}`).join(" L")} L${[...pts].reverse().map(([i, , h]) => `${x(i)},${y(h)}`).join(" L")} Z`;
+}
+
+export function LineChart({ series, height = 220, xLabels, yLabel, markers = [], summary }) {
+  const pad = { l: 48, r: 12, t: yLabel ? 22 : 10, b: 26 };
   const n = Math.max(...series.map((s) => s.values.length), 1);
   const all = series.flatMap((s) => [...s.values, ...(s.band ? s.band.flat() : [])]).filter((v) => v != null && isFinite(v));
   const lo = Math.min(0, ...all);
   const hi = Math.max(...all, 1);
   const x = scale([0, n - 1], [pad.l, W - pad.r]);
   const y = scale([lo, hi], [height - pad.b, pad.t]);
-  const path = (vals) => vals.map((v, i) => (v == null ? null : `${x(i)},${y(v)}`)).filter(Boolean).join(" L");
+  // Gaps (null values) break the line into separate segments instead of bridging them.
+  const path = (vals) => {
+    let d = "";
+    let pen = "M";
+    vals.forEach((v, i) => {
+      if (v == null || !isFinite(v)) { pen = "M"; return; }
+      d += `${pen}${x(i)},${y(v)} `;
+      pen = "L";
+    });
+    return d.trim();
+  };
   const every = Math.max(1, Math.ceil(n / 7));
   return (
     <div className="chart">
-      <svg viewBox={`0 0 ${W} ${height}`} role="img" aria-label={yLabel}>
+      <svg viewBox={`0 0 ${W} ${height}`} role="img" aria-label={summary || yLabel}>
         <g className="axis">
           {niceTicks(lo, hi).map((tv) => (
             <g key={tv}>
@@ -43,33 +62,33 @@ export function LineChart({ series, height = 220, xLabels, yLabel, markers = [] 
             </g>
           ))}
           {xLabels?.map((label, i) => (i % every === 0 ? <text key={i} x={x(i)} y={height - 8} textAnchor="middle">{label}</text> : null))}
-          {yLabel ? <text x={10} y={pad.t + 4} textAnchor="start">{yLabel}</text> : null}
+          {yLabel ? <text x={10} y={12} textAnchor="start">{yLabel}</text> : null}
         </g>
         {series.map((s) =>
           s.band ? (
-            <path key={`${s.name}-band`} fill="var(--band)" stroke="none"
-              d={`M${s.band.map(([l], i) => `${x(i)},${y(l)}`).join(" L")} L${s.band.map(([, h], i) => [i, h]).reverse().map(([i, h]) => `${x(i)},${y(h)}`).join(" L")} Z`} />
+            <path key={`${s.name}-band`} fill="var(--band)" stroke="none" d={bandPath(s.band, x, y)} />
           ) : null,
         )}
         {markers.map((m) => (
           <g key={m.label}>
-            <line x1={x(m.index)} x2={x(m.index)} y1={pad.t} y2={height - pad.b} stroke="var(--accent)" strokeDasharray="4 3" />
-            <text x={x(m.index) + 4} y={pad.t + 10} fontSize="10" fill="var(--muted)">{m.label}</text>
+            <line x1={x(m.index)} x2={x(m.index)} y1={pad.t} y2={height - pad.b} stroke="var(--accent)" strokeWidth="1.5" strokeDasharray="4 3" />
+            <path d={`M${x(m.index) - 5},${pad.t} L${x(m.index) + 5},${pad.t} L${x(m.index)},${pad.t + 7} Z`} fill="var(--accent)" />
+            <text className="mark" x={x(m.index) + 7} y={pad.t + 10}>{m.label}</text>
           </g>
         ))}
-        {series.map((s) => (
-          <path key={s.name} d={`M${path(s.values)}`} fill="none" stroke={s.color} strokeWidth={s.width || 2}
+        {series.map((s) => path(s.values) && (
+          <path key={s.name} d={path(s.values)} fill="none" stroke={s.color} strokeWidth={s.width || 2}
             strokeDasharray={s.dashed ? "5 4" : undefined} />
         ))}
       </svg>
       <div className="legend">
-        {series.map((s) => <span key={s.name} style={{ "--c": s.color }}>{s.name}</span>)}
+        {series.map((s) => <span key={s.name} className={s.band ? "area" : s.dashed ? "dash" : ""} style={{ "--c": s.band ? "var(--band)" : s.color }}>{s.name}</span>)}
       </div>
     </div>
   );
 }
 
-export function BarChart({ values, labels, height = 160, color = "var(--series-4)", yLabel }) {
+export function BarChart({ values, labels, height = 160, color = "var(--series-gap)", yLabel, summary }) {
   const pad = { l: 40, r: 8, t: 10, b: 22 };
   const hi = Math.max(...values.map((v) => v ?? 0), 0.001);
   const lo = Math.min(0, ...values.map((v) => v ?? 0));
@@ -77,7 +96,7 @@ export function BarChart({ values, labels, height = 160, color = "var(--series-4
   const bw = (W - pad.l - pad.r) / values.length;
   return (
     <div className="chart">
-      <svg viewBox={`0 0 ${W} ${height}`} role="img" aria-label={yLabel}>
+      <svg viewBox={`0 0 ${W} ${height}`} role="img" aria-label={summary || yLabel}>
         <g className="axis">
           {niceTicks(lo, hi, 3).map((tv) => (
             <g key={tv}>
@@ -97,8 +116,8 @@ export function BarChart({ values, labels, height = 160, color = "var(--series-4
 }
 
 // Unexplained voltage drop along each phase/branch; the fitted tap position is marked.
-export function VoltageStrip({ groups, highlight }) {
-  if (!groups?.length) return <p className="muted">No voltage result for this zone.</p>;
+export function VoltageStrip({ groups, highlight, minDropV = 0.4 }) {
+  if (!groups?.length) return <p className="muted">{t("noVoltageResult")}</p>;
   const rowH = 54;
   const pad = { l: 70, r: 12 };
   const maxPos = Math.max(...groups.flatMap((g) => g.positions), 1);
@@ -107,7 +126,7 @@ export function VoltageStrip({ groups, highlight }) {
   const height = rowH * groups.length + 20;
   return (
     <div className="chart">
-      <svg viewBox={`0 0 ${W} ${height}`} role="img" aria-label="Neighbour voltage strip">
+      <svg viewBox={`0 0 ${W} ${height}`} role="img" aria-label={t("voltageStrip")}>
         {groups.map((g, gi) => {
           const top = 10 + gi * rowH;
           const yv = scale([0, minSig], [top + 6, top + rowH - 8]);
@@ -115,14 +134,17 @@ export function VoltageStrip({ groups, highlight }) {
             <g key={g.group}>
               <text x={4} y={top + 20} fontSize="11" fill="var(--muted)">{g.group}</text>
               <line x1={pad.l} x2={W - pad.r} y1={yv(0)} y2={yv(0)} stroke="var(--border)" />
-              <line x1={x(g.tap_position)} x2={x(g.tap_position)} y1={top + 2} y2={top + rowH - 4} stroke="var(--accent)" strokeDasharray="3 3" />
+              {/* A fitted position is only a located tap when its drop is above the noise level. */}
+              {g.fitted_drop_v >= minDropV ? (
+                <line x1={x(g.tap_position)} x2={x(g.tap_position)} y1={top + 2} y2={top + rowH - 4} stroke="var(--accent)" strokeDasharray="3 3" />
+              ) : null}
               {g.positions.map((p, i) => {
                 const pid = g.premises[i];
                 const hot = pid === highlight;
                 return (
                   <g key={pid}>
-                    <line x1={x(p)} x2={x(p)} y1={yv(0)} y2={yv(Math.min(g.signal_v[i], 0))} stroke={hot ? "var(--risk)" : "var(--series-1)"} strokeWidth={hot ? 4 : 2} />
-                    <circle cx={x(p)} cy={yv(Math.min(g.signal_v[i], 0))} r={hot ? 4 : 2.5} fill={hot ? "var(--risk)" : "var(--series-1)"} />
+                    <line x1={x(p)} x2={x(p)} y1={yv(0)} y2={yv(Math.min(g.signal_v[i], 0))} stroke={hot ? "var(--accent)" : "var(--series-supply)"} strokeWidth={hot ? 4 : 2} />
+                    <circle cx={x(p)} cy={yv(Math.min(g.signal_v[i], 0))} r={hot ? 4 : 2.5} fill={hot ? "var(--accent)" : "var(--series-supply)"} />
                     <title>{`${pid}: ${g.signal_v[i]} V`}</title>
                   </g>
                 );
@@ -132,9 +154,60 @@ export function VoltageStrip({ groups, highlight }) {
         })}
       </svg>
       <div className="legend">
-        <span style={{ "--c": "var(--series-1)" }}>Unexplained voltage drop (V) by distance from the transformer</span>
-        <span style={{ "--c": "var(--accent)" }}>Estimated hidden-load position</span>
+        <span style={{ "--c": "var(--series-supply)" }}>{t("voltageLegendDrop")}</span>
+        <span className="dash" style={{ "--c": "var(--accent)" }}>{t("voltageLegendTap")}</span>
       </div>
     </div>
   );
+}
+
+const PALETTE = ["var(--series-supply)", "var(--series-gap)", "var(--series-explained)", "var(--info)"];
+
+// Horizontal bars for categories (zones, districts, statuses): long labels stay readable.
+export function CategoryBars({ labels, values, unit, color = "var(--series-supply)" }) {
+  const rowH = 30;
+  const pad = { l: 150, r: 70 };
+  const height = labels.length * rowH + 8;
+  const hi = Math.max(...values.map((v) => Math.abs(v ?? 0)), 0.001);
+  const x = scale([0, hi], [pad.l, W - pad.r]);
+  return (
+    <div className="chart">
+      <svg viewBox={`0 0 ${W} ${height}`} role="img" aria-label={unit}>
+        {labels.map((label, i) => {
+          const v = values[i] ?? 0;
+          const top = 4 + i * rowH;
+          return (
+            <g key={label}>
+              <text x={pad.l - 8} y={top + rowH / 2 + 4} textAnchor="end" fontSize="12" fill="var(--text)">{label}</text>
+              <rect x={pad.l} y={top + 5} width={Math.max(x(Math.abs(v)) - pad.l, 1)} height={rowH - 10} rx="4" fill={color} />
+              <text x={x(Math.abs(v)) + 6} y={top + rowH / 2 + 4} fontSize="12" fill="var(--muted)">{v}</text>
+            </g>
+          );
+        })}
+      </svg>
+      {unit ? <div className="legend"><span style={{ "--c": color }}>{unit}</span></div> : null}
+    </div>
+  );
+}
+
+// Chart for a query-service answer: the API names the chart that suits the rows (FR-AG-03).
+export function QueryChart({ chart, rows }) {
+  if (!chart || !rows?.length) return null;
+  const label = (v) => String(v).slice(0, 24);
+  const tick = (v) => (/^\d{4}-\d{2}-\d{2}/.test(String(v)) ? String(v).slice(5, 10) : label(v));
+  if (chart.type === "line") {
+    if (chart.series) {
+      const xs = [...new Set(rows.map((r) => String(r[chart.x])))];
+      const groups = [...new Set(rows.map((r) => r[chart.series]))];
+      const series = groups.map((g, i) => {
+        const byX = new Map(rows.filter((r) => r[chart.series] === g).map((r) => [String(r[chart.x]), Number(r[chart.y[0]])]));
+        return { name: g, values: xs.map((xv) => byX.get(xv) ?? null), color: PALETTE[i % PALETTE.length] };
+      });
+      return <LineChart series={series} xLabels={xs.map(tick)} yLabel={chart.y_label} />;
+    }
+    const series = chart.y.map((col, i) => ({ name: col.replaceAll("_", " "), values: rows.map((r) => (r[col] == null ? null : Number(r[col]))),
+      color: PALETTE[i % PALETTE.length], dashed: i > 0 }));
+    return <LineChart series={series} xLabels={rows.map((r) => tick(r[chart.x]))} yLabel={chart.y_label} />;
+  }
+  return <CategoryBars labels={rows.map((r) => label(r[chart.x]))} values={rows.map((r) => Number(r[chart.y[0]]))} unit={chart.y_label} />;
 }

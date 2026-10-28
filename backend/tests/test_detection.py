@@ -267,3 +267,12 @@ def test_FR_DI_07_district_weather_loaded_and_used(demo_sim):
 
     zone = build_zone_inputs(tables, scn.start_date, scn.days)["TX-CEN-001"]
     assert zone.sunshine is not None and np.isfinite(zone.sunshine).all()    # the rooftop-solar check reads it (FR-PS-10)
+
+
+def test_FR_PS_07_voltage_reason_at_the_premise_reads_naturally():
+    from voltguard.detection.scoring import reason_text
+
+    at = reason_text("voltage_proximity", {"group_drop_v": 1.1, "tap_distance": 0.0}, [])
+    near = reason_text("voltage_proximity", {"group_drop_v": 1.1, "tap_distance": 63.6}, [])
+    assert "at or right next to this premise" in at and "0 m" not in at
+    assert "about 64 m from this premise" in near

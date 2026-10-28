@@ -67,6 +67,13 @@ export async function signIn(username, password) {
   return data;
 }
 
+// Demo only (DEMO_MODE on): one-click sign-in as a test account from the role cards.
+export async function signInDemo(username) {
+  const data = await request("/auth/demo-token", { method: "POST", body: { username }, tokenOverride: "" });
+  setSession(data.access_token, data.user);
+  return data;
+}
+
 export async function signOut() {
   try {
     await request("/auth/sign-out", { method: "POST" });

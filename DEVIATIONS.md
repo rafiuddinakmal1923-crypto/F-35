@@ -45,3 +45,39 @@ later change wires them in.
 | Language model drafts the report | Facts, reasons, notes and citations are filled from the database by template; the model writes only the assessment paragraph (`REPORT_MODE=live`), pre-drafted at setup (`predrafted`) or from a template (`mock`) | A 4-bit 7B model on a laptop CPU is slow, and facts must never depend on generation |
 | Chatbot query service | Fixed, whitelisted read-only query templates; the model (if any) only picks a template and its parameters | No model-written SQL reaches the database |
 | Public legal texts for RAG | Not copied into the repository; `scripts/fetch_docs.py` downloads them when a verified URL is set, otherwise prints manual steps. Until loaded, legal questions return "not found" and reports cite Section 37 by name only | No invented or unverified legal text |
+
+## Additions after the R0 review (not in the SDD)
+
+| Addition | What it does | Rule kept |
+| --- | --- | --- |
+| Telegram dispatch bot with buttons (`service/telegram.py`) | Supervisor approves or rejects suggestions; team accepts, says it is on the way, or cannot attend; works without a token as an in-app chat | Messages carry a case ID and link only; each press runs as the linked person with their role and region, is audited and answers a message once |
+| Route planner (`agents/route.py`) | Visiting order of a team's cases with distances and arrival estimates | Locations only through `vg_case_contact`; no routing service is called. The Google Maps / Waze buttons send the destination coordinates (never a name or address) to that app when the inspector taps them. TNB may prefer its own navigation app (open issue for R1) |
+| Weekly summary (`service/digest.py`) | Region page, PDF and a Monday message to managers and supervisors | Zone-level figures and case counts only; value at risk stays a `[TNB tariff: to be supplied]` placeholder |
+| "My work" home and badges (`service/work.py`) | Next actions per role | Reads through the caller's own connection, so role and region rules apply |
+| Batched nightly run (`service/pipeline.py`) | Readings in meter batches, detection in zone batches | Same results as one batch (tested); validation still stops the run on errors |
+| Map background (`components/BaseTiles.jsx`) | Esri grey canvas basemap first (dark or light with the theme), then OpenStreetMap, then Esri streets, switching when a provider's tiles fail; a note when none load | CARTO's basemaps now return "API KEY REQUIRED" pictures that load without an error, so the fallback could not catch them; Esri's canvas maps need no key (attribution shown). OpenStreetMap's tile servers block many apps on localhost. R1 should use the utility's own map server. Tile requests carry only map coordinates, never case data |
+
+## UI upgrade (`VoltGuard_UI_Upgrade_Prompt.md`)
+
+| Brief | R0 | Reason |
+| --- | --- | --- |
+| Fonts: IBM Plex Sans and Space Grotesk | `@fontsource/ibm-plex-sans` 5.3.0 and `@fontsource/space-grotesk` 5.3.0 (exact versions), replacing Inter | Self-hosted, so the demo works offline; both are allowed by the brief |
+| `recharts` allowed | Not used: the existing SVG charts in `components/Charts.jsx` were extended (bands, markers, text summaries) | No new dependency; every chart already has a screen-reader summary |
+
+## Rooftop solar (`VoltGuard_Solar_Prompt.md`, FR-PS-10)
+
+| Brief | R0 | Reason |
+| --- | --- | --- |
+| Strong night evidence: night drop >= 25% or night use >= 30% below peers, or a night-time voltage dip | Night drop >= 25% from its own history, or night use >= 30% below similar homes **when it was not already that low before the drop**. A night-time voltage dip is shown and supports, but never drops the penalty on its own | A frugal household is low at night before and after installing solar, and was wrongly kept as a suspect; a dip can come from a neighbour's tap on the same phase (seen in simulation) |
+| Home battery: night comparison low confidence instead of skipped | The night window starts at midnight for homes with a battery (the battery covers the evening), and the comparison is labelled low confidence | Evening use from the grid falls with a battery by design; from midnight the comparison is still meaningful |
+| Peak sun hours from district sunshine, default range when no weather | Peak sun hours = sunshine hours x `solar.psh_per_sunshine_hour` (0.95); without weather the top of `solar.psh_default` (3.5-6.5 h), labelled "[peak sun hours: to confirm]" | No TNB or SEDA generation data in R0; both numbers are settings to confirm |
+| Timing vs registration as a supporting reason | Adds `solar.timing_points` (3 points) only when other evidence already passes the tenancy gate | Same rule as tenancy change (FR-PS-09): supporting evidence never lifts a premise on its own |
+| Rainy-day rebound | Computed for every smart meter; counts towards the solar tag when daytime use on the cloudiest third of days exceeds the sunniest third by `solar.rebound_min` of past daytime use | A self-consumption system that covers all daytime use even on cloudy days shows no rebound; the sun-shaped drop and the zeroed midday carry the check then |
+
+## Data (current public datasets)
+
+| Change | R0 | Reason |
+| --- | --- | --- |
+| Pattern model training | Trained on the real SGCC data (`pattern_training: sgcc`, 42,364 customers, one 28-day window each). Held-out AUC 0.55 against 0.50 for the synthetic-trained model on the same customers | SGCC patterns transfer weakly to single 28-day windows (OI-3); the tuned weight of the pattern input is 0.065 (`config/tuned_weights.yaml`), so demo-zone scores moved by a few points and the top three stayed the same. The previous synthetic model is kept in `DATA_ROOT/models/backup_synthetic/` |
+| London data | The adapter reads the Kaggle `hhblock_dataset` (day + hh_0..hh_47) or half-hourly blocks, in block order, until `london.households` (300) households are covered, and skips the daily, weather and household-information files | The full Kaggle download is about 9 GB; the default subset reads 6 blocks in seconds |
+| Public documents for RAG | `sources.yaml` lists the Electricity Supply Act (Bahasa Melayu reprint), the Penal Code and four Energy Commission guidelines saved in `DATA_ROOT/docs_rag/`; two are scanned PDFs without a text layer and are skipped with a warning until an OCR'd copy is saved | No invented text: only documents with a text layer can be cited |

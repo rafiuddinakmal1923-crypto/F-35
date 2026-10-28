@@ -15,7 +15,9 @@ services:
     volumes:
       - pgdata:/home/postgres/pgdata/data           # named volume, never a Windows bind mount
     ports:
-      - "127.0.0.1:5432:5432"
+      # Host port for Power BI only (containers use db:5432). Not 5432: a local PostgreSQL or a
+      # Windows reserved port range often holds it. Change DB_HOST_PORT in .env if this one is taken.
+      - "127.0.0.1:${DB_HOST_PORT:-15432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U voltguard -d voltguard"]
       interval: 5s
@@ -48,16 +50,21 @@ services:
       context: ./web
     restart: unless-stopped
 
+  # Runs on the CPU here; docker-compose.gpu.yml gives it an NVIDIA GPU (make.ps1 and the Makefile
+  # add that file automatically when nvidia-smi is present). Models live in a named volume inside
+  # Docker's disk image (on D: once its location is moved there): a ~5 GB model loads slowly
+  # through a Windows-drive bind mount.
   ollama:
     image: ollama/ollama:0.6.8
     volumes:
-      - ${OLLAMA_MODELS:-./.data/models/ollama}:/root/.ollama
+      - ollama_models:/root/.ollama
     restart: unless-stopped
 
   proxy:
     image: caddy:2.9.1
     ports:
-      - "8080:80"
+      # WEB_PORT in .env if another program already uses 8080
+      - "${WEB_PORT:-8080}:80"
     volumes:
       - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
     depends_on:
@@ -81,6 +88,17 @@ services:
     command: ["tunnel", "--no-autoupdate", "--config", "/etc/cloudflared/config.yml", "run"]
     volumes:
       - ./deploy/cloudflared:/etc/cloudflared:ro
+    depends_on: [proxy]
+    restart: unless-stopped
+
+  # Named tunnel from the Cloudflare dashboard (Zero Trust -> Networks -> Tunnels): only a token is
+  # needed (TUNNEL_TOKEN in .env); the public hostname -> http://proxy:80 is set in the dashboard.
+  tunnel-token:
+    profiles: ["tunnel-token"]
+    image: cloudflare/cloudflared:2025.4.2
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:-}
     depends_on: [proxy]
     restart: unless-stopped
 
@@ -152,4 +170,5 @@ services:
 
 volumes:
   pgdata:
+  ollama_models:
   minio:

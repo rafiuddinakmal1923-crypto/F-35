@@ -166,6 +166,80 @@ def test_NFR_15_model_output_with_personal_details_is_blocked(monkeypatch):
     assert scrubber.scrub("Kumar a/l Muthu").found == {"NAME": 1}
 
 
+def test_FR_AG_01_live_model_gets_figures_with_units(monkeypatch):
+    """The live model once turned a raw gap share of 0.0012 into "0.001%": it now gets finished figures."""
+    from voltguard.agents import report
+
+    sent = {}
+
+    def fake_complete(system, user, **kwargs):
+        sent["system"], sent["user"] = system, user
+        return llm.Completion("The zone shows an unexplained gap of 118 kWh per day (11.8% of supply).", "ollama", "qwen")
+
+    monkeypatch.setattr(llm, "complete", fake_complete)
+    f = {"case": {"transformer_id": "TX-CEN-001", "premise_id": "P-1"},
+         "zone": {"gap_kwh_recent": 117.6, "gap_pct_recent": 0.1184, "flatness_cv": 0.16},
+         "score": {"score": 57, "rank": 1}, "reasons": [{"reason_text": "Use fell 70% compared with its own history"}],
+         "outcomes": [{"outcome": "confirmed_theft"}]}
+    facts = report.live_facts(f)
+    assert facts["unexplained_energy_gap"] == "118 kWh per day"
+    assert facts["gap_as_share_of_supply"] == "11.8%"
+    assert facts["daily_shape_of_the_gap"].startswith("nearly constant")
+    assert facts["premise_risk_score"].startswith("57 out of 100")
+    assert facts["inspection_outcomes"] == ["Confirmed theft"]
+    text, mode = report._assessment(f, "live")
+    assert mode == "live (qwen)" and "118 kWh per day" in text
+    assert json.loads(sent["user"]) == facts and "never convert" in sent["system"]
+    small = report.live_facts({**f, "zone": {"gap_kwh_recent": 0.99, "gap_pct_recent": 0.0012, "flatness_cv": None}, "score": None, "outcomes": []})
+    assert small["gap_as_share_of_supply"] == "0.1%" and small["daily_shape_of_the_gap"] == "not computed"
+    assert small["inspection_outcomes"] == ["not inspected yet"]
+
+
+def test_FR_AG_03_live_model_choice_is_cleaned_and_labelled(monkeypatch):
+    """Replies recorded from qwen2.5:7b-instruct: a list of params with 10% as 0.1, a null day count, and an
+    empty template for a greeting (which is still a live answer, not mock)."""
+    from voltguard.agents import chatbot
+
+    replies = {"Which zones had a gap above 10% this week?": '{"template": "zones_gap_above", "params": ["0.1", 7]}',
+               "Show the gap trend for TX-CEN-001": '{"template": "zone_gap_trend", "params": {"zone": "TX-CEN-001", "days": null}}',
+               "hi": '{"template": ""}',
+               "which district loses the most energy": '{"template": "gap_by_district", "params": {"bogus": 1}}'}
+    monkeypatch.setattr(chatbot, "_ask_model", lambda q: llm.Completion(replies[q], "ollama", "qwen"))
+    assert chatbot.parse("Which zones had a gap above 10% this week?") == ("zones_gap_above", {"pct": 10.0, "days": 7}, "ollama")
+    assert chatbot.parse("Show the gap trend for TX-CEN-001") == ("zone_gap_trend", {"zone": "TX-CEN-001"}, "ollama")
+    assert chatbot.parse("hi") == ("", {}, "ollama")
+    assert chatbot.parse("which district loses the most energy") == ("gap_by_district", {}, "ollama")
+    monkeypatch.setattr(chatbot, "_ask_model", lambda q: None)        # model unavailable
+    assert chatbot.parse("hi") == ("", {}, "mock")
+
+
+def test_FR_AG_04_field_assistant_mode_says_who_answered(monkeypatch):
+    """"Not found" for a greeting is the online assistant refusing to guess, not a mock answer."""
+    from voltguard import db
+    from voltguard.agents import rag
+    from voltguard.db import Caller
+
+    passage = rag.Passage("c1", "field_evidence_checklist", "Field evidence checklist", "At the meter", "1", "approved", "document",
+                          "Photograph the meter seal and the cabling before touching anything.", 0.9)
+    monkeypatch.setattr(db, "audit", lambda *a, **k: None)
+    monkeypatch.setattr(llm, "available", lambda: True)
+    caller = Caller("inspector.b", "inspector", "CEN", "T-CEN-B")
+
+    monkeypatch.setattr(rag, "search", lambda conn, q, **k: [])
+    assert rag.answer(None, caller, "hi") == {"answer": rag.NOT_FOUND, "sources": [], "mode": "ollama", "refused": False}
+    monkeypatch.setattr(llm, "available", lambda: False)
+    assert rag.answer(None, caller, "hi")["mode"] == "mock"
+
+    monkeypatch.setattr(llm, "available", lambda: True)
+    monkeypatch.setattr(rag, "search", lambda conn, q, **k: [passage])
+    monkeypatch.setattr(llm, "complete", lambda *a, **k: llm.Completion("Photograph the meter seal first [1].", "ollama", "qwen"))
+    live = rag.answer(None, caller, "What should I photograph at the meter seal?")
+    assert live["mode"] == "ollama" and live["sources"][0]["doc_id"] == "field_evidence_checklist"
+    monkeypatch.setattr(llm, "complete", lambda *a, **k: llm.Completion("Sure! Take photos.", "ollama", "qwen"))   # no citation
+    quoted = rag.answer(None, caller, "What should I photograph at the meter seal?")
+    assert quoted["mode"] == "extractive" and "meter seal" in quoted["answer"]
+
+
 def test_FR_UI_05_pdf_fallback_without_a_browser(monkeypatch):
     """Without Chromium (e.g. a minimal image) the export still produces a PDF with every line."""
     from pypdf import PdfReader
@@ -176,3 +250,38 @@ def test_FR_UI_05_pdf_fallback_without_a_browser(monkeypatch):
     data = pdf._fpdf(html)
     text = "".join(page.extract_text() for page in PdfReader(io.BytesIO(data)).pages)
     assert data.startswith(b"%PDF") and "Third line." in text and "Siti" in text
+
+
+def test_FR_AG_01_manager_sees_evidence_photos_only_for_export_approval(api, pg):
+    """The manager reviews evidence photos for the second approval, and not before the content is approved."""
+    case = api.post("/cases", json={"premise_id": "P-NOR-001-003"}, headers=login(api, "analyst.nor")).json()
+    cid = case["case_id"]
+    api.patch(f"/cases/{cid}/assign", json={"team": "T-NOR-C"}, headers=login(api, "supervisor.nor"))
+    inspector = login(api, "inspector.c")
+    key = api.post(f"/cases/{cid}/photos", files={"file": ("m.jpg", b"\xff\xd8\xff fake jpeg", "image/jpeg")}, headers=inspector).json()["photo_key"]
+    r = api.post(f"/cases/{cid}/outcome", json={"outcome": "confirmed_theft", "photo_keys": [key]}, headers=inspector)
+    manager = login(api, "manager.nor")
+    assert api.get(f"/cases/{cid}/photos/{key}", headers=manager).status_code == 403
+    api.post(f"/reports/{r.json()['report_id']}/approve-content", headers=login(api, "analyst.nor"))
+    assert api.get(f"/cases/{cid}/photos/{key}", headers=manager).content.startswith(b"\xff\xd8")
+    assert api.get(f"/cases/{cid}/photos/{key}", headers=login(api, "manager.cen")).status_code in (403, 404)
+
+
+@pytest.mark.parametrize("question, template, chart", [
+    ("Which zones had a gap above 10% this week?", "zones_gap_above", "bar"),
+    ("Show the gap trend for TX-NOR-001 over 20 days", "zone_gap_trend", "line"),
+    ("Daily gap of all zones as a chart", "region_gap_trend", "line"),
+    ("Unexplained energy by district", "gap_by_district", "bar"),
+    ("Top 3 zones as a line chart", "top_zones", "line"),
+    ("Inspection outcomes so far", "outcomes_summary", None),
+])
+def test_FR_AG_03_answers_carry_a_chart_and_a_sentence_from_the_rows(api, question, template, chart):
+    r = api.post("/agents/chat", json={"agent": "analyst", "message": question}, headers=login(api, "manager.nor")).json()
+    q = r["query"]
+    assert q["template"] == template, r
+    assert "row(s)" not in r["answer"] and "TX-CEN" not in r["answer"]
+    if q["rows"]:
+        assert q["chart"]["type"] == (chart or q["chart"]["type"])
+        assert q["chart"]["x"] in q["rows"][0] and all(y in q["rows"][0] for y in q["chart"]["y"])
+    if template == "zone_gap_trend":
+        assert len(q["rows"]) == 20 and q["params"]["days"] == 20 and "TX-NOR-001" in r["answer"]

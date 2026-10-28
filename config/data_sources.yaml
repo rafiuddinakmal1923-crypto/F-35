@@ -1,4 +1,4 @@
-# Active source per canonical table (prompt 3.4).
+﻿# Active source per canonical table (prompt 3.4).
 # Values: simulated | london | upload:<dataset_name> | upload:<dataset_name>@v<N>
 #   simulated  the simulation run named under `simulation.run`
 #   london     London households from the London adapter (no voltage, phase or transformer meter)
@@ -26,7 +26,7 @@ london:
 # Scale profiles to Malaysian monthly consumption seasonality: none | datagovmy
 rescale: none
 # Pattern model training data: synthetic | sgcc
-pattern_training: synthetic
+pattern_training: sgcc
 
 # Simulation run used when a table's source is `simulated`
 simulation:

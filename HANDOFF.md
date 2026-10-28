@@ -104,78 +104,166 @@ graphify graph in `graphify-out/` and `TRACEABILITY.md`).
   and on the phone app through it. All 73 database tests also passed against that server.
 - Not run here: Ollama (no model download), Cloudflare tunnels, the full profile.
 
+## Review round (after the team's laptop test, 2026-10-27)
+
+Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIGN_REQUIREMENTS.md`.
+
+- **End-to-end run of every use case** (`scripts/e2e_use_cases.py`): it starts its own stack and
+  drives 68 browser and API checks for every account. All pass. Your own passwords: `VG_PASSWORDS_FILE`
+  (JSON kept outside the repository).
+- **Telegram dispatch bot**: `service/telegram.py`, `api/routes_telegram.py`, `sql/005_telegram.sql`.
+  - Buttons on dispatch messages: supervisor Approve / Reject; team Accept / On my way / Can't attend.
+  - Chat linking with `/start CODE`, plus `/mycases`, `/whoami` and `/unlink`.
+  - Long polling starts in the API when `TELEGRAM_BOT_TOKEN` is set.
+  - The in-app simulator (`components/TelegramChat.jsx`) is on the Dispatch page (`pages/Dispatch.jsx`,
+    which also has remote sign-out) and in the inspector Messages tab.
+  - Tests: `tests/test_telegram.py`.
+- **Assistant charts**: query templates carry a chart spec, and answers are sentences built from the rows.
+  - New templates: zone and region gap trends, gap by district, outcomes.
+  - The front end: `QueryChart` in `components/Charts.jsx`, and a chat-style `pages/Assistant.jsx`.
+- **Fixed**:
+  - voltage strip marked a tap on every line;
+  - usage chart broke on monthly-read meters and started with a partial day;
+  - "0 m from this premise" wording;
+  - manager 403 on evidence photos;
+  - no notification of pending dispatch suggestions;
+  - top bar overflow on phones;
+  - **an async photo-upload endpoint blocked the event loop and could deadlock the API on the audit
+    lock** (now plain functions everywhere, with a guard test);
+  - laptop setup: Debian 12 base image, `DB_HOST_PORT` and `WEB_PORT`, map tiles sending the origin.
+
+## Laptop round (2026-10-28)
+
+- **Ollama on the GPU**: `docker-compose.gpu.yml`, added automatically by `make.ps1`/`Makefile` when
+  `nvidia-smi` exists (`VG_GPU=0` forces CPU); models in the `ollama_models` volume. Qwen2.5-7B answers in
+  2–3 s, so `REPORT_MODE=live` fits the demo. The live report model gets finished figures with units
+  (`report.live_facts`); the Assistant labels any valid model reply as live and cleans the model's parameters.
+- **Weekly report upgrade** (`VoltGuard_Report_Upgrade_Prompt.md`): `service/digest.py` (figures) +
+  `service/digest_render.py` (rules, charts, HTML, PDF, EN/BM), `/weekly/html?lang=`, PDF on Telegram after an
+  output check, schedule in Settings (`weekly.*`), tariff in `config/tariffs.yaml`. Before/after in
+  `reports/ui/` with `CHANGES.md`.
+- **Fixed**: `training_label` ran as its owner, so hit rates counted every region (now `security_invoker`).
+- Windows: database tests run against a throwaway `timescale/timescaledb-ha:pg16` container via
+  `TEST_DATABASE_URL` (126 pass).
+## UI upgrade and solar round (2026-10-28, branch `claude/ui-upgrade`, worktree `D:\VoltGuard\wt-ui`)
+
+- **Where the work is**: the branch is checked out in a second git worktree at `D:\VoltGuard\wt-ui`; the
+  main folder `C:\...\F-35` stays on `claude/practical-clarke-t5uwrc`. The running Docker stack was built
+  from the main folder, so it does not show this branch until it is rebuilt.
+- **UI brief** (`VoltGuard_UI_Upgrade_Prompt.md`): done. Design system, redesigned pages, Must items 3.1, 3.2,
+  3.3, 3.6 and 3.8, and Should/Could items 3.4, 3.5, 3.7, 3.9, 3.10 and 3.11 (`reports/ui/CHANGES.md` lists each change with
+  its screenshot pair; before/after in `reports/ui/before/` and `reports/ui/after/`, plus `after/light/` and
+  `after/ms/`). Checks run: web unit tests (`cd web; npm test`, 19), backend tests (151), browser tests
+  (`pytest -m e2e`, 3; the 7 live steps in about 25 s), demo reset 10.6 s, contrast of every token pair at
+  4.5:1 or more in both themes, `docker build` of both images. Not run: a screen-reader pass and a usability
+  test with inspectors.
+- **Solar brief** (`VoltGuard_Solar_Prompt.md`, FR-PS-10): scoring loophole closed and the missing checks
+  added in `detection/features.py` (`_solar_checks`, `_solar_decision`) and `scoring.py`; settings under
+  `solar:` in `config/thresholds.yaml`; new simulator cases; shown on the premise page (Solar check), the
+  zone page (Cleared as legitimate, night-use marker), the weekly report and the inspector app. Tests:
+  `tests/test_solar.py`, `web/tests/solar.test.js`. Choices that differ from the brief are in `DEVIATIONS.md`.
+- **Data**: the Kaggle London and SGCC downloads in `DATA_ROOT/raw/` are converted (`python -m voltguard
+  convert`); the pattern model is trained on SGCC (`pattern_training: sgcc`; the synthetic model is kept in
+  `DATA_ROOT/models/backup_synthetic/`). Public documents in `DATA_ROOT/docs_rag/` are listed in
+  `data/docs_rag/sources.yaml`.
+- **Hand-off script**: `scripts/handoff.py` (Windows and Linux; `make.ps1 handoff`) refreshes graphify,
+  `TRACEABILITY.md` and this file's auto part. Run it after every finished section.
+- **Database tests on Windows**: the throwaway container keeps its data, so create a fresh database before
+  each full run: `docker exec vg-ui-pg psql -U voltguard -c "DROP DATABASE IF EXISTS vgtest WITH (FORCE)"`,
+  then `CREATE DATABASE vgtest OWNER voltguard`, and set `TEST_DATABASE_URL=postgresql://voltguard@127.0.0.1:55432/vgtest`.
+  On a reused database, the case tests fail because of the cases left by the previous run.
+
 ## Known issues
 
-- NFR-09 holds for ranked zones (18/18) but not overall (18/24): partial bypasses of about 1% of
-  supply in zones with no other theft stay inside the uncertainty margin u, so no flag threshold
-  makes them visible (`reports/simulation_report.md`, sweep section). Narrowing u needs TNB inputs.
+- NFR-09 on held-out settings that now include theft hidden behind solar (`reports/simulation_report.md`):
+  - ranked zones: 26 of 27 thefts in the top 5%. The miss is a 1.3% partial bypass at rank 4 where the top 5% is 3 homes.
+  - overall: 26 of 36 thefts in the top 5%. Most of the misses are about 1% of supply or less, inside the
+    uncertainty margin u; narrowing u needs TNB inputs.
+  - TX-NOR-107 (7.3% gap) is not flagged: the rule needs 7 days in a row above the threshold, and noise
+    breaks the run twice in 14 days. A "k of the last n days" rule would catch it (to agree with TNB, OI-7).
+- The SGCC-trained pattern model has a held-out AUC of only 0.55 on 28-day windows (OI-3).
 - Fixed this session: metered mining no longer reaches the held-out top 5% (re-tuned weights);
   the sweep now varies both parts of the flag rule.
-- Not exercised here: a live Ollama model, live Telegram, Cloudflare tunnels, the full profile.
+- Not exercised here: a live Ollama model, a real Telegram bot token (the bot path is tested with a
+  recorded Telegram API), Cloudflare tunnels, the full profile.
 
 ## Ideas for a next session
 
-- Measure NFR-01 at 100,000 simulated meters (zone-by-zone processing is in place).
+- NFR-01: the nightly run now streams readings in meter batches and detects in zone batches.
+  It has been measured up to 13,088 homes (3.1 GB, 219 s, nearly flat memory). Still to do: load only
+  the new day each night once real AMI extracts arrive daily (today every source is reloaded in full).
+- Merge `claude/ui-upgrade` into the main branch and rebuild the Docker stack from it (`.\make.ps1 demo`):
+  the running stack still uses the older code.
+- Named tests for NFR-04, 05, 06 and 14 (implemented, still "open" in `TRACEABILITY.md`); the breach
+  runbook, breach register and data-portability export of SDD 9.3 (NFR-07) are not built.
+- A "k of the last n days" flag rule (TX-NOR-107 in the simulation report), to agree with TNB (OI-7).
+- OCR the two scanned Energy Commission guidelines so the field assistant can cite them.
 - Wire the full profile (Keycloak OIDC, MinIO, Celery) behind the existing interfaces.
 - Try narrowing u (e.g. per-zone loss-model calibration) and re-run the held-out report.
 
 <!-- auto:start -->
-## Auto-generated state (scripts/handoff.sh)
+## Auto-generated state (scripts/handoff.py)
 
-- Generated: 2026-10-27T09:10
-- Branch: `claude/practical-clarke-t5uwrc`; last commit: `98abea4 Test every functional requirement by name: FR-DI-07, FR-IW-03, NFR-02, NFR-13`
-- Tests collected: 75 tests
+- Generated: 2026-10-28T15:04
+- Branch: `claude/ui-upgrade`; last commit: `f467ada UI upgrade: after screenshots, change list, browser tests on the new layout, contrast fix`
+- Tests collected: 151 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
   query with `graphify query "<question>"` or `graphify explain "<name>"`)
 
 ### Graph summary
 
-- 1899 nodes · 4394 edges · 126 communities (114 shown, 12 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 252 edges (avg confidence: 0.93)
+- 2667 nodes · 5931 edges · 149 communities (142 shown, 7 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 186 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
-1. `Caller` - 102 edges
-2. `Requirements` - 62 edges
-3. `login()` - 37 edges
-4. `audit()` - 35 edges
-5. `t()` - 33 edges
-6. `admin_connection()` - 30 edges
-7. `simulate_zone()` - 28 edges
-8. `run_detection()` - 28 edges
-9. `command()` - 27 edges
-10. `ingest()` - 27 edges
+1. `Caller` - 142 edges
+2. `t()` - 105 edges
+3. `login()` - 70 edges
+4. `audit()` - 46 edges
+5. `admin_connection()` - 42 edges
+6. `get()` - 42 edges
+7. `useLoad()` - 33 edges
+8. `shot()` - 32 edges
+9. `request()` - 30 edges
+10. `render_html()` - 29 edges
 
 ### File tree
 
-- `./`: .dockerignore, .env.example, .gitignore, DEMO.md, DEVIATIONS.md, HANDOFF.md, MODELS.md, Makefile, PLAN.md, README.md, TRACEABILITY.md, VoltGuard AI Software Design Document (SDD).pdf, ... (+6)
+- `./`: .dockerignore, .env.example, .gitignore, DEMO.md, DEVIATIONS.md, HANDOFF.md, HOW_TO_RUN.md, MODELS.md, Makefile, PLAN.md, README.md, TRACEABILITY.md, ... (+13)
 - `backend/`: Dockerfile, pytest.ini, requirements.txt
-- `backend/tests/`: conftest.py, local_stack.py, pg_server.py, test_agents.py, test_api_security.py, test_cases.py, test_data_layer.py, test_detection.py, test_learning.py, test_reporting.py
+- `backend/tests/`: conftest.py, local_stack.py, pg_server.py, test_agents.py, test_api_security.py, test_cases.py, test_data_layer.py, test_detection.py, test_digest.py, test_digest_render.py, test_learning.py, test_pipeline_batches.py, ... (+6)
 - `backend/tests/e2e/`: __init__.py, test_demo_rehearsal.py, test_web_flow.py
 - `backend/voltguard/`: __init__.py, __main__.py, audit.py, auth.py, cli.py, config.py, db.py, evaluation.py, network.py, pdf.py, storage.py
-- `backend/voltguard/agents/`: __init__.py, chatbot.py, dispatch.py, embed.py, guardrails.py, llm.py, rag.py, report.py, scrubber.py
-- `backend/voltguard/api/`: __init__.py, deps.py, main.py, routes_admin.py, routes_agents.py, routes_auth.py, routes_cases.py, routes_models.py, routes_zones.py
+- `backend/voltguard/agents/`: __init__.py, chatbot.py, dispatch.py, embed.py, guardrails.py, llm.py, rag.py, report.py, route.py, scrubber.py
+- `backend/voltguard/api/`: __init__.py, deps.py, main.py, routes_admin.py, routes_agents.py, routes_auth.py, routes_cases.py, routes_models.py, routes_telegram.py, routes_ui.py, routes_zones.py
 - `backend/voltguard/data/`: __init__.py, adapters/__init__.py, adapters/datagovmy.py, adapters/london.py, adapters/sgcc.py, canonical.py, fakes.py, ingest.py, profiles.py, simulator.py, sources.py, validation.py
 - `backend/voltguard/detection/`: __init__.py, anomaly.py, balance.py, engine.py, features.py, pattern.py, scoring.py, voltage.py, zone_input.py
-- `backend/voltguard/service/`: __init__.py, cases.py, commands.py, demo.py, jobs.py, learning.py, monitoring.py, notify.py, pipeline.py, scheduler.py, seed.py, settings.py, ... (+1)
-- `backend/voltguard/sql/`: 001_core.sql, 002_security.sql, 003_cases.sql, 004_reporting.sql
-- `config/`: data_sources.yaml, demo.yaml, thresholds.yaml, tuned_weights.yaml
-- `data/docs_rag/`: README.md, field_evidence_checklist.md, report_template.md, sources.yaml, voltguard_guide.md
+- `backend/voltguard/service/`: __init__.py, cases.py, commands.py, data_health.py, demo.py, demo_guide.py, digest.py, digest_render.py, explain.py, jobs.py, learning.py, monitoring.py, ... (+9)
+- `backend/voltguard/sql/`: 001_core.sql, 002_security.sql, 003_cases.sql, 004_reporting.sql, 005_telegram.sql, 006_solar.sql
+- `config/`: data_sources.yaml, demo.yaml, tariffs.yaml, thresholds.yaml, tuned_weights.yaml
+- `data/docs_rag/`: README.md, field_evidence_checklist.md, report_template.md, rooftop_solar_schemes.md, sources.yaml, voltguard_guide.md
 - `data/uploads/`: README.md, column_map.example.yaml, schema.yaml
 - `data/uploads/templates/`: account_event.csv, customer_pii.csv, district_weather.csv, duty_roster.csv, inspection_outcome.csv, meter.csv, meter_monthly_reading.csv, meter_reading.csv, premise.csv, transformer.csv, transformer_reading.csv
 - `deploy/airflow/dags/`: voltguard_nightly.py
 - `deploy/caddy/`: Caddyfile
 - `deploy/cloudflared/`: config.example.yml
 - `deploy/prometheus/`: prometheus.yml
-- `powerbi/`: POWERBI.md
+- `docs/`: REVIEW_AND_TEST_REPORT.md, UI_UX_DESIGN_REQUIREMENTS.md
+- `powerbi/`: BUILD_WITH_CLAUDE_ON_LAPTOP.md, POWERBI.md, measures.dax, voltguard_theme.json
 - `powerbi/snapshot/`: rpt_case_counts.csv, rpt_flag_rates.csv, rpt_network_kpis.csv, rpt_outcomes.csv, rpt_zone_daily.csv, rpt_zone_latest.csv
-- `reports/`: backtest_report.md, simulation_report.md
-- `scripts/`: backtest.py, fetch_datasets.py, fetch_docs.py, handoff.sh, setup_env.py, traceability.py, tunnel.sh
+- `reports/`: backtest_replay.json, backtest_report.md, simulation_report.md, simulation_summary.json
+- `reports/ui/`: CHANGES.md, PLAN.md, weekly_report_after.html, weekly_report_after.pdf, weekly_report_after_ms.html, weekly_report_after_ms.pdf, weekly_report_before.html, weekly_report_before.pdf
+- `reports/ui/after/`: assistant_desktop.png, assistant_phone.png, audit_desktop.png, audit_phone.png, backtest_desktop.png, backtest_phone.png, case_desktop.png, case_phone.png, cases_desktop.png, cases_phone.png, data_manager_desktop.png, data_manager_phone.png, ... (+102)
+- `reports/ui/before/`: assistant_desktop.png, assistant_phone.png, audit_desktop.png, audit_phone.png, case_desktop.png, case_phone.png, cases_desktop.png, cases_phone.png, data_manager_desktop.png, data_manager_phone.png, dispatch_desktop.png, dispatch_phone.png, ... (+18)
+- `scripts/`: backtest.py, e2e_use_cases.py, fetch_datasets.py, fetch_docs.py, handoff.py, handoff.sh, setup_env.py, traceability.py, tunnel.sh, ui_check.py, ui_screenshots.py
 - `web/`: .dockerignore, .gitignore, Dockerfile, index.html, nginx.conf, package-lock.json, package.json, vite.config.js
 - `web/public/`: icon.svg, manifest.webmanifest, sw.js
-- `web/src/`: App.jsx, api.js, i18n.js, main.jsx, styles.css
-- `web/src/components/`: Charts.jsx, Common.jsx, ZoneMap.jsx
+- `web/src/`: App.jsx, api.js, i18n.js, main.jsx, styles.css, theme.js
+- `web/src/components/`: BaseTiles.jsx, Charts.jsx, Common.jsx, DemoGuide.jsx, EvidenceTimeline.jsx, FeederSchematic.jsx, PremiseDetail.jsx, RouteMap.jsx, SolarCheck.jsx, TelegramChat.jsx, Waterfall.jsx, WhyCleared.jsx, ... (+2)
 - `web/src/field/`: FieldApp.jsx, secureStore.js
-- `web/src/pages/`: Assistant.jsx, Audit.jsx, Case.jsx, Cases.jsx, DataManager.jsx, Login.jsx, Models.jsx, Overview.jsx, Premise.jsx, Settings.jsx, Zone.jsx, extra.js
+- `web/src/lib/`: format.js, schematic.js, solar.js, waterfall.js
+- `web/src/pages/`: Assistant.jsx, Audit.jsx, Backtest.jsx, Case.jsx, Cases.jsx, DataManager.jsx, Dispatch.jsx, LandlordConcept.jsx, Login.jsx, Models.jsx, Overview.jsx, Premise.jsx, ... (+6)
+- `web/tests/`: i18n.test.js, lib.test.js, solar.test.js
 <!-- auto:end -->

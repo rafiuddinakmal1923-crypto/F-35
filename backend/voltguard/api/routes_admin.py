@@ -59,8 +59,8 @@ def datasets(c: Caller = Depends(require("admin"))):
 
 
 @router.post("/admin/datasets", tags=["data manager"])
-async def upload_dataset(dataset: str = Form(...), table: str = Form(...), file: UploadFile = File(...),
-                         c: Caller = Depends(require("admin")), conn=Depends(connection)):
+def upload_dataset(dataset: str = Form(...), table: str = Form(...), file: UploadFile = File(...),
+                   c: Caller = Depends(require("admin")), conn=Depends(connection)):
     """Upload a CSV or Parquet file for one canonical table, validate it and create a new version."""
     if not DATASET_NAME.match(dataset):
         raise bad_request("Dataset names use letters, digits, '_', '-' and '.' only")

@@ -15,9 +15,13 @@ EDITABLE = {
     "weights": None,          # every weight
     "penalties": None,
     "tenancy": {"max_contribution", "gate_other_evidence"},
+    "solar": {"strong_night_drop", "strong_night_below_peers", "strong_night_dip_v", "budget_factor",
+              "psh_per_sunshine_hour", "rebound_min", "timing_points"},
     "cases": {"case_threshold", "max_cases_per_zone", "random_sample_per_zone"},
     "dispatch": {"reminder_hours", "escalation_hours", "demo_reminder_minutes", "demo_escalation_minutes"},
+    "route": {"road_factor", "speed_kmh", "visit_minutes"},
     "monitoring": {"min_interval_completeness", "drift_psi_alert"},
+    "weekly": {"day_of_week", "hour", "minute", "send_pdf", "include_supervisors", "min_random_checks"},
 }
 
 

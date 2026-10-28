@@ -11,6 +11,7 @@ Ground truth is read only here, for evaluation; it is never loaded into model in
 from __future__ import annotations
 
 import copy
+import json
 import math
 import time
 from dataclasses import replace
@@ -25,7 +26,9 @@ from voltguard.data.simulator import Injected, Scenario
 from voltguard.detection import engine, pattern
 from voltguard.detection.features import FEATURE_NAMES
 
-LEGIT_KINDS = {"ev_charging", "metered_mining", "solar", "tenancy_only", "home_business", "vacancy"}
+LEGIT_KINDS = {"ev_charging", "metered_mining", "solar", "solar_unregistered_export", "solar_with_battery",
+               "tenancy_only", "home_business", "vacancy"}
+SOLAR_LEGIT = {"solar", "solar_unregistered_export", "solar_with_battery"}
 MAX_WEIGHT = 0.35
 
 
@@ -91,10 +94,22 @@ def summarise(ev: dict) -> dict:
         # Zone level: total stolen energy as a share of the zone's supply.
         "smallest_flagged_share": min((z["stolen_share"] for z in theft_zones if z["flagged"]), default=float("nan")),
         "largest_missed_share": max((z["stolen_share"] for z in theft_zones if not z["flagged"]), default=float("nan")),
+        # Rooftop solar (FR-PS-10): look-alikes that reached the top suspects, and theft hidden behind solar found.
+        "solar_homes": sum(1 for l in ev["legit"] if l["kind"] in SOLAR_LEGIT and l["ranked_in_pipeline"]),
+        "solar_homes_in_top5": sum(1 for l in legit_top if l["kind"] in SOLAR_LEGIT),
+        "solar_theft": sum(1 for t in in_pipeline if t["kind"] == "solar_with_theft"),
+        "solar_theft_in_top5": sum(1 for t in found if t["kind"] == "solar_with_theft"),
     }
 
 
 # --------------------------------------------------------------------------- tuning
+
+def penalised_tags(p) -> list[str]:
+    """Tags whose penalty the scorer applied: the solar penalty is dropped when the night-time evidence is
+    strong or the drop is larger than the panels can produce (FR-PS-10), so tuning must drop it too."""
+    solar = (p.details or {}).get("solar") or {}
+    return [t for t in p.tags if not (t == "solar" and not (solar.get("penalty") or {"applies": True})["applies"])]
+
 
 def _fast_scores(X: np.ndarray, tags: list[list[str]], cfg: dict) -> np.ndarray:
     w = np.array([cfg["weights"].get(name, 0.0) for name in FEATURE_NAMES])
@@ -132,7 +147,7 @@ def tune(seed: int = 1000, samples: int = 400, progress=print) -> dict:
             continue
         ids = [p.premise_id for p in zr.premises]
         X = np.array([[p.features[f] for f in FEATURE_NAMES] for p in zr.premises])
-        tags = [p.tags for p in zr.premises]
+        tags = [penalised_tags(p) for p in zr.premises]
         kinds = {c["premise_id"]: c["kind"] for c in zt["cases"]}
         zones.append((ids, X, tags, kinds, top_k(zt["n_homes"]), zr.balance.flagged or not zr.balance.balance_available))
 
@@ -203,6 +218,22 @@ def stress_scenarios(seed: int = 9000, count: int = 8) -> dict[str, Scenario]:
     return out
 
 
+NOISE_LEVELS = (0.15, 0.3, 0.45, 0.6)
+MONTHLY_SHARES = (0.0, 0.25, 0.5, 0.75)
+
+
+def _num(x):
+    """JSON number or null (NaN means the case did not occur, e.g. no zone flagged)."""
+    return None if x is None or (isinstance(x, float) and math.isnan(x)) else round(float(x), 4)
+
+
+def _solar_demo(demo_cases: list[dict]) -> str:
+    c = next((t for t in demo_cases if t["kind"] == "solar_with_theft"), None)
+    if c is None:
+        return "n/a"
+    return f"{'yes' if c['zone_flagged'] and c['in_top'] else 'no'} (rank {c['rank']})"
+
+
 def _fmt(x, pct=False):
     if x is None or (isinstance(x, float) and math.isnan(x)):
         return "n/a"
@@ -244,6 +275,27 @@ def simulation_report(progress=print, stress_count: int = 8) -> str:
         run, truth = run_scenario(scn, cfg, score_all=False)
         stress[name] = summarise(evaluate(run, truth))
 
+    # Where it breaks (UI brief 3.6): the same held-out-style zones at rising noise, and with a rising
+    # share of monthly-read meters (no daily readings, so they are estimated and widen the margin u).
+    base = stress_scenarios(count=stress_count)["noise_high"]
+    noise_sweep, monthly_sweep = [], []
+    for level in NOISE_LEVELS:
+        progress(f"Noise sweep {level:.2f}...")
+        scn = replace(base, name=f"sweep_noise_{level}", zones=[replace(z, noise=level) for z in base.zones])
+        s = summarise(evaluate(*run_scenario(scn, cfg, score_all=False)))
+        noise_sweep.append({"noise": level, "smallest_flagged_share": _num(s["smallest_flagged_share"]),
+                            "theft_zone_flag_rate": _num(s["theft_zone_flag_rate"]),
+                            "share_all_thefts_in_top5": _num(s["share_all_thefts_in_top5"]),
+                            "clean_zone_false_flags": s["clean_zone_false_flags"], "clean_zones": s["clean_zones"]})
+    for share in MONTHLY_SHARES:
+        progress(f"Monthly-read sweep {share:.0%}...")
+        scn = replace(base, name=f"sweep_monthly_{share}", zones=[replace(z, conventional_share=share, noise=0.25) for z in base.zones])
+        s = summarise(evaluate(*run_scenario(scn, cfg, score_all=False)))
+        monthly_sweep.append({"monthly_read_share": share, "theft_zone_flag_rate": _num(s["theft_zone_flag_rate"]),
+                              "share_all_thefts_in_top5": _num(s["share_all_thefts_in_top5"]),
+                              "share_ranked_thefts_in_top5": _num(s["share_ranked_thefts_in_top5"]),
+                              "smallest_flagged_share": _num(s["smallest_flagged_share"])})
+
     pm_meta_path = pattern.model_path().with_suffix(".meta.json")
     pm_meta = yaml.safe_load(pm_meta_path.read_text(encoding="utf-8")) if pm_meta_path.exists() else {}
     day_one = next((t for t in demo_cases if t["day_one"]), None)
@@ -266,6 +318,10 @@ def simulation_report(progress=print, stress_count: int = 8) -> str:
         f"| Smallest total theft that flagged its zone (stress tests, share of zone supply) | {_fmt(smallest, True)} |",
         f"| Largest total theft that did not flag its zone (held-out settings) | {_fmt(held['largest_missed_share'], True)} |",
         f"| Clean held-out zones wrongly flagged | {held['clean_zone_false_flags']} of {held['clean_zones']} |",
+        f"| Solar homes in top suspects (held-out settings, ranked zones; plain, battery and unregistered export) | "
+        f"{held['solar_homes_in_top5']} of {held['solar_homes']} |",
+        f"| Solar + theft found in top 5% (held-out settings, ranked zones) | {held['solar_theft_in_top5']} of {held['solar_theft']} |",
+        f"| Solar + theft in the demo zone in the top 5% | {_solar_demo(demo_cases)} |",
     ]
     sections.append("## Summary (copy into the pitch deck)\n\n" + "\n".join(summary))
 
@@ -316,6 +372,38 @@ def simulation_report(progress=print, stress_count: int = 8) -> str:
         p = ranks.get(c["premise_id"])
         demo_rows.append(f"| {c['kind']} | {c['premise_id']} | {p.rank if p else '-'} | {', '.join(p.tags) if p and p.tags else ''} |")
     sections.append(f"## Demo zone {demo_zone}\n\n" + "\n".join(demo_rows))
+
+    sweep_rows = ["| Household noise level | Smallest zone theft flagged | Theft zones flagged | All thefts in top 5% | Clean zones wrongly flagged |",
+                  "| --- | --- | --- | --- | --- |"]
+    for r in noise_sweep:
+        sweep_rows.append(f"| {r['noise']:.2f} | {_fmt(r['smallest_flagged_share'], True)} | {_fmt(r['theft_zone_flag_rate'], True)} | "
+                          f"{_fmt(r['share_all_thefts_in_top5'], True)} | {r['clean_zone_false_flags']}/{r['clean_zones']} |")
+    sweep_rows += ["", "| Share of monthly-read meters | Theft zones flagged | Thefts in top 5% (ranked zones) | All thefts in top 5% |",
+                   "| --- | --- | --- | --- |"]
+    for r in monthly_sweep:
+        sweep_rows.append(f"| {r['monthly_read_share']:.0%} | {_fmt(r['theft_zone_flag_rate'], True)} | "
+                          f"{_fmt(r['share_ranked_thefts_in_top5'], True)} | {_fmt(r['share_all_thefts_in_top5'], True)} |")
+    sections.append("## Where it breaks: noise and monthly-read meters\n\n" + "\n".join(sweep_rows))
+
+    summary_json = {
+        "generated": datetime.now().isoformat(timespec="seconds"), "source": "simulation", "seconds": round(time.time() - started),
+        "heldout": {"thefts": held["thefts"], "thefts_ranked": held["thefts_in_flagged_or_no_balance_zones"],
+                    "thefts_in_top5": held["thefts_in_top5"], "share_all_thefts_in_top5": _num(held["share_all_thefts_in_top5"]),
+                    "share_ranked_thefts_in_top5": _num(held["share_ranked_thefts_in_top5"]),
+                    "inspections_per_theft_model": _num(held["inspections_per_theft_model"]),
+                    "inspections_per_theft_random": _num(held["inspections_per_theft_random"]),
+                    "clean_zone_false_flags": held["clean_zone_false_flags"], "clean_zones": held["clean_zones"],
+                    "largest_missed_share": _num(held["largest_missed_share"]),
+                    "legit_in_top5": sorted({k for k, _ in held["legit_in_top5"]}),
+                    "solar_homes": held["solar_homes"], "solar_homes_in_top5": held["solar_homes_in_top5"],
+                    "solar_theft": held["solar_theft"], "solar_theft_in_top5": held["solar_theft_in_top5"]},
+        "noise_sweep": noise_sweep, "monthly_read_sweep": monthly_sweep,
+        "pattern_model": {"source": pm_meta.get("source"), "holdout_auc": pm_meta.get("holdout_auc")},
+        "flag_rule": {"share_of_supply": cfg["zone"]["share_of_supply"], "min_gap_kwh_per_day": cfg["zone"]["min_gap_kwh_per_day"],
+                      "consecutive_days": cfg["zone"]["consecutive_days"]},
+    }
+    (config.REPO_ROOT / "reports").mkdir(exist_ok=True)
+    (config.REPO_ROOT / "reports" / "simulation_summary.json").write_text(json.dumps(summary_json, indent=2) + "\n", encoding="utf-8")
 
     header = (f"# Simulation report\n\nGenerated {datetime.now().isoformat(timespec='seconds')} in {time.time() - started:.0f} s by "
               "`make.ps1 simreport`. Failures are reported as they are.\n")
