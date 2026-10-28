@@ -345,7 +345,7 @@ def case_detail(conn, caller: Caller, case_id: str) -> dict:
                             "FROM inspection_outcome WHERE case_id = %s ORDER BY visit_no", (case_id,)).fetchall()
     suggestion = conn.execute("SELECT suggested_team, distance_km, joint_operation, rationale, status, decided_by FROM dispatch_suggestion "
                               "WHERE case_id = %s", (case_id,)).fetchone()
-    reports = conn.execute("SELECT report_id, status, created_at, content_approved_by, export_approved_by, pdf_key IS NOT NULL AS has_pdf "
+    reports = conn.execute("SELECT report_id, status, created_at, content_approved_by, content_approved_at, export_approved_by, export_approved_at, pdf_key IS NOT NULL AS has_pdf "
                            "FROM case_report WHERE case_id = %s ORDER BY created_at", (case_id,)).fetchall()
     contact = None
     if caller.role in ("analyst", "supervisor", "inspector"):

@@ -1,6 +1,6 @@
 // Inspector PWA service worker: caches the app shell only, never API data.
 // Case data lives in the app's encrypted IndexedDB store (see src/field/secureStore.js).
-const CACHE = "voltguard-shell-v1";
+const CACHE = "voltguard-shell-v2";
 const SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (event) => {

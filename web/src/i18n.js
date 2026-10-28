@@ -1,14 +1,17 @@
-// Interface labels in English and Bahasa Melayu (SRS 2.3, NFR-13).
+// Interface labels in English and Bahasa Melayu (SRS 2.3, NFR-13). Every label exists in both languages
+// (web/tests/i18n.test.js checks it). Placeholders in {braces} are filled by t(key, values).
 import { useEffect, useState } from "react";
 
 const LABELS = {
   en: {
     signIn: "Sign in", signOut: "Sign out", username: "Username", password: "Password",
-    overview: "Network overview", cases: "Cases", dataManager: "Data manager", settings: "Settings", audit: "Audit log",
-    models: "Models", assistant: "Assistant", field: "Inspector app", dispatch: "Dispatch", messages: "Messages", weekly: "Weekly summary", work: "My work", me: "Me", offlineBanner: "Offline: outcomes are saved encrypted on this phone and sent when the connection returns.", search: "Search",
+    overview: "Overview", cases: "Cases", dataManager: "Data", settings: "Settings", audit: "Audit log",
+    models: "Models", assistant: "Assistant", field: "Inspector app", dispatch: "Dispatch", messages: "Messages", weekly: "Weekly", work: "My work", me: "Me",
+    validation: "Validation", backtest: "Back-test", concept: "Concept",
+    offlineBanner: "Outcomes are saved encrypted on this phone and sent when the connection returns.", search: "Search",
     searchPlaceholder: "Go to zone, premise or case ID", searchMiss: "Not an ID you can open",
     navigate: "Navigate", todaysRoute: "Today's route", stop: "stop", stops: "stops", openRoute: "Open the whole route in Google Maps",
-    flaggedZones: "Leaking zones", gapPerDay: "Unexplained energy (kWh/day)", noBalance: "Zones without balance",
+    flaggedZones: "Flagged zones", gapPerDay: "Gap per day", noBalance: "Zones without balance",
     openCases: "Open cases", zone: "Zone", district: "District", allDistricts: "All districts", date: "Date",
     gap: "Gap", uncertainty: "Uncertainty", flatness: "Flatness (CV)", gapStart: "Gap started", sinceStart: "since data start",
     priority: "Priority", largeLoad: "Large load", runDetection: "Run detection", runCaseJob: "Run case job",
@@ -24,14 +27,214 @@ const LABELS = {
     outcome: "Outcome", notes: "Notes", photo: "Photo", submit: "Submit", safety: "Safety checklist",
     confirmed_theft: "Confirmed theft", false_alarm: "False alarm", inconclusive: "Inconclusive", no_access: "No access",
     routine: "Routine meter check", address: "Address", wipeNotice: "Case data on this phone is encrypted and wiped after sync or within 24 hours.",
+
+    // Shell and design system
+    skipToContent: "Skip to content", mainMenu: "Main menu", region: "Region", allRegions: "all regions", runDate: "Run",
+    dataSimulated: "Simulated data", dataUpload: "Uploaded data", mockTitle: "Agents use deterministic templates (mock mode)",
+    light: "Light", dark: "Dark", toLight: "Switch to the light theme", toDark: "Switch to the dark theme", language: "Language",
+    waitingN: "{n} waiting", loading: "Loading…", emptyDefault: "Nothing to show yet.", loadError: "This panel could not load", retry: "Try again",
+    close: "Close", estimate: "estimate", vsDayBefore: "vs the day before", scoreOf: "Risk score {score} of 100",
+    pillFlagged: "Flagged", pillBalanced: "Balanced", pillNoBalance: "No balance", pillFlat: "Flat 24/7", pillCleared: "Cleared",
+    tagEv: "EV charging", tagSolar: "rooftop solar", tagVacancy: "vacant", lowConfidence: "low confidence", highConfidence: "high confidence",
+    noReasons: "No reasons recorded.", otherEvidence: "Other evidence", rounding: "Rounding", cappedLine: "Score capped at 0 or 100",
+    linesAddUp: "Lines add up to {total} = score {score}", maskedReason: " Shown only on an open case, to its analyst, supervisor and assigned inspector.",
+    jobFailed: "The job failed", job_queued: "queued", job_running: "running", job_done: "done", job_failed: "failed",
+    notAvailable: "not available", none: "none", day: "day", monthShort: "month", perMonth: "/month", rows: "rows", save: "Save",
+
+    // Overview
+    runOf: "Detection run of {date}", noRunYet: "No detection run yet", rmAtRisk: "At risk per month",
+    rmHelp: "Gap above the uncertainty margin in flagged zones, times 30 days, times the tariff in config/tariffs.yaml. An estimate, not a bill.",
+    rmBasis: "{kwh} kWh at RM {rate}/kWh", kwhPerMonthAtRisk: "{kwh} kWh/month above the margin", noneFlagged: "No flagged zone",
+    hitRateKpi: "Hit rate: model vs random", noOutcomesYet: "No outcomes yet", vsRandom: "vs {random} random sample ({n} and {m} visits)",
+    helpFlagged: "Transformer zones whose unexplained energy stayed above the flag rule for several days in a row.",
+    helpGap: "Energy supplied that no meter, estimate or technical loss explains, per day, in the flagged zones.",
+    helpOpenCases: "Inspection cases not yet closed. Opens the case list.",
+    helpHitRate: "Share of inspections that confirmed theft: cases picked by the model against random-sample checks (the unbiased reference).",
+    mapTitle: "Transformer zones", noZones: "No zones in this run.", noZonePositions: "No zone positions recorded.",
+    mapSummary: "Map of {n} transformer zones, {flagged} flagged. The same zones are listed in the leaderboard.",
+    mapOffline: "Map background unavailable (offline or blocked): zones are shown on a plain grid.",
+    dotSize: "Dot size: gap kWh/day", leaderboard: "Leaking zones", leaderAria: "{zone}: {gap} kWh per day, {pct} of supply",
+    sparkAria: "{zone} gap over the last 14 days", zoneNoBalanceNote: "{zone}: no transformer meter, so no balance; premises ranked on use only.",
+
+    // Zone
+    decisionNoBalance: "No energy balance here: premises are ranked on usage patterns only.",
+    decisionNotFlagged: "Not flagged: the recent gap ({pct} of supply) stays inside the flag rule.",
+    decisionFlagged: "Flagged: {pct} of supply (about {kwh} kWh/day) is unexplained {since}.", sinceDate: "since {date}",
+    decisionFlat: "The hidden load runs flat 24/7, typical of mining rigs.", decisionLarge: "Large-load priority.",
+    backToOverview: "Back to overview", noBalanceExplain: "No transformer meter in this zone: no energy balance; premises are ranked on usage patterns only (low confidence).",
+    supplied: "Supplied", explained: "Metered + estimated + technical loss", gapKwhDay: "gap kWh/day", gapBand: "Gap ± uncertainty u", gapOpens: "gap opens",
+    balanceSummary: "Daily energy supplied and explained over {days} days; the gap opens {start}.",
+    gapSummary: "Daily gap with its uncertainty band; the largest gap is {max} kWh/day; recent margin {u} kWh/day.",
+    kwhPerHour: "kWh per hour", hourlySummary: "Average gap for each hour of the day; flatness (coefficient of variation) {cv}.",
+    flatnessLine: "Flatness (coefficient of variation) {cv}.", flatMeaning: "A constant 24/7 load, typical of mining rigs.",
+    managerZoneOnly: "Premise rankings are shown to analysts and supervisors. Managers see zone-level figures only.",
+    noSuspects: "No ranked premises in this run.", topKNote: "Top 5% = first {k}", top5: "Top 5%",
+    moreInSchematic: "{n} more premises are on the feeder schematic.", suspectAria: "Rank {rank}, premise {id}, risk score {score}. Opens the premise.",
+    feederSchematic: "Feeder schematic", voltageMethod: "Voltage: {method}, {confidence} confidence",
+    schematicEmpty: "No ranked premises to draw.", phase: "Phase", branch: "branch", residual: "Voltage residual",
+    tapHere: "estimated tap · {v} V dip", nodeLabel: "Premise {id}, risk score {score}, rank {rank}, voltage residual {residual}. Opens the premise.",
+    schematicSummary: "Feeder schematic of zone {zone}: {phases} phases, {branches} branches, {premises} premises. Highest risk {top} (score {score}). Deepest voltage dip: {dip}.",
+    dipOverlay: "Voltage dip (deeper = further below)", voltageOff: "Voltage not available: ranking uses balance and usage.",
+    voltageLegendDrop: "Unexplained voltage drop (V) by distance from the transformer", voltageLegendTap: "Estimated hidden-load position",
+    noVoltageResult: "No voltage result for this zone.", openFullPage: "Full page",
+
+    // Premise
+    whyRanked: "Why it ranks here", rankInZone: "Rank {rank} in this zone", notScored: "Not scored in the latest run (zone not flagged).",
+    reasonWaterfall: "Reason waterfall", riskScore: "Risk score", waterfallExact: "The bars add up exactly to the score {score}.",
+    waterfallRounding: "The bars add up to the score after rounding.", shapHint: "Click the pattern-model bar for its sub-reasons.",
+    waterfallSummary: "Score {score} built from: {lines}.", shapRaises: "raises", shapLowers: "lowers",
+    shap_cv: "how much daily use varies", shap_min_ratio: "unusually low days", shap_max_ratio: "unusually high days",
+    shap_zero_day_share: "days with almost no use", shap_trend: "a steady fall in use", shap_half_ratio: "lower use in the second half of the month",
+    shap_max_drop: "a sudden drop between weeks", shap_weekly_autocorr: "a weekly pattern that has broken down",
+    shap_low_day_share: "many days well below the usual level", shap_last_first_week_ratio: "the last week against the first",
+    shap_level_vs_peers: "use far below similar homes",
+    whyCleared: "Why not ranked high", whyNote: "Legitimate-use evidence lowers the score; a night-time drop still counts as evidence.",
+    cleared_solar: "Rooftop solar", cleared_ev_charging: "EV charging", cleared_metered_mining: "Metered mining", cleared_vacancy: "Vacant premise",
+    whySolarDay: "Drop is daytime-only: daytime use fell {day}, night use changed {night}.", whySolarSun: "It follows sunny days.",
+    whySolarShape: "The drop has the sun's daily shape.", whySolarExport: "The meter records export to the grid.",
+    whySolarRegistered: "Solar registration on {date}.", whySolarUnregistered: "No solar registration on file: recognised from the pattern only.",
+    whyEv: "A regular night-time block of 2 hours or more on {share} of nights, matching EV charging. The meter records it.",
+    whyMining: "Constant 24/7 load, but metered: use is {above} above similar homes and did not drop.",
+    whyVacancy: "Near-zero use with no sign of occupancy, consistent with an empty premise.",
+    evidenceTimeline: "Evidence timeline", evGapStart: "Zone gap starts", evGapSinceStart: "Zone gap present from data start",
+    evChangePoint: "This premise's use changes", evTenancy: "Tenancy change", evSolar: "Solar registration", evCase: "Case",
+    noTimelineEvents: "No dated evidence for this premise.", noCaseEventsYet: "No case yet.", timelineSummary: "Evidence timeline: {list}.",
+    contactLocation: "Contact and location", contactShown: "Shown because you work on open case {case}; location {lat}, {lon}. This view is logged.",
+    thisPremise: "This premise", similarMedian: "Median of similar {type} homes", usageSummary: "Daily use of this premise against similar {type} homes over {days} days.",
+    noUsage: "No readings for this premise.", monthlyMeterNote: "Monthly-read meter: no daily readings, so only similar homes are shown.",
+    noVoltageEvidence: "No voltage evidence for this premise (no voltage data, no phase data, or zone not located).",
+    openManualCase: "Open a manual case", event_change_of_tenancy: "tenancy change", event_holder_change: "account holder change",
+    event_solar_registration: "solar registration",
+
+    // Case
+    status_new: "New", status_assigned: "Assigned", status_visited: "Visited", status_reporting: "Reporting", status_closed: "Closed",
+    statusIs: "Status: {status}", origin_model: "model ranking", origin_random_sample: "random sample", origin_manual: "manual",
+    scoreAtCreation: "score {score} at creation", jointOperation: "Joint operation with police: the team does not visit alone.",
+    people: "People", analyst: "Analyst", unclaimed: "unclaimed", dispatchSuggestion: "Dispatch suggestion: {team} ({km} km)",
+    contactOnCase: "Shown on an open case to its analyst, supervisor and assigned inspector; logged.",
+    caseClosedMasked: " The case is closed.", maskedCaseReason: " Only this case's analyst, the supervisor and the assigned inspector see them.",
+    auditTrail: "Audit trail", via: "via", justNow: "just now", minAgo: "{n} min ago", hAgo: "{n} h ago",
+    inspectionOutcomes: "Inspection outcomes", noVisitYet: "No visit yet.", visitN: "Visit {n}", evidencePhoto: "Inspection evidence",
+    photosForExport: "{n} photo(s): shown to managers when a report waits for export approval.",
+    notesRedacted: "Notes are shown redacted; personal details typed into notes never leave the case service.",
+    similarCases: "Similar past cases", summaryRedacted: "Summary (redacted)", similarity: "Similarity", draftReport: "Draft report",
+    report: "Report", rstatus_draft: "Draft", rstatus_content_approved: "Content approved", rstatus_export_approved: "Export approved",
+    approvalOne: "Approval 1 of 2", approvalTwo: "Approval 2 of 2", contentApprover: "Content approver (analyst)", exportApprover: "Export approver (manager)",
+    waitingFor: "Waiting for {who}", theAnalyst: "the case's analyst", waitingForManager: "Waiting for a manager", afterContent: "After content approval",
+    signedAt: "Signed {at}", notSignedYet: "Not signed yet", twoPeopleRule: "Two different people must approve: nothing is exported before both.",
+    approveContent: "Approve content", approveExport: "Approve export (second approval)", downloadPdf: "Download PDF",
+    reportPreview: "Report preview", reportMeta: "Mode: {mode} · drafted by {by} · personal details are placeholders until export.", sources: "Sources",
+
+    // Sign-in
+    loginTagline: "From a transformer's energy gap to a ranked, explained list of premises to inspect.",
+    loginPoint1: "Zone energy balance with an uncertainty margin", loginPoint2: "Scores rank risk; people decide after inspection",
+    loginPoint3: "Personal details only on an open case, and every view is logged", loginR0: "R0 prototype · simulated data and fake personal details only",
+    loginIntro: "Revenue-protection decision support for analysts, supervisors, managers and auditors. Inspectors: use the phone app at",
+    loginAccountsHint: "Test accounts and passwords are printed by make.ps1 demo.", demoPickRole: "Demo: pick a role to sign in with one click.",
+    demoCardsNote: "Demo mode only (DEMO_MODE). Simulated data and fake personal details; every sign-in is logged.",
+    signInWithPassword: "Sign in with a password instead",
+    role_manager: "Manager", role_analyst: "Analyst", role_supervisor: "Supervisor", role_inspector: "Inspector", role_data_scientist: "Data scientist",
+    role_admin: "Administrator", role_auditor: "Auditor", role_pipeline: "Pipeline",
+
+    // Validation
+    validationIntro: "Results of the simulation report: held-out settings, where detection breaks, and hit rates.",
+    validationFrom: "From {file}, generated {date}. Simulation results, not TNB results.", notRunYet: "Not run yet: run make.ps1 simreport.",
+    heldOut: "Held-out results", heldRanked: "injected thefts in the top 5% ({found} of {of}) in the zones the pipeline ranks",
+    heldAll: "of all injected thefts ({found} of {of}), including zones that were not flagged", inspectionsPerTheft: "Inspections per theft found",
+    modelOrder: "Model order", randomOrder: "Random order", heldFoot: "Clean zones wrongly flagged: {clean} of {zones}. Largest theft that did not flag its zone: {missed} of supply.",
+    hitRatesByVersion: "Hit rate per model version", noModelVersions: "No model version yet: retrain after outcomes are recorded.",
+    modelRanked: "Model-ranked", randomSample: "Random sample", active: "active",
+    hitRateNote: "Random-sample inspections are the unbiased reference. On simulated outcomes this shows the mechanics, not proof.",
+    breaksNoise: "Where it breaks: household noise", breaksMonthly: "Where it breaks: monthly-read meters", shareOfSupply: "% of zone supply",
+    smallestFlagged: "Smallest zone theft that flagged (% of supply)", thefts5: "All thefts in the top 5% (%)", theftZonesFlagged: "Theft zones flagged (%)",
+    noiseSummary: "Smallest theft that flagged its zone by noise level: {list}.", monthlySummary: "Theft zones flagged by share of monthly-read meters: {list}.",
+    noiseNote: "Household noise barely moves the limit: what stops small taps is the uncertainty margin, not the noise.",
+    monthlyNote: "Monthly-read meters have no daily readings: their use is estimated, which widens the margin.",
+    limits: "Limits", limitVoltage: "Voltage is simulated by a load-flow model: open datasets hold kWh only (SRS AS-3).",
+    limitSgcc: "The pattern model's public training data (SGCC) is daily data from China, or synthetic windows in its style.",
+    limitSimulation: "Every result here is from simulation, not from TNB data.", limitPilot: "The real hit rate needs the R1 back-test and shadow pilot on TNB data.",
+
+    // Back-test
+    backtestIntro: "Replay detection day by day for a zone with a known case, as the nightly run would have seen it.",
+    knownCasesN: "{n} known case(s)", replay: "Day-by-day replay", noReplay: "No replay yet: run scripts/backtest.py --replay.",
+    play: "Play", pause: "Pause", replayDay: "Replay day", dayOf: "Day {day} · {date}", detectedDay: "detected day {day}",
+    overThresholdToday: "Over the flag threshold today", replaySource: "{source} data, a run every {step} day(s), generated {generated}",
+    replaySummary: "Zone balance up to day {day}; zone state {flagged}.", knownCases: "Known cases", knownCase: "known case", knownCaseN: "Known case {n}",
+    theftStarts: "theft starts {date}", timeToDetection: "Top 5% from day {day}: {days} day(s) after the theft started", notDetected: "Not in the top 5% in this period",
+    backtestNote: "Simulated history with ground truth. With a TNB extract the same replay runs on past confirmed cases (R1 pilot).",
+    rankingOnDay: "Ranking on day {day}", notRankedYet: "The zone was not ranked yet on this day (not flagged).", top5Line: "Dashed line: end of the top 5% (first {k}).",
+    kind_full_bypass_mining: "full bypass (mining)", kind_partial_bypass: "partial bypass", kind_confirmed_theft: "confirmed theft",
+
+    // Demo guide
+    demoGuide: "Demo guide", demoGuideIntro: "The 7 live steps (about 5 minutes). Each button signs in as the right test account and opens the page.",
+    guidePass: "Pass", guideGo: "Go as {who}", guideDone: "Done", guideNotYet: "Not yet", resetDemo: "Reset demo", resetting: "Resetting…",
+    resetHint: "Sign in as admin to reset the demo.", resetExplain: "Removes rehearsal cases, reports and model versions, reruns detection and reseeds the demo kit (about 30 seconds). The audit log is kept.",
+    resetDone: "Reset in {s} s",
+    guide1Title: "Run detection", guide1Say: "The transformer meter shows energy leaving that the customers' meters do not record.",
+    guide1Pass: "TX-CEN-001 flagged, gap since data start, flat 24/7.",
+    guide2Title: "Open the zone's ranked suspects", guide2Say: "Energy balance with its margin, the hourly profile and the feeder schematic point to where.",
+    guide2Pass: "Both injected taps in the top 3; EV and tenancy-only homes not in the top 5%.",
+    guide3Title: "Open the top premise", guide3Say: "The score explains itself: the bars add up to the score, and personal details stay hidden.",
+    guide3Pass: "Reasons add up to the score; details masked.",
+    guide4Title: "Case job, dispatch and claim", guide4Say: "The supervisor runs the case job and approves the suggested team; the analyst claims the case.",
+    guide4Pass: "Case claimed; dispatch suggestion approved.",
+    guide5Title: "Inspector records the outcome", guide5Say: "On the phone, offline then online: the outcome syncs and the local copy is wiped.",
+    guide5Pass: "Outcome synced for the demo case.",
+    guide6Title: "Report and two approvals", guide6Say: "The analyst approves the content, a manager approves the export: two different people.",
+    guide6Pass: "Report export-approved.",
+    guide7Title: "Retrain with the new outcomes", guide7Say: "A new model version with model-ranked and random-sample hit rates: mechanics, not proof.",
+    guide7Pass: "New model version after the outcome.",
+
+    // Data manager and settings
+    dataManagerIntro: "Upload, validate and activate datasets; check how the data was prepared.", dataHealth: "Data health",
+    completenessLine: "of smart-meter days are at least {min} complete ({short} of {total} meter-days short).", fallbacksActive: "Fallbacks in use",
+    noFallbacks: "No fallback in use", fallback_AS2: "no transformer meter", fallback_AS3: "voltage simulated or missing", fallback_AS7: "no phase or branch data",
+    fallback_AS8: "loss model from similar zones", fallback_AS9: "no solar registrations",
+    duplicatesRemoved: "Duplicates removed", timezoneFixes: "Time-zone fixes", notApplicable: "n/a (simulated)",
+    healthSimulatedNote: "Simulated tables are generated in the canonical form, so the upload checks had nothing to remove or convert.",
+    healthUploadNote: "Counts come from the active upload's validation report.", upload: "Upload", datasetName: "Dataset name", targetTable: "Target table",
+    fileCsvParquet: "File (CSV or Parquet)", validating: "Validating…", uploadValidate: "Upload and validate", activeSources: "Active source per table",
+    backToSimulated: "back to simulated", uploadResult: "{errors} error(s), {warnings} warning(s), {short} meter-day(s) under 90% complete.",
+    level: "Level", table: "Table", tables: "Tables", check: "Check", message: "Message", preview: "Preview", datasetsVersions: "Datasets and versions",
+    noUploadsYet: "No uploaded dataset yet.", dataset: "Dataset", version: "Version", created: "Created", activated: "activated", activate: "Activate",
+    settingsIntro: "Defaults come from config/thresholds.yaml and the tuned weights; values saved here override them and are logged.",
+    saveChanges: "Save changes", newValue: "new value", tariffTitle: "Tariff for value-at-risk estimates",
+    tariffExplain: "RM at risk = gap above the margin x {days} days x this tariff. Stored in {file} (the weekly report reads it too). Leave it empty until TNB confirms the figure.",
+    tariffCurrent: "Now", tariffRate: "RM per kWh", tariffEmpty: "empty = placeholder", tariffSource: "Source", tariffSourceHint: "e.g. TNB revenue protection, Nov 2026",
+    tariffSaved: "Tariff saved; pages use it at once.",
+
+    // Inspector app
+    inspectorsOnly: "This app is for field inspectors", assistantNeedsConnection: "The assistant needs a connection.",
+    askPlaceholder: "What should I photograph at the meter board?", ask: "Ask", telegramLinkHint: "Get these messages in Telegram too: send the code to the VoltGuard bot.",
+    linkTelegram: "Link Telegram", telegramSendCode: "Send /start {code} to the bot within 15 minutes.",
+    savedOfflineN: "{n} outcome(s) saved offline", waitingToSyncN: "{n} outcome(s) waiting to sync", syncSoon: "Sending now.",
+    syncedAt: "Synced at {time}", takePhoto: "Take a photo", photoAnother: "Add another photo ({n} taken)",
+    submitOfflineNote: "Works offline: the outcome is kept encrypted and sent at the next sync.", wipedOld: "Local case data was older than 24 hours and has been wiped. Sign in again.",
+    remoteWiped: "This phone was signed out remotely. All case data on it has been wiped.", signInAgain: "Please sign in again.", syncing: "Syncing…",
+    noConnectionKept: "No connection: outcomes stay encrypted on this phone until the next sync.", syncFailed: "Sync failed: {error}",
+    messagesNeedConnection: "Messages need a connection.", kmFromBase: "{km} km from base (straight line)",
+    jointOperationField: "Joint operation with police: do not visit alone.", outcomeSavedOffline: "Outcome saved on this phone (encrypted); it syncs when online.",
+    todaysCases: "Today's cases", routeTotals: "{n} stops · {km} km route", joint: "joint", fromBaseStraight: "from base, straight line",
+    noLocation: "no location", noCasesOnPhone: "No assigned cases on this phone.", routeOrderNote: "Ordered by the shortest route from the team base (straight-line distances).",
+
+    // Concept (R2)
+    conceptBadge: "Concept: R2, opt-in only", conceptIntro: "A mock of a consent-based alert to a property owner. Simulated data; nothing is sent. The landlord portal is out of scope for R0 (SRS).",
+    conceptTitle: "Landlord alert (concept)", conceptPhone: "What an opted-in owner would see", conceptSender: "TNB (concept)",
+    conceptMessage: "An electricity supply area in {district} that includes a property you let is under review (run of {date}). No finding has been made about your tenant. Reply STOP to opt out.",
+    conceptAck: "Noted", conceptStop: "Opt out", conceptNothingSent: "Mock only: nothing is sent.", conceptRules: "Rules the concept would keep",
+    conceptRule1: "Only owners who opted in, with the tenant informed.", conceptRule2: "Zone-level only: never the premise, the score or the tenant.",
+    conceptRule3: "No accusation: a flagged zone is not a finding of theft.", conceptRule4: "Sent only after a person approves, and logged.",
+    conceptRule5: "Owner can opt out at any time.", conceptScope: "Out of scope for R0; to be designed with TNB legal and the Energy Commission for R2.",
   },
   ms: {
     signIn: "Log masuk", signOut: "Log keluar", username: "Nama pengguna", password: "Kata laluan",
-    overview: "Gambaran rangkaian", cases: "Kes", dataManager: "Pengurus data", settings: "Tetapan", audit: "Log audit",
-    models: "Model", assistant: "Pembantu", field: "Aplikasi pemeriksa", dispatch: "Penghantaran", messages: "Mesej", weekly: "Ringkasan mingguan", work: "Kerja saya", me: "Saya", offlineBanner: "Luar talian: keputusan disimpan secara disulitkan di telefon ini dan dihantar apabila sambungan pulih.", search: "Cari",
+    overview: "Gambaran", cases: "Kes", dataManager: "Data", settings: "Tetapan", audit: "Log audit",
+    models: "Model", assistant: "Pembantu", field: "Aplikasi pemeriksa", dispatch: "Penghantaran", messages: "Mesej", weekly: "Mingguan", work: "Kerja saya", me: "Saya",
+    validation: "Pengesahan", backtest: "Ujian balik", concept: "Konsep",
+    offlineBanner: "Keputusan disimpan secara disulitkan di telefon ini dan dihantar apabila sambungan pulih.", search: "Cari",
     searchPlaceholder: "Pergi ke ID zon, premis atau kes", searchMiss: "Bukan ID yang boleh anda buka",
     navigate: "Navigasi", todaysRoute: "Laluan hari ini", stop: "hentian", stops: "hentian", openRoute: "Buka seluruh laluan dalam Google Maps",
-    flaggedZones: "Zon bocor", gapPerDay: "Tenaga tidak dijelaskan (kWj/hari)", noBalance: "Zon tanpa imbangan",
+    flaggedZones: "Zon dibenderakan", gapPerDay: "Jurang sehari", noBalance: "Zon tanpa imbangan",
     openCases: "Kes terbuka", zone: "Zon", district: "Daerah", allDistricts: "Semua daerah", date: "Tarikh",
     gap: "Jurang", uncertainty: "Ketidakpastian", flatness: "Kerataan (CV)", gapStart: "Jurang bermula", sinceStart: "sejak data bermula",
     priority: "Keutamaan", largeLoad: "Beban besar", runDetection: "Jalankan pengesanan", runCaseJob: "Jalankan tugas kes",
@@ -47,24 +250,231 @@ const LABELS = {
     outcome: "Keputusan", notes: "Catatan", photo: "Foto", submit: "Hantar", safety: "Senarai semak keselamatan",
     confirmed_theft: "Kecurian disahkan", false_alarm: "Penggera palsu", inconclusive: "Tidak muktamad", no_access: "Tiada akses",
     routine: "Pemeriksaan meter rutin", address: "Alamat", wipeNotice: "Data kes di telefon ini disulitkan dan dipadam selepas segerak atau dalam 24 jam.",
+
+    skipToContent: "Langkau ke kandungan", mainMenu: "Menu utama", region: "Wilayah", allRegions: "semua wilayah", runDate: "Larian",
+    dataSimulated: "Data simulasi", dataUpload: "Data dimuat naik", mockTitle: "Ejen menggunakan templat tetap (mod olok-olok)",
+    light: "Cerah", dark: "Gelap", toLight: "Tukar ke tema cerah", toDark: "Tukar ke tema gelap", language: "Bahasa",
+    waitingN: "{n} menunggu", loading: "Memuatkan…", emptyDefault: "Belum ada apa-apa untuk ditunjukkan.", loadError: "Panel ini tidak dapat dimuatkan", retry: "Cuba lagi",
+    close: "Tutup", estimate: "anggaran", vsDayBefore: "berbanding hari sebelumnya", scoreOf: "Skor risiko {score} daripada 100",
+    pillFlagged: "Dibenderakan", pillBalanced: "Seimbang", pillNoBalance: "Tiada imbangan", pillFlat: "Rata 24/7", pillCleared: "Dibersihkan",
+    tagEv: "pengecasan EV", tagSolar: "solar bumbung", tagVacancy: "kosong", lowConfidence: "keyakinan rendah", highConfidence: "keyakinan tinggi",
+    noReasons: "Tiada sebab direkodkan.", otherEvidence: "Bukti lain", rounding: "Pembundaran", cappedLine: "Skor dihadkan pada 0 atau 100",
+    linesAddUp: "Baris berjumlah {total} = skor {score}", maskedReason: " Ditunjukkan hanya pada kes terbuka, kepada penganalisis, penyelia dan pemeriksa yang ditugaskan.",
+    jobFailed: "Tugas gagal", job_queued: "dalam giliran", job_running: "sedang berjalan", job_done: "selesai", job_failed: "gagal",
+    notAvailable: "tiada", none: "tiada", day: "hari", monthShort: "bulan", perMonth: "/bulan", rows: "baris", save: "Simpan",
+
+    runOf: "Larian pengesanan {date}", noRunYet: "Belum ada larian pengesanan", rmAtRisk: "Berisiko sebulan",
+    rmHelp: "Jurang melebihi margin ketidakpastian dalam zon dibenderakan, darab 30 hari, darab tarif dalam config/tariffs.yaml. Satu anggaran, bukan bil.",
+    rmBasis: "{kwh} kWj pada RM {rate}/kWj", kwhPerMonthAtRisk: "{kwh} kWj/bulan melebihi margin", noneFlagged: "Tiada zon dibenderakan",
+    hitRateKpi: "Kadar kena: model lawan rawak", noOutcomesYet: "Belum ada keputusan", vsRandom: "berbanding {random} sampel rawak ({n} dan {m} lawatan)",
+    helpFlagged: "Zon pengubah yang tenaga tidak dijelaskannya kekal melebihi peraturan bendera beberapa hari berturut-turut.",
+    helpGap: "Tenaga dibekalkan yang tidak dijelaskan oleh meter, anggaran atau kehilangan teknikal, sehari, dalam zon dibenderakan.",
+    helpOpenCases: "Kes pemeriksaan yang belum ditutup. Membuka senarai kes.",
+    helpHitRate: "Bahagian pemeriksaan yang mengesahkan kecurian: kes pilihan model berbanding semakan sampel rawak (rujukan tidak berat sebelah).",
+    mapTitle: "Zon pengubah", noZones: "Tiada zon dalam larian ini.", noZonePositions: "Tiada kedudukan zon direkodkan.",
+    mapSummary: "Peta {n} zon pengubah, {flagged} dibenderakan. Zon yang sama disenaraikan dalam papan pendahulu.",
+    mapOffline: "Latar peta tiada (luar talian atau disekat): zon ditunjukkan pada grid biasa.",
+    dotSize: "Saiz titik: jurang kWj/hari", leaderboard: "Zon bocor", leaderAria: "{zone}: {gap} kWj sehari, {pct} bekalan",
+    sparkAria: "Jurang {zone} dalam 14 hari lepas", zoneNoBalanceNote: "{zone}: tiada meter pengubah, jadi tiada imbangan; premis disusun mengikut penggunaan sahaja.",
+
+    decisionNoBalance: "Tiada imbangan tenaga di sini: premis disusun mengikut corak penggunaan sahaja.",
+    decisionNotFlagged: "Tidak dibenderakan: jurang terkini ({pct} bekalan) kekal dalam peraturan bendera.",
+    decisionFlagged: "Dibenderakan: {pct} bekalan (kira-kira {kwh} kWj/hari) tidak dijelaskan {since}.", sinceDate: "sejak {date}",
+    decisionFlat: "Beban tersembunyi berjalan rata 24/7, lazim bagi rig perlombongan.", decisionLarge: "Keutamaan beban besar.",
+    backToOverview: "Kembali ke gambaran", noBalanceExplain: "Tiada meter pengubah dalam zon ini: tiada imbangan tenaga; premis disusun mengikut corak penggunaan sahaja (keyakinan rendah).",
+    supplied: "Dibekalkan", explained: "Bermeter + anggaran + kehilangan teknikal", gapKwhDay: "jurang kWj/hari", gapBand: "Jurang ± ketidakpastian u", gapOpens: "jurang bermula",
+    balanceSummary: "Tenaga harian dibekalkan dan dijelaskan selama {days} hari; jurang bermula {start}.",
+    gapSummary: "Jurang harian dengan jalur ketidakpastian; jurang terbesar {max} kWj/hari; margin terkini {u} kWj/hari.",
+    kwhPerHour: "kWj sejam", hourlySummary: "Purata jurang bagi setiap jam dalam sehari; kerataan (pekali variasi) {cv}.",
+    flatnessLine: "Kerataan (pekali variasi) {cv}.", flatMeaning: "Beban tetap 24/7, lazim bagi rig perlombongan.",
+    managerZoneOnly: "Senarai premis ditunjukkan kepada penganalisis dan penyelia. Pengurus melihat angka peringkat zon sahaja.",
+    noSuspects: "Tiada premis disenaraikan dalam larian ini.", topKNote: "5% teratas = {k} pertama", top5: "5% teratas",
+    moreInSchematic: "{n} premis lagi ada pada skema penyuap.", suspectAria: "Kedudukan {rank}, premis {id}, skor risiko {score}. Membuka premis.",
+    feederSchematic: "Skema penyuap", voltageMethod: "Voltan: {method}, keyakinan {confidence}",
+    schematicEmpty: "Tiada premis untuk dilukis.", phase: "Fasa", branch: "cabang", residual: "Baki voltan",
+    tapHere: "anggaran sambungan · susutan {v} V", nodeLabel: "Premis {id}, skor risiko {score}, kedudukan {rank}, baki voltan {residual}. Membuka premis.",
+    schematicSummary: "Skema penyuap zon {zone}: {phases} fasa, {branches} cabang, {premises} premis. Risiko tertinggi {top} (skor {score}). Susutan voltan terdalam: {dip}.",
+    dipOverlay: "Susutan voltan (lebih dalam = lebih ke bawah)", voltageOff: "Voltan tiada: susunan menggunakan imbangan dan penggunaan.",
+    voltageLegendDrop: "Susutan voltan tidak dijelaskan (V) mengikut jarak dari pengubah", voltageLegendTap: "Anggaran kedudukan beban tersembunyi",
+    noVoltageResult: "Tiada keputusan voltan untuk zon ini.", openFullPage: "Halaman penuh",
+
+    whyRanked: "Mengapa berada di kedudukan ini", rankInZone: "Kedudukan {rank} dalam zon ini", notScored: "Tidak diberi skor dalam larian terkini (zon tidak dibenderakan).",
+    reasonWaterfall: "Air terjun sebab", riskScore: "Skor risiko", waterfallExact: "Bar berjumlah tepat kepada skor {score}.",
+    waterfallRounding: "Bar berjumlah kepada skor selepas pembundaran.", shapHint: "Klik bar model corak untuk sub-sebabnya.",
+    waterfallSummary: "Skor {score} dibina daripada: {lines}.", shapRaises: "menaikkan", shapLowers: "menurunkan",
+    shap_cv: "variasi penggunaan harian", shap_min_ratio: "hari yang luar biasa rendah", shap_max_ratio: "hari yang luar biasa tinggi",
+    shap_zero_day_share: "hari dengan hampir tiada penggunaan", shap_trend: "penurunan penggunaan yang berterusan", shap_half_ratio: "penggunaan lebih rendah pada separuh kedua bulan",
+    shap_max_drop: "penurunan mendadak antara minggu", shap_weekly_autocorr: "corak mingguan yang sudah rosak",
+    shap_low_day_share: "banyak hari jauh di bawah paras biasa", shap_last_first_week_ratio: "minggu terakhir berbanding minggu pertama",
+    shap_level_vs_peers: "penggunaan jauh di bawah rumah serupa",
+    whyCleared: "Mengapa tidak disusun tinggi", whyNote: "Bukti penggunaan sah menurunkan skor; penurunan waktu malam masih dikira sebagai bukti.",
+    cleared_solar: "Solar bumbung", cleared_ev_charging: "Pengecasan EV", cleared_metered_mining: "Perlombongan bermeter", cleared_vacancy: "Premis kosong",
+    whySolarDay: "Penurunan hanya pada waktu siang: penggunaan siang turun {day}, penggunaan malam berubah {night}.", whySolarSun: "Ia mengikut hari yang cerah.",
+    whySolarShape: "Penurunan mengikut bentuk harian matahari.", whySolarExport: "Meter merekod eksport ke grid.",
+    whySolarRegistered: "Pendaftaran solar pada {date}.", whySolarUnregistered: "Tiada pendaftaran solar dalam rekod: dikenal pasti daripada corak sahaja.",
+    whyEv: "Blok waktu malam yang tetap selama 2 jam atau lebih pada {share} malam, sepadan dengan pengecasan EV. Meter merekodnya.",
+    whyMining: "Beban tetap 24/7, tetapi bermeter: penggunaan {above} melebihi rumah serupa dan tidak menurun.",
+    whyVacancy: "Penggunaan hampir sifar tanpa tanda penghuni, sepadan dengan premis kosong.",
+    evidenceTimeline: "Garis masa bukti", evGapStart: "Jurang zon bermula", evGapSinceStart: "Jurang zon wujud sejak data bermula",
+    evChangePoint: "Penggunaan premis ini berubah", evTenancy: "Pertukaran penyewaan", evSolar: "Pendaftaran solar", evCase: "Kes",
+    noTimelineEvents: "Tiada bukti bertarikh untuk premis ini.", noCaseEventsYet: "Belum ada kes.", timelineSummary: "Garis masa bukti: {list}.",
+    contactLocation: "Hubungan dan lokasi", contactShown: "Ditunjukkan kerana anda mengendalikan kes terbuka {case}; lokasi {lat}, {lon}. Paparan ini dilog.",
+    thisPremise: "Premis ini", similarMedian: "Median rumah {type} serupa", usageSummary: "Penggunaan harian premis ini berbanding rumah {type} serupa selama {days} hari.",
+    noUsage: "Tiada bacaan untuk premis ini.", monthlyMeterNote: "Meter bacaan bulanan: tiada bacaan harian, jadi hanya rumah serupa ditunjukkan.",
+    noVoltageEvidence: "Tiada bukti voltan untuk premis ini (tiada data voltan, tiada data fasa, atau zon tidak dikesan).",
+    openManualCase: "Buka kes manual", event_change_of_tenancy: "pertukaran penyewaan", event_holder_change: "pertukaran pemegang akaun",
+    event_solar_registration: "pendaftaran solar",
+
+    status_new: "Baharu", status_assigned: "Ditugaskan", status_visited: "Dilawati", status_reporting: "Pelaporan", status_closed: "Ditutup",
+    statusIs: "Status: {status}", origin_model: "susunan model", origin_random_sample: "sampel rawak", origin_manual: "manual",
+    scoreAtCreation: "skor {score} semasa dicipta", jointOperation: "Operasi bersama polis: pasukan tidak melawat bersendirian.",
+    people: "Orang", analyst: "Penganalisis", unclaimed: "belum dituntut", dispatchSuggestion: "Cadangan penghantaran: {team} ({km} km)",
+    contactOnCase: "Ditunjukkan pada kes terbuka kepada penganalisis, penyelia dan pemeriksa yang ditugaskan; dilog.",
+    caseClosedMasked: " Kes telah ditutup.", maskedCaseReason: " Hanya penganalisis kes ini, penyelia dan pemeriksa yang ditugaskan melihatnya.",
+    auditTrail: "Jejak audit", via: "melalui", justNow: "baru sahaja", minAgo: "{n} minit lalu", hAgo: "{n} jam lalu",
+    inspectionOutcomes: "Keputusan pemeriksaan", noVisitYet: "Belum ada lawatan.", visitN: "Lawatan {n}", evidencePhoto: "Bukti pemeriksaan",
+    photosForExport: "{n} foto: ditunjukkan kepada pengurus apabila laporan menunggu kelulusan eksport.",
+    notesRedacted: "Catatan ditunjukkan dengan suntingan; butiran peribadi dalam catatan tidak pernah keluar dari perkhidmatan kes.",
+    similarCases: "Kes lepas yang serupa", summaryRedacted: "Ringkasan (disunting)", similarity: "Persamaan", draftReport: "Draf laporan",
+    report: "Laporan", rstatus_draft: "Draf", rstatus_content_approved: "Kandungan diluluskan", rstatus_export_approved: "Eksport diluluskan",
+    approvalOne: "Kelulusan 1 daripada 2", approvalTwo: "Kelulusan 2 daripada 2", contentApprover: "Pelulus kandungan (penganalisis)", exportApprover: "Pelulus eksport (pengurus)",
+    waitingFor: "Menunggu {who}", theAnalyst: "penganalisis kes", waitingForManager: "Menunggu pengurus", afterContent: "Selepas kelulusan kandungan",
+    signedAt: "Ditandatangani {at}", notSignedYet: "Belum ditandatangani", twoPeopleRule: "Dua orang berbeza mesti meluluskan: tiada apa dieksport sebelum kedua-duanya.",
+    approveContent: "Luluskan kandungan", approveExport: "Luluskan eksport (kelulusan kedua)", downloadPdf: "Muat turun PDF",
+    reportPreview: "Pratonton laporan", reportMeta: "Mod: {mode} · didraf oleh {by} · butiran peribadi ialah pemegang tempat sehingga eksport.", sources: "Sumber",
+
+    loginTagline: "Daripada jurang tenaga pengubah kepada senarai premis untuk diperiksa yang tersusun dan dijelaskan.",
+    loginPoint1: "Imbangan tenaga zon dengan margin ketidakpastian", loginPoint2: "Skor menilai risiko; manusia membuat keputusan selepas pemeriksaan",
+    loginPoint3: "Butiran peribadi hanya pada kes terbuka, dan setiap paparan dilog", loginR0: "Prototaip R0 · data simulasi dan butiran peribadi palsu sahaja",
+    loginIntro: "Sokongan keputusan perlindungan hasil untuk penganalisis, penyelia, pengurus dan juruaudit. Pemeriksa: gunakan aplikasi telefon di",
+    loginAccountsHint: "Akaun ujian dan kata laluan dicetak oleh make.ps1 demo.", demoPickRole: "Demo: pilih peranan untuk log masuk dengan satu klik.",
+    demoCardsNote: "Mod demo sahaja (DEMO_MODE). Data simulasi dan butiran peribadi palsu; setiap log masuk dilog.",
+    signInWithPassword: "Log masuk dengan kata laluan",
+    role_manager: "Pengurus", role_analyst: "Penganalisis", role_supervisor: "Penyelia", role_inspector: "Pemeriksa", role_data_scientist: "Saintis data",
+    role_admin: "Pentadbir", role_auditor: "Juruaudit", role_pipeline: "Saluran paip",
+
+    validationIntro: "Keputusan laporan simulasi: tetapan simpanan, di mana pengesanan gagal, dan kadar kena.",
+    validationFrom: "Daripada {file}, dijana {date}. Keputusan simulasi, bukan keputusan TNB.", notRunYet: "Belum dijalankan: jalankan make.ps1 simreport.",
+    heldOut: "Keputusan tetapan simpanan", heldRanked: "kecurian disuntik dalam 5% teratas ({found} daripada {of}) dalam zon yang disusun saluran paip",
+    heldAll: "daripada semua kecurian disuntik ({found} daripada {of}), termasuk zon yang tidak dibenderakan", inspectionsPerTheft: "Pemeriksaan bagi setiap kecurian ditemui",
+    modelOrder: "Susunan model", randomOrder: "Susunan rawak", heldFoot: "Zon bersih tersalah bendera: {clean} daripada {zones}. Kecurian terbesar yang tidak membenderakan zonnya: {missed} bekalan.",
+    hitRatesByVersion: "Kadar kena mengikut versi model", noModelVersions: "Belum ada versi model: latih semula selepas keputusan direkodkan.",
+    modelRanked: "Susunan model", randomSample: "Sampel rawak", active: "aktif",
+    hitRateNote: "Pemeriksaan sampel rawak ialah rujukan tidak berat sebelah. Pada keputusan simulasi ini menunjukkan mekanisme, bukan bukti.",
+    breaksNoise: "Di mana gagal: hingar isi rumah", breaksMonthly: "Di mana gagal: meter bacaan bulanan", shareOfSupply: "% bekalan zon",
+    smallestFlagged: "Kecurian zon terkecil yang dibenderakan (% bekalan)", thefts5: "Semua kecurian dalam 5% teratas (%)", theftZonesFlagged: "Zon kecurian dibenderakan (%)",
+    noiseSummary: "Kecurian terkecil yang membenderakan zonnya mengikut tahap hingar: {list}.", monthlySummary: "Zon kecurian dibenderakan mengikut bahagian meter bacaan bulanan: {list}.",
+    noiseNote: "Hingar isi rumah hampir tidak menggerakkan had: yang menghalang sambungan kecil ialah margin ketidakpastian, bukan hingar.",
+    monthlyNote: "Meter bacaan bulanan tiada bacaan harian: penggunaannya dianggarkan, yang meluaskan margin.",
+    limits: "Had", limitVoltage: "Voltan disimulasikan oleh model aliran beban: set data terbuka hanya ada kWj (SRS AS-3).",
+    limitSgcc: "Data latihan awam model corak (SGCC) ialah data harian dari China, atau tetingkap sintetik mengikut gayanya.",
+    limitSimulation: "Setiap keputusan di sini daripada simulasi, bukan daripada data TNB.", limitPilot: "Kadar kena sebenar memerlukan ujian balik R1 dan perintis bayangan pada data TNB.",
+
+    backtestIntro: "Main semula pengesanan hari demi hari untuk zon dengan kes diketahui, seperti yang dilihat oleh larian malam.",
+    knownCasesN: "{n} kes diketahui", replay: "Main semula hari demi hari", noReplay: "Belum ada main semula: jalankan scripts/backtest.py --replay.",
+    play: "Main", pause: "Jeda", replayDay: "Hari main semula", dayOf: "Hari {day} · {date}", detectedDay: "dikesan hari {day}",
+    overThresholdToday: "Melebihi ambang bendera hari ini", replaySource: "data {source}, larian setiap {step} hari, dijana {generated}",
+    replaySummary: "Imbangan zon sehingga hari {day}; keadaan zon {flagged}.", knownCases: "Kes diketahui", knownCase: "kes diketahui", knownCaseN: "Kes diketahui {n}",
+    theftStarts: "kecurian bermula {date}", timeToDetection: "5% teratas dari hari {day}: {days} hari selepas kecurian bermula", notDetected: "Tidak dalam 5% teratas dalam tempoh ini",
+    backtestNote: "Sejarah simulasi dengan kebenaran asas. Dengan ekstrak TNB, main semula yang sama dijalankan pada kes sah lepas (perintis R1).",
+    rankingOnDay: "Susunan pada hari {day}", notRankedYet: "Zon belum disusun pada hari ini (tidak dibenderakan).", top5Line: "Garis putus-putus: hujung 5% teratas ({k} pertama).",
+    kind_full_bypass_mining: "pintasan penuh (perlombongan)", kind_partial_bypass: "pintasan separa", kind_confirmed_theft: "kecurian disahkan",
+
+    demoGuide: "Panduan demo", demoGuideIntro: "7 langkah langsung (kira-kira 5 minit). Setiap butang log masuk sebagai akaun ujian yang betul dan membuka halaman.",
+    guidePass: "Lulus", guideGo: "Pergi sebagai {who}", guideDone: "Selesai", guideNotYet: "Belum", resetDemo: "Set semula demo", resetting: "Menetapkan semula…",
+    resetHint: "Log masuk sebagai pentadbir untuk menetapkan semula demo.", resetExplain: "Membuang kes, laporan dan versi model raptai, menjalankan semula pengesanan dan menyemai semula kit demo (kira-kira 30 saat). Log audit dikekalkan.",
+    resetDone: "Ditetapkan semula dalam {s} s",
+    guide1Title: "Jalankan pengesanan", guide1Say: "Meter pengubah menunjukkan tenaga keluar yang tidak direkod oleh meter pelanggan.",
+    guide1Pass: "TX-CEN-001 dibenderakan, jurang sejak data bermula, rata 24/7.",
+    guide2Title: "Buka senarai premis berisiko zon", guide2Say: "Imbangan tenaga dengan marginnya, profil mengikut jam dan skema penyuap menunjukkan lokasinya.",
+    guide2Pass: "Kedua-dua sambungan disuntik dalam 3 teratas; rumah EV dan penyewaan sahaja tiada dalam 5% teratas.",
+    guide3Title: "Buka premis teratas", guide3Say: "Skor menjelaskan dirinya: bar berjumlah kepada skor, dan butiran peribadi kekal tersembunyi.",
+    guide3Pass: "Sebab berjumlah kepada skor; butiran disembunyikan.",
+    guide4Title: "Tugas kes, penghantaran dan tuntutan", guide4Say: "Penyelia menjalankan tugas kes dan meluluskan pasukan yang dicadangkan; penganalisis menuntut kes.",
+    guide4Pass: "Kes dituntut; cadangan penghantaran diluluskan.",
+    guide5Title: "Pemeriksa merekod keputusan", guide5Say: "Di telefon, luar talian kemudian dalam talian: keputusan disegerakkan dan salinan tempatan dipadam.",
+    guide5Pass: "Keputusan disegerakkan untuk kes demo.",
+    guide6Title: "Laporan dan dua kelulusan", guide6Say: "Penganalisis meluluskan kandungan, pengurus meluluskan eksport: dua orang berbeza.",
+    guide6Pass: "Eksport laporan diluluskan.",
+    guide7Title: "Latih semula dengan keputusan baharu", guide7Say: "Versi model baharu dengan kadar kena susunan model dan sampel rawak: mekanisme, bukan bukti.",
+    guide7Pass: "Versi model baharu selepas keputusan.",
+
+    dataManagerIntro: "Muat naik, sahkan dan aktifkan set data; semak cara data disediakan.", dataHealth: "Kesihatan data",
+    completenessLine: "hari meter pintar sekurang-kurangnya {min} lengkap ({short} daripada {total} hari-meter kurang).", fallbacksActive: "Sandaran digunakan",
+    noFallbacks: "Tiada sandaran digunakan", fallback_AS2: "tiada meter pengubah", fallback_AS3: "voltan disimulasikan atau tiada", fallback_AS7: "tiada data fasa atau cabang",
+    fallback_AS8: "model kehilangan daripada zon serupa", fallback_AS9: "tiada pendaftaran solar",
+    duplicatesRemoved: "Pendua dibuang", timezoneFixes: "Pembetulan zon waktu", notApplicable: "t/b (simulasi)",
+    healthSimulatedNote: "Jadual simulasi dijana dalam bentuk kanonik, jadi semakan muat naik tiada apa untuk dibuang atau ditukar.",
+    healthUploadNote: "Kiraan daripada laporan pengesahan muat naik yang aktif.", upload: "Muat naik", datasetName: "Nama set data", targetTable: "Jadual sasaran",
+    fileCsvParquet: "Fail (CSV atau Parquet)", validating: "Mengesahkan…", uploadValidate: "Muat naik dan sahkan", activeSources: "Sumber aktif bagi setiap jadual",
+    backToSimulated: "kembali ke simulasi", uploadResult: "{errors} ralat, {warnings} amaran, {short} hari-meter di bawah 90% lengkap.",
+    level: "Tahap", table: "Jadual", tables: "Jadual-jadual", check: "Semakan", message: "Mesej", preview: "Pratonton", datasetsVersions: "Set data dan versi",
+    noUploadsYet: "Belum ada set data dimuat naik.", dataset: "Set data", version: "Versi", created: "Dicipta", activated: "diaktifkan", activate: "Aktifkan",
+    settingsIntro: "Nilai lalai daripada config/thresholds.yaml dan pemberat yang ditala; nilai yang disimpan di sini mengatasinya dan dilog.",
+    saveChanges: "Simpan perubahan", newValue: "nilai baharu", tariffTitle: "Tarif untuk anggaran nilai berisiko",
+    tariffExplain: "RM berisiko = jurang melebihi margin x {days} hari x tarif ini. Disimpan dalam {file} (laporan mingguan juga membacanya). Biarkan kosong sehingga TNB mengesahkan angkanya.",
+    tariffCurrent: "Sekarang", tariffRate: "RM sekWj", tariffEmpty: "kosong = pemegang tempat", tariffSource: "Sumber", tariffSourceHint: "cth. perlindungan hasil TNB, Nov 2026",
+    tariffSaved: "Tarif disimpan; halaman menggunakannya serta-merta.",
+
+    inspectorsOnly: "Aplikasi ini untuk pemeriksa lapangan", assistantNeedsConnection: "Pembantu memerlukan sambungan.",
+    askPlaceholder: "Apa yang perlu saya fotograf di papan meter?", ask: "Tanya", telegramLinkHint: "Terima mesej ini dalam Telegram juga: hantar kod kepada bot VoltGuard.",
+    linkTelegram: "Pautkan Telegram", telegramSendCode: "Hantar /start {code} kepada bot dalam 15 minit.",
+    savedOfflineN: "{n} keputusan disimpan luar talian", waitingToSyncN: "{n} keputusan menunggu segerak", syncSoon: "Sedang dihantar.",
+    syncedAt: "Disegerakkan pada {time}", takePhoto: "Ambil foto", photoAnother: "Tambah foto lain ({n} diambil)",
+    submitOfflineNote: "Berfungsi luar talian: keputusan disimpan secara disulitkan dan dihantar pada segerak seterusnya.", wipedOld: "Data kes tempatan lebih lama daripada 24 jam dan telah dipadam. Log masuk semula.",
+    remoteWiped: "Telefon ini telah dilog keluar dari jauh. Semua data kes padanya telah dipadam.", signInAgain: "Sila log masuk semula.", syncing: "Menyegerak…",
+    noConnectionKept: "Tiada sambungan: keputusan kekal disulitkan di telefon ini sehingga segerak seterusnya.", syncFailed: "Segerak gagal: {error}",
+    messagesNeedConnection: "Mesej memerlukan sambungan.", kmFromBase: "{km} km dari pangkalan (garis lurus)",
+    jointOperationField: "Operasi bersama polis: jangan melawat bersendirian.", outcomeSavedOffline: "Keputusan disimpan di telefon ini (disulitkan); ia disegerakkan apabila dalam talian.",
+    todaysCases: "Kes hari ini", routeTotals: "{n} hentian · laluan {km} km", joint: "bersama", fromBaseStraight: "dari pangkalan, garis lurus",
+    noLocation: "tiada lokasi", noCasesOnPhone: "Tiada kes ditugaskan di telefon ini.", routeOrderNote: "Disusun mengikut laluan terpendek dari pangkalan pasukan (jarak garis lurus).",
+
+    conceptBadge: "Konsep: R2, ikut serta sahaja", conceptIntro: "Contoh amaran berasaskan persetujuan kepada pemilik hartanah. Data simulasi; tiada apa dihantar. Portal tuan rumah di luar skop R0 (SRS).",
+    conceptTitle: "Amaran tuan rumah (konsep)", conceptPhone: "Apa yang dilihat pemilik yang ikut serta", conceptSender: "TNB (konsep)",
+    conceptMessage: "Kawasan bekalan elektrik di {district} yang termasuk hartanah yang anda sewakan sedang disemak (larian {date}). Tiada penemuan dibuat tentang penyewa anda. Balas STOP untuk menarik diri.",
+    conceptAck: "Dimaklumi", conceptStop: "Tarik diri", conceptNothingSent: "Contoh sahaja: tiada apa dihantar.", conceptRules: "Peraturan yang akan dipegang konsep ini",
+    conceptRule1: "Hanya pemilik yang ikut serta, dengan penyewa dimaklumkan.", conceptRule2: "Peringkat zon sahaja: tidak sekali-kali premis, skor atau penyewa.",
+    conceptRule3: "Tiada tuduhan: zon dibenderakan bukan penemuan kecurian.", conceptRule4: "Dihantar hanya selepas diluluskan manusia, dan dilog.",
+    conceptRule5: "Pemilik boleh menarik diri pada bila-bila masa.", conceptScope: "Di luar skop R0; untuk direka bersama pasukan undang-undang TNB dan Suruhanjaya Tenaga bagi R2.",
   },
 };
 
-let lang = localStorage.getItem("vg_lang") || "en";
-const subscribers = new Set();
+export const LANGS = Object.keys(LABELS);
+export const KEYS = LABELS;
 
-export function t(key) {
-  return LABELS[lang][key] ?? LABELS.en[key] ?? key;
-}
-
-export function setLang(next) {
-  lang = next;
+function initialLang() {
   try {
-    localStorage.setItem("vg_lang", next);
+    const saved = localStorage.getItem("vg_lang");
+    if (saved === "en" || saved === "ms") return saved;
   } catch {
     /* storage may be blocked */
   }
-  subscribers.forEach((fn) => fn(next));
+  // Bahasa Melayu first when the phone or browser is set to it.
+  const nav = typeof navigator !== "undefined" ? [navigator.language, ...(navigator.languages || [])] : [];
+  return nav.some((l) => /^(ms|zsm)\b/i.test(l || "")) ? "ms" : "en";
+}
+
+let lang = initialLang();
+const subscribers = new Set();
+
+export function t(key, values) {
+  const text = LABELS[lang][key] ?? LABELS.en[key] ?? key;
+  if (!values) return text;
+  return text.replace(/\{(\w+)\}/g, (m, name) => (values[name] != null ? String(values[name]) : m));
+}
+
+export function getLang() {
+  return lang;
+}
+
+export function setLang(next) {
+  lang = next === "ms" ? "ms" : "en";
+  try {
+    localStorage.setItem("vg_lang", lang);
+  } catch {
+    /* storage may be blocked */
+  }
+  subscribers.forEach((fn) => fn(lang));
 }
 
 export function useLang() {

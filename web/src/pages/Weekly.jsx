@@ -1,9 +1,12 @@
 // Weekly summary (managers and supervisors): the self-explanatory report for the region, in the interface
 // language (English or Bahasa Melayu), exactly as printed to PDF; download it or send it to Telegram / the
 // in-app chat. Every sentence on the report is rule-based and every figure comes from the database.
+// The report itself is the server-rendered page (/weekly/html); this page only frames it.
+import { Download, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { post, request } from "../api.js";
 import { ErrorBox } from "../components/Common.jsx";
+import { Skeleton } from "../components/ui.jsx";
 import { t, useLang } from "../i18n.js";
 import { LinkTelegram } from "./Dispatch.jsx";
 
@@ -54,24 +57,23 @@ export default function Weekly() {
   }
 
   return (
-    <div className="stack">
-      <div className="row" style={{ justifyContent: "space-between" }}>
+    <div className="page">
+      <div className="page-head">
         <div>
           <h1>{t("weekly")}</h1>
-          <small className="muted">{t("weeklyNote")}</small>
+          <span className="sub">{t("weeklyNote")}</span>
         </div>
         <div className="row">
-          <button onClick={send} disabled={!page}>{t("weeklySend")}</button>
-          <button className="primary" onClick={download} disabled={!page}>{t("weeklyDownload")}</button>
+          <button onClick={send} disabled={!page}><Send size={15} aria-hidden="true" />{t("weeklySend")}</button>
+          <button className="primary" onClick={download} disabled={!page}><Download size={15} aria-hidden="true" />{t("weeklyDownload")}</button>
         </div>
       </div>
       <ErrorBox error={error} />
       {message ? <div className="notice ok">{message}</div> : null}
-      {page === null && !error ? <p className="muted" aria-busy="true">…</p> : null}
-      {page !== null ? (
-        <iframe ref={frame} title={t("weekly")} srcDoc={page} sandbox="allow-same-origin" onLoad={fit}
-          style={{ width: "100%", maxWidth: 900, minHeight: 600, border: "1px solid var(--line, #DCE0E5)", borderRadius: 8, background: "#fff" }} />
-      ) : null}
+      <div className="report-frame">
+        {page === null && !error ? <div style={{ width: "100%", maxWidth: 900 }}><Skeleton lines={8} block /></div> : null}
+        {page !== null ? <iframe ref={frame} title={t("weekly")} srcDoc={page} sandbox="allow-same-origin" onLoad={fit} /> : null}
+      </div>
       <div style={{ maxWidth: 480 }}><LinkTelegram /></div>
     </div>
   );
