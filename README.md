@@ -157,11 +157,10 @@ rates; monitoring alerts; zone-level Power BI views and CSV snapshot; the 7 live
 browser (about 20 s automated, mock mode).
 
 **Does not work yet, or not shown (reported as is)**
-- NFR-09 is nearly met for ranked zones and not met overall (`reports/simulation_report.md`, held-out settings,
+- NFR-09 is met for ranked zones and not met overall (`reports/simulation_report.md`, held-out settings,
   which now include theft hidden behind rooftop solar):
-  - 26 of 27 thefts in ranked zones reach the top 5%. The miss is a 1.3% partial bypass at rank 4 in a zone
-    whose top 5% is 3 homes, behind another theft in the same zone.
-  - 26 of 36 thefts overall. Most of the other 9 are thefts of about 1% of supply or less, inside the
+  - 27 of 27 thefts in ranked zones reach the top 5%.
+  - 27 of 36 thefts overall. Most of the other 9 are thefts of about 1% of supply or less, inside the
     uncertainty margin, so their zones are not flagged.
   - One zone with a 7.3% gap (TX-NOR-107) is not flagged: the gap is above the threshold on 12 of the last
     14 days, but the rule needs 7 days in a row and noise breaks the run twice.
@@ -175,9 +174,10 @@ browser (about 20 s automated, mock mode).
   Electricity Supply Act (Bahasa Melayu reprint), the Penal Code and Energy Commission guidelines. Two of the
   guidelines are scanned PDFs with no text layer and are skipped until an OCR'd copy is saved. On a machine
   without them, legal questions return "not found" and reports cite Section 37 by name only.
-- The pattern model is trained on the real SGCC data, but it separates theft only weakly on single 28-day
-  windows (held-out AUC 0.55, OI-3). Its weight in the score is small (0.065), so the ranking rests mainly
-  on the zone balance, the voltage locator and the usage features.
+- The pattern model (pattern-v2) is trained on the real SGCC data: 4 windows of 28 days per customer, with
+  each window's day-by-day shape as inputs. It separates theft only moderately (AUC 0.64 on held-out
+  customers, OI-3). Its weight in the score is small (0.037), so the ranking rests mainly on the zone
+  balance, the voltage locator and the usage features.
 - NFR-01 (2-hour nightly run for 100,000 meters) is measured up to 13,088 homes, not at 100,000.
   The run streams readings in meter batches and detects in zone batches (config `pipeline`), and gives
   the same results as one batch (`tests/test_pipeline_batches.py`). Measured on 4 cores, load and

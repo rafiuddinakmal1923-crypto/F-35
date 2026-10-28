@@ -11,6 +11,7 @@ const SHAP_KEY = {
   cv: "shap_cv", min_ratio: "shap_min_ratio", max_ratio: "shap_max_ratio", zero_day_share: "shap_zero_day_share", trend: "shap_trend",
   half_ratio: "shap_half_ratio", max_drop: "shap_max_drop", weekly_autocorr: "shap_weekly_autocorr", low_day_share: "shap_low_day_share",
   last_first_week_ratio: "shap_last_first_week_ratio", level_vs_peers: "shap_level_vs_peers",
+  shape: "shap_shape", level_kwh: "shap_level_kwh",
 };
 
 function Row({ label, pts, kind, style, zero, onToggle, open, sub }) {

@@ -12,6 +12,7 @@ separate SHAP package is needed.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 
 import numpy as np
@@ -19,10 +20,14 @@ import numpy as np
 from voltguard import config
 
 WINDOW_DAYS = 28
-FEATURES = [
+VERSION = "pattern-v2"
+SUMMARY_FEATURES = [
     "cv", "min_ratio", "max_ratio", "zero_day_share", "trend", "half_ratio",
     "max_drop", "weekly_autocorr", "low_day_share", "last_first_week_ratio", "level_vs_peers",
 ]
+# v2 adds the window's own shape (each day / the window mean) and its level: on held-out SGCC customers
+# the summary features alone reach AUC ~0.57, with the shape ~0.64 (28-day windows, 4 per customer).
+FEATURES = SUMMARY_FEATURES + [f"shape_d{i}" for i in range(WINDOW_DAYS)] + ["level_kwh"]
 FEATURE_TEXT = {
     "cv": "how much daily use varies",
     "min_ratio": "unusually low days",
@@ -35,13 +40,21 @@ FEATURE_TEXT = {
     "low_day_share": "many days well below its usual level",
     "last_first_week_ratio": "the last week compared with the first",
     "level_vs_peers": "use far below similar homes",
+    "shape": "its day-to-day shape over the month",
+    "level_kwh": "its overall level of use",
 }
 
 
+def feature_text(name: str) -> str:
+    return FEATURE_TEXT["shape" if name.startswith("shape_d") else name]
+
+
 def window_features(daily: np.ndarray, peer_median: float | None = None) -> np.ndarray:
-    """Features of one premise's last WINDOW_DAYS daily totals (kWh)."""
+    """Features of one premise's last WINDOW_DAYS daily totals (kWh): summary features, then the shape."""
     x = np.asarray(daily[-WINDOW_DAYS:], dtype=float)
     x = np.nan_to_num(x, nan=np.nanmean(x) if np.isfinite(x).any() else 0.0)
+    if len(x) < WINDOW_DAYS:     # a short history: pad at the start with its own mean
+        x = np.r_[np.full(WINDOW_DAYS - len(x), x.mean() if len(x) else 0.0), x]
     mean = max(x.mean(), 1e-6)
     med = max(float(np.median(x)), 1e-6)
     weeks = x[: len(x) // 7 * 7].reshape(-1, 7).mean(axis=1) if len(x) >= 14 else np.array([mean, mean])
@@ -63,6 +76,8 @@ def window_features(daily: np.ndarray, peer_median: float | None = None) -> np.n
         float((x < 0.5 * med).mean()),
         weeks[-1] / max(weeks[0], 1e-6),
         mean / max(peer_median, 1e-6) if peer_median else 1.0,
+        *(x / mean),
+        x.mean(),
     ])
 
 
@@ -94,24 +109,26 @@ def synthetic_training_set(seed: int = 7, n: int = 4000) -> tuple[np.ndarray, np
     return np.array(X), np.array(y)
 
 
-def sgcc_training_set() -> tuple[np.ndarray, np.ndarray] | None:
+def sgcc_training_set() -> tuple[np.ndarray, np.ndarray, np.ndarray] | None:
+    """(X, y, customer): several windows per customer, so hold-outs are split by customer."""
     path = config.data_root() / "processed" / "sgcc_windows.parquet"
     if not path.exists():
         return None
     import polars as pl
 
     frame = pl.read_parquet(path)
-    days = [c for c in frame.columns if c.startswith("d")]
+    days = [c for c in frame.columns if re.fullmatch(r"d\d+", c)]
     values = frame.select(days).to_numpy()
     X = np.array([window_features(row) for row in values])
-    return X, frame["flag"].to_numpy().astype(int)
+    groups = frame["customer"].to_numpy() if "customer" in frame.columns else np.arange(len(frame))
+    return X, frame["flag"].to_numpy().astype(int), groups
 
 
 @dataclass
 class PatternModel:
     booster: object
     source: str
-    version: str = "pattern-v1"
+    version: str = VERSION
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         import xgboost as xgb
@@ -124,16 +141,26 @@ class PatternModel:
         return self.booster.predict(xgb.DMatrix(X, feature_names=FEATURES), pred_contribs=True)[:, :-1]
 
     def sub_reasons(self, x_row: np.ndarray, top: int = 2) -> list[str]:
+        """The top distinct reasons: the 28 shape inputs share one plain-language reason."""
         contrib = self.contributions(x_row[None, :])[0]
-        order = np.argsort(-contrib)
-        return [FEATURE_TEXT[FEATURES[i]] for i in order[:top] if contrib[i] > 0]
+        texts: dict[str, float] = {}
+        for i, c in enumerate(contrib):
+            if c > 0:
+                text = feature_text(FEATURES[i])
+                texts[text] = texts.get(text, 0.0) + float(c)
+        return [t for t, _ in sorted(texts.items(), key=lambda kv: -kv[1])[:top]]
 
     def sub_reason_values(self, x_row: np.ndarray, top: int = 4) -> list[dict]:
-        """SHAP contributions (log-odds) of the strongest inputs, for the premise page's expandable bar."""
+        """SHAP contributions (log-odds) of the strongest inputs, for the premise page's expandable bar.
+        The 28 day-shape inputs (pattern-v2) are summed into one "shape" line, as in sub_reasons()."""
         contrib = self.contributions(x_row[None, :])[0]
-        order = np.argsort(-np.abs(contrib))
-        return [{"feature": FEATURES[i], "text": FEATURE_TEXT[FEATURES[i]], "shap": round(float(contrib[i]), 3)}
-                for i in order[:top] if abs(contrib[i]) >= 1e-3]
+        grouped: dict[str, float] = {}
+        for i, c in enumerate(contrib):
+            name = "shape" if FEATURES[i].startswith("shape_d") else FEATURES[i]
+            grouped[name] = grouped.get(name, 0.0) + float(c)
+        order = sorted(grouped, key=lambda k: -abs(grouped[k]))
+        return [{"feature": k, "text": FEATURE_TEXT[k], "shap": round(grouped[k], 3)}
+                for k in order[:top] if abs(grouped[k]) >= 1e-3]
 
 
 def train(X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None, seed: int = 7):
@@ -166,13 +193,18 @@ def train_default(save: bool = True) -> tuple[PatternModel, dict]:
     data = sgcc_training_set() if wanted == "sgcc" else None
     source = "sgcc"
     if data is None:
-        data, source = synthetic_training_set(), "synthetic_sgcc_patterns"
-    X, y = data
+        X, y = synthetic_training_set()
+        groups, source = np.arange(len(y)), "synthetic_sgcc_patterns"
+    else:
+        X, y, groups = data
+    # Hold out 20% of customers (not windows): a customer's windows must not sit on both sides.
     rng = np.random.default_rng(11)
-    test = rng.random(len(y)) < 0.2
+    held = set(rng.choice(np.unique(groups), size=max(1, int(0.2 * len(np.unique(groups)))), replace=False).tolist())
+    test = np.array([g in held for g in groups])
     booster = train(X[~test], y[~test])
     model = PatternModel(booster, source)
-    metrics = {"source": source, "train_rows": int((~test).sum()), "holdout_rows": int(test.sum()),
+    metrics = {"source": source, "version": VERSION, "features": len(FEATURES), "train_rows": int((~test).sum()),
+               "holdout_rows": int(test.sum()), "holdout_customers": len(held),
                "holdout_auc": round(auc(y[test], model.predict(X[test])), 4)}
     if save:
         booster.save_model(str(model_path()))
@@ -190,12 +222,16 @@ def load() -> PatternModel:
     import xgboost as xgb
 
     path = model_path()
+    booster = None
     if path.exists():
         booster = xgb.Booster()
         booster.load_model(str(path))
+        if booster.num_features() != len(FEATURES):
+            booster = None      # a pattern-v1 file (11 inputs): retrain for the current features
+    if booster is not None:
         meta_path = path.with_suffix(".meta.json")
         meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
-        _cached = PatternModel(booster, meta.get("source", "unknown"), meta.get("version", "pattern-v1"))
+        _cached = PatternModel(booster, meta.get("source", "unknown"), meta.get("version", VERSION))
     else:
         _cached, _ = train_default(save=True)
     return _cached

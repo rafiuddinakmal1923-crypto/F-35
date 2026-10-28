@@ -168,6 +168,12 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
   `data/docs_rag/sources.yaml`.
 - **Hand-off script**: `scripts/handoff.py` (Windows and Linux; `make.ps1 handoff`) refreshes graphify,
   `TRACEABILITY.md` and this file's auto part. Run it after every finished section.
+- **graphify community names**: no LLM backend is configured, so `graphify update` names groups after their
+  busiest node ("get", "columns"). `scripts/graph_labels.py` (run by `handoff.py`, with graphify's own Python)
+  gives every group a readable name from `scripts/graph_labels.json` (rules: main file, plus a node label
+  where several groups share a file) without re-clustering. When new code forms a new group, add a rule there.
+  The graphify tool now includes SQL support (`uv tool install "graphifyy[sql]==0.9.50"`), so the database
+  tables, views and row-level security functions are in the graph.
 - **Database tests on Windows**: the throwaway container keeps its data, so create a fresh database before
   each full run: `docker exec vg-ui-pg psql -U voltguard -c "DROP DATABASE IF EXISTS vgtest WITH (FORCE)"`,
   then `CREATE DATABASE vgtest OWNER voltguard`, and set `TEST_DATABASE_URL=postgresql://voltguard@127.0.0.1:55432/vgtest`.
@@ -176,12 +182,18 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 ## Known issues
 
 - NFR-09 on held-out settings that now include theft hidden behind solar (`reports/simulation_report.md`):
-  - ranked zones: 26 of 27 thefts in the top 5%. The miss is a 1.3% partial bypass at rank 4 where the top 5% is 3 homes.
-  - overall: 26 of 36 thefts in the top 5%. Most of the misses are about 1% of supply or less, inside the
+  - ranked zones: 27 of 27 thefts in the top 5%.
+  - overall: 27 of 36 thefts in the top 5%. Most of the misses are about 1% of supply or less, inside the
     uncertainty margin u; narrowing u needs TNB inputs.
   - TX-NOR-107 (7.3% gap) is not flagged: the rule needs 7 days in a row above the threshold, and noise
     breaks the run twice in 14 days. A "k of the last n days" rule would catch it (to agree with TNB, OI-7).
-- The SGCC-trained pattern model has a held-out AUC of only 0.55 on 28-day windows (OI-3).
+- The SGCC-trained pattern model (pattern-v2) has a held-out AUC of 0.64 on held-out customers (OI-3).
+- **Two sessions at once (28 Oct)**: a second Claude session worked on `claude/practical-clarke-t5uwrc` in the main
+  folder while this one worked on `claude/ui-upgrade`, and both wrote to `D:\VoltGuard`. Its improvements (pattern-v2,
+  SGCC reader with 4 windows per customer, embedding in small batches, field-assistant fixes for Malay statute text and
+  "Section 37" lookups) were reapplied on `claude/integrate`, made from `main`, then the weights were retuned and every
+  test rerun. Run one session per repository and `DATA_ROOT` at a time: the model file in `DATA_ROOT/models` is shared,
+  and a pattern-v2 file cannot be read by pattern-v1 code.
 - Fixed this session: metered mining no longer reaches the held-out top 5% (re-tuned weights);
   the sweep now varies both parts of the flag rule.
 - Not exercised here: a live Ollama model, a real Telegram bot token (the bot path is tested with a
@@ -204,17 +216,17 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.py)
 
-- Generated: 2026-10-28T15:04
-- Branch: `claude/ui-upgrade`; last commit: `f467ada UI upgrade: after screenshots, change list, browser tests on the new layout, contrast fix`
-- Tests collected: 151 tests
+- Generated: 2026-10-28T16:17
+- Branch: `claude/integrate`; last commit: `739a27a Integrate: pattern-v2 sub-reasons on the premise page, retuned weights, fresh reports`
+- Tests collected: 152 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
   query with `graphify query "<question>"` or `graphify explain "<name>"`)
 
 ### Graph summary
 
-- 2667 nodes · 5931 edges · 149 communities (142 shown, 7 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 186 edges (avg confidence: 0.93)
+- 2731 nodes · 6024 edges · 153 communities (143 shown, 10 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 188 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
@@ -222,12 +234,12 @@ Most connected (core abstractions):
 2. `t()` - 105 edges
 3. `login()` - 70 edges
 4. `audit()` - 46 edges
-5. `admin_connection()` - 42 edges
-6. `get()` - 42 edges
+5. `get()` - 42 edges
+6. `admin_connection()` - 42 edges
 7. `useLoad()` - 33 edges
 8. `shot()` - 32 edges
 9. `request()` - 30 edges
-10. `render_html()` - 29 edges
+10. `run_detection()` - 29 edges
 
 ### File tree
 
@@ -257,7 +269,7 @@ Most connected (core abstractions):
 - `reports/ui/`: CHANGES.md, PLAN.md, weekly_report_after.html, weekly_report_after.pdf, weekly_report_after_ms.html, weekly_report_after_ms.pdf, weekly_report_before.html, weekly_report_before.pdf
 - `reports/ui/after/`: assistant_desktop.png, assistant_phone.png, audit_desktop.png, audit_phone.png, backtest_desktop.png, backtest_phone.png, case_desktop.png, case_phone.png, cases_desktop.png, cases_phone.png, data_manager_desktop.png, data_manager_phone.png, ... (+102)
 - `reports/ui/before/`: assistant_desktop.png, assistant_phone.png, audit_desktop.png, audit_phone.png, case_desktop.png, case_phone.png, cases_desktop.png, cases_phone.png, data_manager_desktop.png, data_manager_phone.png, dispatch_desktop.png, dispatch_phone.png, ... (+18)
-- `scripts/`: backtest.py, e2e_use_cases.py, fetch_datasets.py, fetch_docs.py, handoff.py, handoff.sh, setup_env.py, traceability.py, tunnel.sh, ui_check.py, ui_screenshots.py
+- `scripts/`: backtest.py, e2e_use_cases.py, fetch_datasets.py, fetch_docs.py, graph_labels.json, graph_labels.py, handoff.py, handoff.sh, setup_env.py, traceability.py, tunnel.sh, ui_check.py, ... (+1)
 - `web/`: .dockerignore, .gitignore, Dockerfile, index.html, nginx.conf, package-lock.json, package.json, vite.config.js
 - `web/public/`: icon.svg, manifest.webmanifest, sw.js
 - `web/src/`: App.jsx, api.js, i18n.js, main.jsx, styles.css, theme.js

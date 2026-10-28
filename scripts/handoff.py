@@ -38,6 +38,14 @@ def update_graph() -> None:
     g = graphify_cmd()
     if run(g + ["update", ".", "--force"]).returncode != 0:
         run(g + ["update", "."], check=True)
+    # Readable community names from scripts/graph_labels.json, run with graphify's own Python.
+    gpy = Path(g[0]).with_name("python.exe" if sys.platform == "win32" else "python")
+    if not gpy.exists():
+        tool = Path.home() / ("AppData/Roaming/uv/tools/graphifyy/Scripts/python.exe" if sys.platform == "win32"
+                              else ".local/share/uv/tools/graphifyy/bin/python")
+        gpy = tool if tool.exists() else Path(sys.executable)
+    result = run([str(gpy), "scripts/graph_labels.py"])
+    print(result.stdout.strip().splitlines()[-1] if result.stdout.strip() else f"graph_labels.py: {result.stderr.strip()[-200:]}")
 
 
 def test_count() -> str:
