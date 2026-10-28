@@ -150,8 +150,13 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 - **Where the work is**: the branch is checked out in a second git worktree at `D:\VoltGuard\wt-ui`; the
   main folder `C:\...\F-35` stays on `claude/practical-clarke-t5uwrc`. The running Docker stack was built
   from the main folder, so it does not show this branch until it is rebuilt.
-- **UI brief** (`VoltGuard_UI_Upgrade_Prompt.md`): design system, redesigned pages and the new pages are
-  in place (see `reports/ui/PLAN.md` and `reports/ui/CHANGES.md`); web unit tests in `web/tests/` (`npm test`).
+- **UI brief** (`VoltGuard_UI_Upgrade_Prompt.md`): done. Design system, redesigned pages, Must items 3.1, 3.2,
+  3.3, 3.6 and 3.8, and Should/Could items 3.4, 3.5, 3.7, 3.9, 3.10 and 3.11 (`reports/ui/CHANGES.md` lists each change with
+  its screenshot pair; before/after in `reports/ui/before/` and `reports/ui/after/`, plus `after/light/` and
+  `after/ms/`). Checks run: web unit tests (`cd web; npm test`, 19), backend tests (151), browser tests
+  (`pytest -m e2e`, 3; the 7 live steps in about 25 s), demo reset 10.6 s, contrast of every token pair at
+  4.5:1 or more in both themes, `docker build` of both images. Not run: a screen-reader pass and a usability
+  test with inspectors.
 - **Solar brief** (`VoltGuard_Solar_Prompt.md`, FR-PS-10): scoring loophole closed and the missing checks
   added in `detection/features.py` (`_solar_checks`, `_solar_decision`) and `scoring.py`; settings under
   `solar:` in `config/thresholds.yaml`; new simulator cases; shown on the premise page (Solar check), the
@@ -187,15 +192,20 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 - NFR-01: the nightly run now streams readings in meter batches and detects in zone batches.
   It has been measured up to 13,088 homes (3.1 GB, 219 s, nearly flat memory). Still to do: load only
   the new day each night once real AMI extracts arrive daily (today every source is reloaded in full).
-- UI redesign per `docs/UI_UX_DESIGN_REQUIREMENTS.md` (prompts in section 8).
+- Merge `claude/ui-upgrade` into the main branch and rebuild the Docker stack from it (`.\make.ps1 demo`):
+  the running stack still uses the older code.
+- Named tests for NFR-04, 05, 06 and 14 (implemented, still "open" in `TRACEABILITY.md`); the breach
+  runbook, breach register and data-portability export of SDD 9.3 (NFR-07) are not built.
+- A "k of the last n days" flag rule (TX-NOR-107 in the simulation report), to agree with TNB (OI-7).
+- OCR the two scanned Energy Commission guidelines so the field assistant can cite them.
 - Wire the full profile (Keycloak OIDC, MinIO, Celery) behind the existing interfaces.
 - Try narrowing u (e.g. per-zone loss-model calibration) and re-run the held-out report.
 
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.py)
 
-- Generated: 2026-10-28T14:25
-- Branch: `claude/ui-upgrade`; last commit: `80a50e3 Solar wrap-up: API tests, report figures, demo step, deviations; zone and login fixes`
+- Generated: 2026-10-28T15:04
+- Branch: `claude/ui-upgrade`; last commit: `f467ada UI upgrade: after screenshots, change list, browser tests on the new layout, contrast fix`
 - Tests collected: 151 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
@@ -203,7 +213,7 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 
 ### Graph summary
 
-- 2661 nodes · 5925 edges · 154 communities (147 shown, 7 thin omitted)
+- 2667 nodes · 5931 edges · 149 communities (142 shown, 7 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 186 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
@@ -245,7 +255,7 @@ Most connected (core abstractions):
 - `powerbi/snapshot/`: rpt_case_counts.csv, rpt_flag_rates.csv, rpt_network_kpis.csv, rpt_outcomes.csv, rpt_zone_daily.csv, rpt_zone_latest.csv
 - `reports/`: backtest_replay.json, backtest_report.md, simulation_report.md, simulation_summary.json
 - `reports/ui/`: CHANGES.md, PLAN.md, weekly_report_after.html, weekly_report_after.pdf, weekly_report_after_ms.html, weekly_report_after_ms.pdf, weekly_report_before.html, weekly_report_before.pdf
-- `reports/ui/after/`: assistant_desktop.png, assistant_phone.png, audit_desktop.png, audit_phone.png, backtest_desktop.png, backtest_phone.png, case_desktop.png, case_phone.png, cases_desktop.png, cases_phone.png, data_manager_desktop.png, data_manager_phone.png, ... (+26)
+- `reports/ui/after/`: assistant_desktop.png, assistant_phone.png, audit_desktop.png, audit_phone.png, backtest_desktop.png, backtest_phone.png, case_desktop.png, case_phone.png, cases_desktop.png, cases_phone.png, data_manager_desktop.png, data_manager_phone.png, ... (+102)
 - `reports/ui/before/`: assistant_desktop.png, assistant_phone.png, audit_desktop.png, audit_phone.png, case_desktop.png, case_phone.png, cases_desktop.png, cases_phone.png, data_manager_desktop.png, data_manager_phone.png, dispatch_desktop.png, dispatch_phone.png, ... (+18)
 - `scripts/`: backtest.py, e2e_use_cases.py, fetch_datasets.py, fetch_docs.py, handoff.py, handoff.sh, setup_env.py, traceability.py, tunnel.sh, ui_check.py, ui_screenshots.py
 - `web/`: .dockerignore, .gitignore, Dockerfile, index.html, nginx.conf, package-lock.json, package.json, vite.config.js
