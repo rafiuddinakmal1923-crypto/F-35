@@ -222,9 +222,9 @@
     "semantic_hash": ""
   },
   "make.ps1": {
-    "mtime": 1793152802.2334654,
-    "seen": 1793152860.8253298,
-    "ast_hash": "5f8c952959abc52583ce8ce7883b628e",
+    "mtime": 1793153205.107453,
+    "seen": 1793153254.974853,
+    "ast_hash": "8e575021d4c546e38db5fe00027bfcb6",
     "semantic_hash": ""
   },
   "scripts/handoff.sh": {
@@ -246,9 +246,9 @@
     "semantic_hash": ""
   },
   "scripts/tunnel.sh": {
-    "mtime": 1793152792.01114,
-    "seen": 1793152860.8255546,
-    "ast_hash": "346762c068526fc6ed57024e7ea244e6",
+    "mtime": 1793153205.1092064,
+    "seen": 1793153254.975043,
+    "ast_hash": "afb18bcb0042e8d9fe4ea864ed7c2dff",
     "semantic_hash": ""
   },
   "DEVIATIONS.md": {
@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1793148526.9553483,
-    "seen": 1793152860.8263803,
-    "ast_hash": "06f541c5f29ed65e5d818f62bfef4731",
+    "mtime": 1793152862.5188694,
+    "seen": 1793153254.9759202,
+    "ast_hash": "70d9d94b1fb6668d774193e1611ec966",
     "semantic_hash": ""
   },
   "README.md": {
@@ -270,8 +270,8 @@
     "semantic_hash": ""
   },
   "TRACEABILITY.md": {
-    "mtime": 1793148525.6749554,
-    "seen": 1793152860.8264308,
+    "mtime": 1793152861.2352953,
+    "seen": 1793153254.9759805,
     "ast_hash": "fabc1f385725ce48260adf8889e2eca7",
     "semantic_hash": ""
   },
@@ -978,9 +978,9 @@
     "semantic_hash": ""
   },
   "HOW_TO_RUN.md": {
-    "mtime": 1793152841.037339,
-    "seen": 1793152860.8263826,
-    "ast_hash": "82db197e68b7bc121cdeef153cfad2ec",
+    "mtime": 1793153217.640825,
+    "seen": 1793153254.9759219,
+    "ast_hash": "919a3cd33efe5a708bcda13a659430ca",
     "semantic_hash": ""
   },
   "web/package-lock.json": {
