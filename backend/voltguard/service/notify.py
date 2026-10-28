@@ -44,9 +44,9 @@ def case_link(case_id: str) -> str:
     return f"{config.public_base_url()}/#/cases/{case_id}"
 
 
-def compose(kind: str, case_id: str | None, extra: str = "") -> str:
-    if case_id is None:      # region-level messages (the weekly summary) link to their page
-        return f"VoltGuard {LABELS.get(kind, kind)}: {extra}".strip() + f"\nOpen: {config.public_base_url()}/#/{kind}"
+def compose(kind: str, case_id: str | None, extra: str = "", label: str | None = None, page: str | None = None) -> str:
+    if case_id is None:      # region-level messages (the manager summary) link to their page, e.g. "weekly?period=month"
+        return f"VoltGuard {label or LABELS.get(kind, kind)}: {extra}".strip() + f"\nOpen: {config.public_base_url()}/#/{page or kind}"
     text = f"VoltGuard {LABELS.get(kind, kind)}: case {case_id}. {extra}".strip()
     return f"{text}\nOpen: {case_link(case_id)}"
 
@@ -103,13 +103,15 @@ def telegram_document(chat_id: str, filename: str, data: bytes, caption: str = "
 
 
 def send(conn: psycopg.Connection, kind: str, case_id: str | None, region: str, recipient: str, extra: str = "",
-         buttons: list[dict] | None = None, document: tuple[str, bytes] | None = None) -> dict:
+         buttons: list[dict] | None = None, document: tuple[str, bytes] | None = None, label: str | None = None,
+         page: str | None = None) -> dict:
     """Record one message (shown in the in-app chat) and send it to Telegram when a bot is configured.
 
     `recipient` is a team or user ID. `buttons` default to the kind's buttons (BUTTONS). `document`
     (filename, bytes) is attached on Telegram after the text; the caller has already checked it.
+    `label` and `page` override the message title and link of a region-level message (a monthly summary).
     """
-    text = compose(kind, case_id, extra)
+    text = compose(kind, case_id, extra, label, page)
     output_check(text, extra)
     buttons = BUTTONS.get(kind) if buttons is None else buttons
     row = conn.execute("INSERT INTO notification (case_id, region, recipient, kind, channel, text, status, buttons) "

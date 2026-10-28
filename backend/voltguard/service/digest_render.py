@@ -9,6 +9,7 @@ Colour is never the only signal: bars carry value labels, whiskers and threshold
 from __future__ import annotations
 
 import html
+import math
 import re
 from datetime import date, datetime
 
@@ -21,50 +22,53 @@ MONTHS = {"en": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", 
 
 T = {
     "en": {
-        "title": "VoltGuard weekly summary · region {r}",
+        "title": "VoltGuard {p_title} · region {r}",
         "meta": "Report {id} · generated {when} MYT · for revenue-protection managers, region {r}",
         "meter_data": "Meter data", "field_work": "Field work",
         "banner_sim": "Simulated data (R0): not TNB data. Figures show how the system works, not real network performance.",
-        "one_para": "This week in one paragraph.", "action": "Action {n}",
-        "s1": "Unexplained energy in region {r} averaged {avg} kWh a day, {chg} than the week before, so the leak is {trend}.",
-        "s1_nochange": "Unexplained energy in region {r} averaged {avg} kWh a day; there is no earlier week to compare with.",
-        "s1_none": "There are no meter data for this week, so unexplained energy cannot be measured.",
+        "one_para": "{p_This} in one paragraph.", "action": "Action {n}",
+        "s1": "Unexplained energy in region {r} averaged {avg} kWh a day, {chg} than {p_before}, so the leak is {trend}.",
+        "s1_nochange": "Unexplained energy in region {r} averaged {avg} kWh a day; there is no earlier {p_unit} to compare with.",
+        "s1_none": "There are no meter data for this {p_unit}, so unexplained energy cannot be measured.",
         "lower": "{p} lower", "higher": "{p} higher",
         "trend_steady": "steady, not growing", "trend_rising": "growing", "trend_falling": "shrinking",
         "s2": "{n} of {m} zones are flagged; {top} alone accounts for {share} of the unexplained energy",
         "s2_flat": " and draws a flat 24/7 load typical of mining rigs",
-        "s2_none": "No zone is flagged this week.",
-        "s3_idle": "No cases were opened or closed this week and no inspections were recorded.",
-        "s3": "{o} case(s) were opened and {c} closed this week; {v} inspection(s) were recorded.",
-        "s3_novisit": "{o} case(s) were opened and {c} closed this week; no inspections were recorded yet.",
+        "s2_none": "No zone is flagged {p_this}.",
+        "s3_idle": "No cases were opened or closed {p_this} and no inspections were recorded.",
+        "s3": "{o} case(s) were opened and {c} closed {p_this}; {v} inspection(s) were recorded.",
+        "s3_novisit": "{o} case(s) were opened and {c} closed {p_this}; no inspections were recorded yet.",
         "h_key": "1 · Key figures",
         "k_flagged": "Flagged zones", "k_flagged_d": "Unexplained energy above the flag rule for {k} days in a row",
-        "k_of": "of {m}", "k_same": "no change vs last week", "k_diff": "{s} vs last week ({p} then)",
-        "k_kwh": "Unexplained kWh per day", "k_kwh_d": "Average over the meter week, all zones with a transformer meter",
-        "k_kwh_c": "{s} vs {p} the week before", "k_month": "kWh a month at this level",
+        "k_of": "of {m}", "k_same": "no change vs {p_last}", "k_diff": "{s} vs {p_last} ({p} then)",
+        "k_kwh": "Unexplained kWh per day", "k_kwh_d": "Average over the meter {p_unit}, all zones with a transformer meter",
+        "k_kwh_c": "{s} vs {p} {p_before}", "k_month": "kWh a month at this level",
         "k_month_d": "{avg} × 30 days. Value in RM: {rm}", "k_month_c": "estimate, see section 3",
-        "k_cases": "Cases opened / closed", "k_cases_d": "During the field-work week", "k_cases_c": "{n} closed in total",
+        "k_cases": "Cases opened / closed", "k_cases_d": "During the field-work {p_unit}", "k_cases_c": "{n} closed in total",
         "k_overdue": "Overdue cases", "k_overdue_d": "Assigned and not visited within {h} h",
         "k_rep": "Reports exported · open alerts", "k_rep_d": "Reports after both approvals · unacknowledged data or model alerts",
-        "k_rep_c": "{n} new alert(s) this week", "k_none": "no earlier week",
+        "k_rep_c": "{n} new alert(s) {p_this}", "k_none": "no earlier {p_unit}",
         "why_title": "Why two dates?",
-        "why": "Meter data reach VoltGuard daily, so energy figures cover the latest full week of readings ({e}). Cases and inspections are counted over the last 7 calendar days ({w}).",
+        "why": "Meter data reach VoltGuard daily, so energy figures cover the latest {p_unit} of readings ({e}). Cases and inspections are counted over {p_work} ({w}).",
+        "why_custom": "Energy figures and field work both use the dates you chose ({w}), compared with the {n} day(s) just before.",
+        "why_cover": " Meter data cover {d} of these {m} days ({e}).", "why_nodata": " There are no meter data for these dates.",
         "why_sim": " In this prototype the simulated meter data end on {last}, which is why the two windows are {n} days apart; with live TNB data they would be one or two days apart.",
-        "why_late": " Meter data have not arrived since {last} ({n} days ago): check the data feed before relying on this week's energy figures.",
+        "why_late": " Meter data have not arrived since {last} ({n} days ago): check the data feed before relying on {p_poss} energy figures.",
         "h_energy": "2 · Is energy still going missing?",
-        "c_energy": "Unexplained energy per day, whole region, last 14 days (kWh/day)",
-        "l_series": "unexplained energy", "l_band": "margin of error ±{m} kWh", "l_avg": "weekly average", "l_week": "start of this week",
-        "prev_avg": "prev. week avg {v}", "this_avg": "this week avg {v}", "week_starts": "week starts", "axis_kwh": "kWh/day",
+        "c_energy": "Unexplained energy per day, whole region, {p_this} and {p_before} (kWh/day{p_bucket})",
+        "l_series": "unexplained energy", "l_band": "margin of error ±{m} kWh", "l_avg": "{p_adj} average", "l_week": "start of this {p_unit}",
+        "prev_avg": "prev. {p_unit} avg {v}", "this_avg": "this {p_unit} avg {v}", "week_starts": "{p_unit} starts", "axis_kwh": "kWh/day",
         "read_energy": "<b>What this shows:</b> for each day, energy the transformers supplied minus what customers' meters recorded, minus the estimate for monthly-read meters and the expected technical loss in cables and transformers. <b>How to read it:</b> a line inside the shaded band could be measurement error; a line well above it means energy is leaving the network unrecorded.",
         "take": "Takeaway:",
-        "t_none": "No meter data for this week, so there is nothing to compare.",
-        "t_inside": "Unexplained energy averaged {avg} kWh a day, inside the margin of error (±{m} kWh): it could be measurement error, so nothing stands out this week.",
-        "t_steady": "About {avg} kWh a day goes unrecorded, well above the margin of error (±{m} kWh) and steady compared with the week before ({chg}).",
-        "t_rising": "About {avg} kWh a day goes unrecorded, above the margin of error (±{m} kWh) and rising: {chg} on the week before. Start with the zones in section 3.",
-        "t_falling": "About {avg} kWh a day goes unrecorded, above the margin of error (±{m} kWh) but falling: {chg} on the week before, which may mean a tap was removed or inspections are working.",
+        "t_none": "No meter data for this {p_unit}, so there is nothing to compare.",
+        "t_inside": "Unexplained energy averaged {avg} kWh a day, inside the margin of error (±{m} kWh): it could be measurement error, so nothing stands out {p_this}.",
+        "t_steady": "About {avg} kWh a day goes unrecorded, well above the margin of error (±{m} kWh) and steady compared with {p_before} ({chg}).",
+        "t_rising": "About {avg} kWh a day goes unrecorded, above the margin of error (±{m} kWh) and rising: {chg} on {p_before}. Start with the zones in section 3.",
+        "t_falling": "About {avg} kWh a day goes unrecorded, above the margin of error (±{m} kWh) but falling: {chg} on {p_before}, which may mean a tap was removed or inspections are working.",
         "t_flat": " A steady, flat leak points to a continuous load, not a one-off.",
         "h_where": "3 · Where is it going missing?",
-        "c_zones": "Unexplained energy per zone this week (kWh/day)",
+        "c_zones": "Unexplained energy per zone {p_this} (kWh/day)",
+        "z_none": "No meter data for this {p_unit}, so the zones cannot be compared.",
         "l_flagged": "flagged zone", "l_ok": "not flagged", "l_margin": "margin of error", "l_thr": "flag threshold for that zone",
         "read_zones": "<b>How to read it:</b> a zone is flagged when its unexplained energy stays above its threshold mark plus the margin of error for {k} days in a row. Thresholds differ by zone because they scale with the energy each transformer supplies ({p} of supply, or {g} kWh a day, whichever is larger).",
         "th_zone": "Zone", "th_district": "District", "th_kwh": "kWh/day", "th_pct": "% of supply", "th_margin": "Margin", "th_thr": "Threshold",
@@ -97,9 +101,9 @@ T = {
         "h_apart": "Model-ranked inspections find theft more often than random checks ({a} vs {b}), and the ranges do not overlap, so the difference is unlikely to be chance.",
         "h_apart_worse": "Model-ranked inspections find theft less often than random checks ({a} vs {b}), and the ranges do not overlap: review the model's weights and thresholds.",
         "cmp_better": "better", "cmp_worse": "worse", "cmp_same": "similar",
-        "h_no_week": " No inspections were recorded this week.",
+        "h_no_week": " No inspections were recorded {p_this}.",
         "h_synthetic": " Outcomes so far come from simulated cases, so they show how the measurement works, not real performance.",
-        "outcomes_h": "Inspection outcomes", "th_outcome": "Outcome", "th_week": "This week", "th_all": "All time",
+        "outcomes_h": "Inspection outcomes", "th_outcome": "Outcome", "th_week": "{p_This}", "th_all": "All time",
         "o_confirmed_theft": "Confirmed theft", "o_false_alarm": "False alarm", "o_inconclusive": "Inconclusive",
         "o_no_access": "No access (not used for learning)",
         "status_h": "Cases by status now", "th_status_name": "Status", "th_cases": "Cases", "th_meaning": "Meaning",
@@ -107,7 +111,7 @@ T = {
         "m_new": "Waiting for the supervisor", "m_assigned": "Team sent", "m_visited": "Outcome recorded",
         "m_reporting": "Theft confirmed, report in approval", "m_closed": "Finished",
         "h_trust": "5 · Can these figures be trusted?",
-        "quality_h": "Data quality (meter week)", "q_complete": "Meter-days with ≥ 90% of readings", "q_monthly": "Meters read monthly (estimated daily)",
+        "quality_h": "Data quality (meter {p_unit})", "q_complete": "Meter-days with ≥ 90% of readings", "q_monthly": "Meters read monthly (estimated daily)",
         "q_no_dtm": "Zones without a transformer meter", "q_dup": "Duplicate or out-of-order readings fixed",
         "q_dup_v": "not recorded for this data source", "q_fallbacks": "Fallbacks in use", "q_none": "none",
         "f_AS-2": "no transformer meter in {n} zone(s): listed without a balance (AS-2)",
@@ -123,7 +127,7 @@ T = {
         "sol_unreg_e": "check the Solar ATAP / NEM / SelCo record; not counted as theft",
         "model_h": "Model in use", "m_scoring": "Scoring version", "m_retrained": "Last retrained",
         "m_retrained_v": "{at}, version {v}; {n} labels available", "m_not_retrained": "not retrained yet; {n} labels available",
-        "m_alerts": "Data or drift alerts this week", "m_thresholds": "Thresholds",
+        "m_alerts": "Data or drift alerts {p_this}", "m_thresholds": "Thresholds",
         "m_thresholds_v": "{p} of supply or {g} kWh/day, {k} days; large load above {l}",
         "assume_h": "Assumptions and limits",
         "a_sim": "<b>Simulated data.</b> This prototype runs on a simulated region built from public household profiles; voltages come from a network model, because open data hold energy readings only.",
@@ -135,7 +139,7 @@ T = {
         "a_zone": "<b>Zone-level only:</b> this report holds no premise IDs, names or addresses, and covers region {r} only.",
         "steps_h": "6 · Recommended next steps",
         "steps_note": "Steps are generated from fixed rules on the figures above, not written by the language model.",
-        "steps_none": "No action stands out from this week's figures.",
+        "steps_none": "No action stands out from {p_poss} figures.",
         "n_case_job": "Supervisor: run the case job for {zones}; their top suspects have no open case.",
         "n_case_job_joint": "Supervisor: run the case job for {zones}; suggest a joint operation with police for {large} (large, flat load).",
         "n_joint": "Supervisor: suggest a joint operation with police for {large} (large load above {p} of supply).",
@@ -154,54 +158,57 @@ T = {
         "data_sim": "simulated", "data_upload": "uploaded",
         "page_label": "page {page} of {total}",
         "headline": "{n} flagged zone(s), {kwh} kWh/day unexplained{chg}; {o} case(s) opened, {c} closed, {od} overdue{hr}.{step}",
-        "hl_chg": " ({s} vs the week before)", "hl_hr": "; model-ranked hit rate {p}", "hl_step": " Next: {s}",
+        "hl_chg": " ({s} vs {p_before})", "hl_hr": "; model-ranked hit rate {p}", "hl_step": " Next: {s}",
         "empty": "No detection results yet.",
     },
     "ms": {
-        "title": "Ringkasan mingguan VoltGuard · wilayah {r}",
+        "title": "{p_title} VoltGuard · wilayah {r}",
         "meta": "Laporan {id} · dijana {when} MYT · untuk pengurus perlindungan hasil, wilayah {r}",
         "meter_data": "Data meter", "field_work": "Kerja lapangan",
         "banner_sim": "Data simulasi (R0): bukan data TNB. Angka menunjukkan cara sistem berfungsi, bukan prestasi rangkaian sebenar.",
-        "one_para": "Minggu ini dalam satu perenggan.", "action": "Tindakan {n}",
-        "s1": "Tenaga yang tidak dapat dijelaskan di wilayah {r} purata {avg} kWh sehari, {chg} berbanding minggu sebelumnya, jadi kebocoran itu {trend}.",
-        "s1_nochange": "Tenaga yang tidak dapat dijelaskan di wilayah {r} purata {avg} kWh sehari; tiada minggu terdahulu untuk dibandingkan.",
-        "s1_none": "Tiada data meter untuk minggu ini, jadi tenaga yang tidak dapat dijelaskan tidak boleh diukur.",
+        "one_para": "{p_This} dalam satu perenggan.", "action": "Tindakan {n}",
+        "s1": "Tenaga yang tidak dapat dijelaskan di wilayah {r} purata {avg} kWh sehari, {chg} berbanding {p_before}, jadi kebocoran itu {trend}.",
+        "s1_nochange": "Tenaga yang tidak dapat dijelaskan di wilayah {r} purata {avg} kWh sehari; tiada {p_unit} terdahulu untuk dibandingkan.",
+        "s1_none": "Tiada data meter untuk {p_poss}, jadi tenaga yang tidak dapat dijelaskan tidak boleh diukur.",
         "lower": "{p} lebih rendah", "higher": "{p} lebih tinggi",
         "trend_steady": "stabil, tidak bertambah", "trend_rising": "bertambah", "trend_falling": "berkurang",
         "s2": "{n} daripada {m} zon ditandakan; {top} sahaja menyumbang {share} daripada tenaga yang tidak dapat dijelaskan",
         "s2_flat": " dan menarik beban rata 24/7 yang lazim bagi rig perlombongan",
-        "s2_none": "Tiada zon yang ditandakan minggu ini.",
-        "s3_idle": "Tiada kes dibuka atau ditutup minggu ini dan tiada pemeriksaan direkodkan.",
-        "s3": "{o} kes dibuka dan {c} ditutup minggu ini; {v} pemeriksaan direkodkan.",
-        "s3_novisit": "{o} kes dibuka dan {c} ditutup minggu ini; belum ada pemeriksaan direkodkan.",
+        "s2_none": "Tiada zon yang ditandakan {p_this}.",
+        "s3_idle": "Tiada kes dibuka atau ditutup {p_this} dan tiada pemeriksaan direkodkan.",
+        "s3": "{o} kes dibuka dan {c} ditutup {p_this}; {v} pemeriksaan direkodkan.",
+        "s3_novisit": "{o} kes dibuka dan {c} ditutup {p_this}; belum ada pemeriksaan direkodkan.",
         "h_key": "1 · Angka utama",
         "k_flagged": "Zon ditandakan", "k_flagged_d": "Tenaga yang tidak dapat dijelaskan melepasi peraturan tanda selama {k} hari berturut-turut",
-        "k_of": "daripada {m}", "k_same": "tiada perubahan berbanding minggu lalu", "k_diff": "{s} berbanding minggu lalu ({p} ketika itu)",
-        "k_kwh": "kWh tidak dapat dijelaskan sehari", "k_kwh_d": "Purata minggu meter, semua zon yang ada meter pengubah",
-        "k_kwh_c": "{s} berbanding {p} minggu sebelumnya", "k_month": "kWh sebulan pada tahap ini",
+        "k_of": "daripada {m}", "k_same": "tiada perubahan berbanding {p_last}", "k_diff": "{s} berbanding {p_last} ({p} ketika itu)",
+        "k_kwh": "kWh tidak dapat dijelaskan sehari", "k_kwh_d": "Purata {p_unit} meter, semua zon yang ada meter pengubah",
+        "k_kwh_c": "{s} berbanding {p} {p_before}", "k_month": "kWh sebulan pada tahap ini",
         "k_month_d": "{avg} × 30 hari. Nilai dalam RM: {rm}", "k_month_c": "anggaran, lihat bahagian 3",
-        "k_cases": "Kes dibuka / ditutup", "k_cases_d": "Dalam minggu kerja lapangan", "k_cases_c": "{n} ditutup kesemuanya",
+        "k_cases": "Kes dibuka / ditutup", "k_cases_d": "Dalam {p_unit} kerja lapangan", "k_cases_c": "{n} ditutup kesemuanya",
         "k_overdue": "Kes tertunggak", "k_overdue_d": "Ditugaskan dan tidak dilawati dalam {h} jam",
         "k_rep": "Laporan dieksport · amaran terbuka", "k_rep_d": "Laporan selepas kedua-dua kelulusan · amaran data atau model yang belum diakui",
-        "k_rep_c": "{n} amaran baharu minggu ini", "k_none": "tiada minggu terdahulu",
+        "k_rep_c": "{n} amaran baharu {p_this}", "k_none": "tiada {p_unit} terdahulu",
         "why_title": "Mengapa dua tarikh?",
-        "why": "Data meter sampai ke VoltGuard setiap hari, jadi angka tenaga meliputi minggu bacaan penuh yang terkini ({e}). Kes dan pemeriksaan dikira dalam 7 hari kalendar terakhir ({w}).",
+        "why": "Data meter sampai ke VoltGuard setiap hari, jadi angka tenaga meliputi {p_unit} bacaan yang terkini ({e}). Kes dan pemeriksaan dikira dalam {p_work} ({w}).",
+        "why_custom": "Angka tenaga dan kerja lapangan kedua-duanya menggunakan tarikh yang anda pilih ({w}), berbanding {n} hari sejurus sebelumnya.",
+        "why_cover": " Data meter meliputi {d} daripada {m} hari ini ({e}).", "why_nodata": " Tiada data meter bagi tarikh ini.",
         "why_sim": " Dalam prototaip ini data meter simulasi berakhir pada {last}, sebab itu kedua-dua tempoh berjarak {n} hari; dengan data TNB sebenar jaraknya satu atau dua hari sahaja.",
-        "why_late": " Data meter belum sampai sejak {last} ({n} hari lalu): semak suapan data sebelum bergantung pada angka tenaga minggu ini.",
+        "why_late": " Data meter belum sampai sejak {last} ({n} hari lalu): semak suapan data sebelum bergantung pada angka tenaga {p_poss}.",
         "h_energy": "2 · Adakah tenaga masih hilang?",
-        "c_energy": "Tenaga yang tidak dapat dijelaskan sehari, seluruh wilayah, 14 hari terakhir (kWh/hari)",
-        "l_series": "tenaga tidak dapat dijelaskan", "l_band": "margin ralat ±{m} kWh", "l_avg": "purata mingguan", "l_week": "permulaan minggu ini",
-        "prev_avg": "purata minggu lalu {v}", "this_avg": "purata minggu ini {v}", "week_starts": "minggu bermula", "axis_kwh": "kWh/hari",
+        "c_energy": "Tenaga yang tidak dapat dijelaskan sehari, seluruh wilayah, {p_poss} dan {p_before} (kWh/hari{p_bucket})",
+        "l_series": "tenaga tidak dapat dijelaskan", "l_band": "margin ralat ±{m} kWh", "l_avg": "purata {p_adj}", "l_week": "permulaan {p_poss}",
+        "prev_avg": "purata {p_last} {v}", "this_avg": "purata {p_poss} {v}", "week_starts": "{p_unit} bermula", "axis_kwh": "kWh/hari",
         "read_energy": "<b>Apa yang ditunjukkan:</b> bagi setiap hari, tenaga yang dibekalkan pengubah tolak tenaga yang direkodkan meter pelanggan, tolak anggaran bagi meter bacaan bulanan dan kehilangan teknikal yang dijangka dalam kabel dan pengubah. <b>Cara membacanya:</b> garisan di dalam jalur berlorek mungkin ralat pengukuran; garisan jauh di atasnya bermakna tenaga keluar dari rangkaian tanpa direkodkan.",
         "take": "Rumusan:",
-        "t_none": "Tiada data meter untuk minggu ini, jadi tiada apa untuk dibandingkan.",
-        "t_inside": "Tenaga yang tidak dapat dijelaskan purata {avg} kWh sehari, di dalam margin ralat (±{m} kWh): ia mungkin ralat pengukuran, jadi tiada yang menonjol minggu ini.",
-        "t_steady": "Kira-kira {avg} kWh sehari tidak direkodkan, jauh di atas margin ralat (±{m} kWh) dan stabil berbanding minggu sebelumnya ({chg}).",
-        "t_rising": "Kira-kira {avg} kWh sehari tidak direkodkan, di atas margin ralat (±{m} kWh) dan meningkat: {chg} berbanding minggu sebelumnya. Mulakan dengan zon di bahagian 3.",
-        "t_falling": "Kira-kira {avg} kWh sehari tidak direkodkan, di atas margin ralat (±{m} kWh) tetapi menurun: {chg} berbanding minggu sebelumnya, mungkin kerana sambungan haram telah ditanggalkan atau pemeriksaan berkesan.",
+        "t_none": "Tiada data meter untuk {p_poss}, jadi tiada apa untuk dibandingkan.",
+        "t_inside": "Tenaga yang tidak dapat dijelaskan purata {avg} kWh sehari, di dalam margin ralat (±{m} kWh): ia mungkin ralat pengukuran, jadi tiada yang menonjol {p_this}.",
+        "t_steady": "Kira-kira {avg} kWh sehari tidak direkodkan, jauh di atas margin ralat (±{m} kWh) dan stabil berbanding {p_before} ({chg}).",
+        "t_rising": "Kira-kira {avg} kWh sehari tidak direkodkan, di atas margin ralat (±{m} kWh) dan meningkat: {chg} berbanding {p_before}. Mulakan dengan zon di bahagian 3.",
+        "t_falling": "Kira-kira {avg} kWh sehari tidak direkodkan, di atas margin ralat (±{m} kWh) tetapi menurun: {chg} berbanding {p_before}, mungkin kerana sambungan haram telah ditanggalkan atau pemeriksaan berkesan.",
         "t_flat": " Kebocoran yang stabil dan rata menunjukkan beban berterusan, bukan kejadian sekali sahaja.",
         "h_where": "3 · Di mana tenaga hilang?",
-        "c_zones": "Tenaga yang tidak dapat dijelaskan bagi setiap zon minggu ini (kWh/hari)",
+        "c_zones": "Tenaga yang tidak dapat dijelaskan bagi setiap zon {p_this} (kWh/hari)",
+        "z_none": "Tiada data meter untuk {p_poss}, jadi zon tidak dapat dibandingkan.",
         "l_flagged": "zon ditandakan", "l_ok": "tidak ditandakan", "l_margin": "margin ralat", "l_thr": "ambang tanda bagi zon itu",
         "read_zones": "<b>Cara membacanya:</b> sesebuah zon ditandakan apabila tenaga yang tidak dapat dijelaskan kekal di atas tanda ambangnya ditambah margin ralat selama {k} hari berturut-turut. Ambang berbeza mengikut zon kerana ia berskala dengan tenaga yang dibekalkan setiap pengubah ({p} daripada bekalan, atau {g} kWh sehari, mana-mana yang lebih besar).",
         "th_zone": "Zon", "th_district": "Daerah", "th_kwh": "kWh/hari", "th_pct": "% bekalan", "th_margin": "Margin", "th_thr": "Ambang",
@@ -234,9 +241,9 @@ T = {
         "h_apart": "Pemeriksaan berdasarkan model menemui kecurian lebih kerap daripada pemeriksaan rawak ({a} berbanding {b}), dan julatnya tidak bertindih, jadi perbezaan itu tidak mungkin kebetulan.",
         "h_apart_worse": "Pemeriksaan berdasarkan model menemui kecurian kurang kerap daripada pemeriksaan rawak ({a} berbanding {b}), dan julatnya tidak bertindih: semak pemberat dan ambang model.",
         "cmp_better": "lebih baik", "cmp_worse": "lebih teruk", "cmp_same": "serupa",
-        "h_no_week": " Tiada pemeriksaan direkodkan minggu ini.",
+        "h_no_week": " Tiada pemeriksaan direkodkan {p_this}.",
         "h_synthetic": " Keputusan setakat ini datang daripada kes simulasi, jadi ia menunjukkan cara pengukuran berfungsi, bukan prestasi sebenar.",
-        "outcomes_h": "Keputusan pemeriksaan", "th_outcome": "Keputusan", "th_week": "Minggu ini", "th_all": "Keseluruhan",
+        "outcomes_h": "Keputusan pemeriksaan", "th_outcome": "Keputusan", "th_week": "{p_This}", "th_all": "Keseluruhan",
         "o_confirmed_theft": "Kecurian disahkan", "o_false_alarm": "Amaran palsu", "o_inconclusive": "Tidak muktamad",
         "o_no_access": "Tiada akses (tidak digunakan untuk pembelajaran)",
         "status_h": "Kes mengikut status sekarang", "th_status_name": "Status", "th_cases": "Kes", "th_meaning": "Maksud",
@@ -244,7 +251,7 @@ T = {
         "m_new": "Menunggu penyelia", "m_assigned": "Pasukan dihantar", "m_visited": "Keputusan direkodkan",
         "m_reporting": "Kecurian disahkan, laporan dalam kelulusan", "m_closed": "Selesai",
         "h_trust": "5 · Bolehkah angka ini dipercayai?",
-        "quality_h": "Kualiti data (minggu meter)", "q_complete": "Hari meter dengan ≥ 90% bacaan", "q_monthly": "Meter dibaca bulanan (anggaran harian)",
+        "quality_h": "Kualiti data ({p_unit} meter)", "q_complete": "Hari meter dengan ≥ 90% bacaan", "q_monthly": "Meter dibaca bulanan (anggaran harian)",
         "q_no_dtm": "Zon tanpa meter pengubah", "q_dup": "Bacaan pendua atau tidak tertib yang dibetulkan",
         "q_dup_v": "tidak direkodkan bagi sumber data ini", "q_fallbacks": "Sandaran yang digunakan", "q_none": "tiada",
         "f_AS-2": "tiada meter pengubah di {n} zon: disenaraikan tanpa imbangan (AS-2)",
@@ -260,7 +267,7 @@ T = {
         "sol_unreg_e": "semak rekod Solar ATAP / NEM / SelCo; tidak dikira sebagai kecurian",
         "model_h": "Model yang digunakan", "m_scoring": "Versi pemarkahan", "m_retrained": "Latihan semula terakhir",
         "m_retrained_v": "{at}, versi {v}; {n} label tersedia", "m_not_retrained": "belum dilatih semula; {n} label tersedia",
-        "m_alerts": "Amaran data atau hanyutan minggu ini", "m_thresholds": "Ambang",
+        "m_alerts": "Amaran data atau hanyutan {p_this}", "m_thresholds": "Ambang",
         "m_thresholds_v": "{p} daripada bekalan atau {g} kWh/hari, {k} hari; beban besar melebihi {l}",
         "assume_h": "Andaian dan had",
         "a_sim": "<b>Data simulasi.</b> Prototaip ini berjalan pada wilayah simulasi yang dibina daripada profil isi rumah awam; voltan datang daripada model rangkaian, kerana data terbuka hanya mengandungi bacaan tenaga.",
@@ -272,7 +279,7 @@ T = {
         "a_zone": "<b>Peringkat zon sahaja:</b> laporan ini tidak mengandungi ID premis, nama atau alamat, dan meliputi wilayah {r} sahaja.",
         "steps_h": "6 · Langkah seterusnya yang disyorkan",
         "steps_note": "Langkah-langkah dijana daripada peraturan tetap ke atas angka di atas, bukan ditulis oleh model bahasa.",
-        "steps_none": "Tiada tindakan yang menonjol daripada angka minggu ini.",
+        "steps_none": "Tiada tindakan yang menonjol daripada angka {p_poss}.",
         "n_case_job": "Penyelia: jalankan tugas kes untuk {zones}; suspek utamanya belum ada kes terbuka.",
         "n_case_job_joint": "Penyelia: jalankan tugas kes untuk {zones}; cadangkan operasi bersama polis untuk {large} (beban besar dan rata).",
         "n_joint": "Penyelia: cadangkan operasi bersama polis untuk {large} (beban besar melebihi {p} daripada bekalan).",
@@ -291,14 +298,68 @@ T = {
         "data_sim": "simulasi", "data_upload": "dimuat naik",
         "page_label": "halaman {page} daripada {total}",
         "headline": "{n} zon ditandakan, {kwh} kWh/hari tidak dapat dijelaskan{chg}; {o} kes dibuka, {c} ditutup, {od} tertunggak{hr}.{step}",
-        "hl_chg": " ({s} berbanding minggu sebelumnya)", "hl_hr": "; kadar penemuan berdasarkan model {p}", "hl_step": " Seterusnya: {s}",
+        "hl_chg": " ({s} berbanding {p_before})", "hl_hr": "; kadar penemuan berdasarkan model {p}", "hl_step": " Seterusnya: {s}",
         "empty": "Belum ada keputusan pengesanan.",
     },
 }
 
 
-def tr(lang: str) -> dict:
-    return T.get(lang, T["en"])
+# The period's words, filled into {p_...} in T (so "this week" becomes "this month" for a monthly report).
+# p_this is the adverb ("this week", "on this day"); p_This the noun phrase heading a sentence or column;
+# p_poss the possessive ("this week's" in English; Malay puts the noun first: "angka minggu ini").
+WORDS = {
+    "en": {
+        "unit": {"day": "day", "week": "week", "month": "month", "year": "year", "custom": "period"},
+        "this": {"day": "on this day", "week": "this week", "month": "this month", "year": "this year", "custom": "in this period"},
+        "This": {"day": "This day", "week": "This week", "month": "This month", "year": "This year", "custom": "This period"},
+        "poss": {"day": "this day's", "week": "this week's", "month": "this month's", "year": "this year's", "custom": "this period's"},
+        "before": {"day": "the day before", "week": "the week before", "month": "the month before", "year": "the year before",
+                   "custom": "the period before"},
+        "last": {"day": "the day before", "week": "last week", "month": "last month", "year": "last year", "custom": "the period before"},
+        "adj": {"day": "daily", "week": "weekly", "month": "monthly", "year": "yearly", "custom": "period"},
+        "title": {"day": "daily summary", "week": "weekly summary", "month": "monthly summary", "year": "yearly summary",
+                  "custom": "summary for chosen dates"},
+        "work": {"day": "today", "week": "the last 7 calendar days", "month": "this calendar month so far",
+                 "year": "this calendar year so far", "custom": "the chosen dates"},
+    },
+    "ms": {
+        "unit": {"day": "hari", "week": "minggu", "month": "bulan", "year": "tahun", "custom": "tempoh"},
+        "this": {"day": "pada hari tersebut", "week": "minggu ini", "month": "bulan ini", "year": "tahun ini", "custom": "dalam tempoh ini"},
+        "This": {"day": "Hari tersebut", "week": "Minggu ini", "month": "Bulan ini", "year": "Tahun ini", "custom": "Tempoh ini"},
+        "poss": {"day": "hari tersebut", "week": "minggu ini", "month": "bulan ini", "year": "tahun ini", "custom": "tempoh ini"},
+        "before": {"day": "hari sebelumnya", "week": "minggu sebelumnya", "month": "bulan sebelumnya", "year": "tahun sebelumnya",
+                   "custom": "tempoh sebelumnya"},
+        "last": {"day": "hari sebelumnya", "week": "minggu lalu", "month": "bulan lalu", "year": "tahun lalu", "custom": "tempoh sebelumnya"},
+        "adj": {"day": "harian", "week": "mingguan", "month": "bulanan", "year": "tahunan", "custom": "tempoh"},
+        "title": {"day": "Ringkasan harian", "week": "Ringkasan mingguan", "month": "Ringkasan bulanan", "year": "Ringkasan tahunan",
+                  "custom": "Ringkasan bagi tarikh pilihan"},
+        "work": {"day": "hari ini", "week": "7 hari kalendar terakhir", "month": "bulan kalendar ini setakat ini",
+                 "year": "tahun kalendar ini setakat ini", "custom": "tarikh yang dipilih"},
+    },
+}
+BUCKET = {"en": {1: "", 7: ", weekly averages", 30: ", 30-day averages"}, "ms": {1: "", 7: ", purata mingguan", 30: ", purata 30 hari"}}
+
+
+def period_of(d: dict | None) -> tuple[str, int]:
+    p = (d or {}).get("period") or {}
+    return p.get("kind", "week"), int(p.get("bucket_days", 1))
+
+
+def tr(lang: str, d: dict | None = None) -> dict:
+    """Labels in `lang`, with the period words of report `d` filled in (a week when no report is given)."""
+    lang = lang if lang in T else "en"
+    kind, bucket = period_of(d)
+    words = {f"{{p_{name}}}": table[kind] for name, table in WORDS[lang].items()}
+    words["{p_bucket}"] = BUCKET[lang].get(bucket, "")
+
+    def fill(s):
+        if not isinstance(s, str) or "{p_" not in s:
+            return s
+        for token, word in words.items():
+            s = s.replace(token, word)
+        return s
+
+    return {key: fill(value) for key, value in T[lang].items()}
 
 
 # --------------------------------------------------------------------------- number and date formats
@@ -345,7 +406,7 @@ def when_text(iso: str, lang: str) -> str:
 
 def trend(d: dict) -> tuple[str, bool]:
     """('rising'|'falling'|'steady'|'none', average outside the margin of error)."""
-    avg = d["week_average"]["this"]
+    avg = d["period_average"]["this"]
     if avg is None:
         return "none", False
     change = d["kpis"]["unexplained_change_pct"]
@@ -406,7 +467,7 @@ def next_steps(d: dict) -> list[tuple[str, dict]]:
 
 
 def step_text(rule: str, figures: dict, d: dict, lang: str) -> str:
-    t = tr(lang)
+    t = tr(lang, d)
     joined = {key: _join(v, lang) if isinstance(v, list) else v for key, v in figures.items()}
     return t[rule].format(**joined, h=d["thresholds"]["escalation_hours"], p=pct(d["thresholds"]["large_load_share"] * 100))
 
@@ -418,10 +479,10 @@ def _join(items: list[str], lang: str) -> str:
 
 
 def summary(d: dict, lang: str = "en") -> tuple[list[str], list[str]]:
-    """'This week in one paragraph': 3-4 sentences and up to two actions, from fixed rules."""
-    t, k = tr(lang), d["kpis"]
+    """'This week (month, ...) in one paragraph': 3-4 sentences and up to two actions, from fixed rules."""
+    t, k = tr(lang, d), d["kpis"]
     out = []
-    avg = d["week_average"]["this"]
+    avg = d["period_average"]["this"]
     direction, _ = trend(d)
     if avg is None:
         out.append(t["s1_none"])
@@ -439,7 +500,7 @@ def summary(d: dict, lang: str = "en") -> tuple[list[str], list[str]]:
         out.append(sentence + (t["s2_flat"] if is_flat(top, d) else "") + ".")
     else:
         out.append(t["s2_none"])
-    visits = sum(d["outcomes_this_week"].values())
+    visits = sum(d["outcomes_in_period"].values())
     if not (k["cases_opened"] or k["cases_closed"] or visits):
         out.append(t["s3_idle"])
     else:
@@ -449,11 +510,11 @@ def summary(d: dict, lang: str = "en") -> tuple[list[str], list[str]]:
 
 
 def energy_takeaway(d: dict, lang: str = "en") -> str:
-    t = tr(lang)
+    t = tr(lang, d)
     direction, outside = trend(d)
     if direction == "none":
         return t["t_none"]
-    avg, margin = num(d["week_average"]["this"]), num(d.get("region_margin_kwh"))
+    avg, margin = num(d["period_average"]["this"]), num(d.get("region_margin_kwh"))
     if not outside:
         return t["t_inside"].format(avg=avg, m=margin)
     chg = signed_pct(d["kpis"]["unexplained_change_pct"]) if d["kpis"]["unexplained_change_pct"] is not None else t["k_none"]
@@ -464,7 +525,9 @@ def energy_takeaway(d: dict, lang: str = "en") -> str:
 
 
 def zones_takeaway(d: dict, lang: str = "en") -> str:
-    t = tr(lang)
+    t = tr(lang, d)
+    if not d["zones"] and d["period_average"]["this"] is None:
+        return t["z_none"]          # chosen dates without meter data: no zone figures, not "no zone flagged"
     top = priority_zone(d)
     if not top:
         text = t["t_no_flag"]
@@ -480,7 +543,7 @@ def zones_takeaway(d: dict, lang: str = "en") -> str:
 
 
 def hits_takeaway(d: dict, lang: str = "en") -> str:
-    t = tr(lang)
+    t = tr(lang, d)
     m, r = d["hit_rates"].get("model_ranked"), d["hit_rates"].get("random_sample")
     kind = hit_comparison(d)
     if kind == "none":
@@ -496,7 +559,7 @@ def hits_takeaway(d: dict, lang: str = "en") -> str:
             text = t["h_overlap"].format(cmp=t[cmp], a=a, b=b, n=r["inspections"])
         else:
             text = t[f"h_{kind}"].format(a=a, b=b)
-    if not sum(d["outcomes_this_week"].values()):
+    if not sum(d["outcomes_in_period"].values()):
         text += t["h_no_week"]
     if d["data_mode"]["outcomes_simulated"] and kind != "none":
         text += t["h_synthetic"]
@@ -504,18 +567,28 @@ def hits_takeaway(d: dict, lang: str = "en") -> str:
 
 
 def why_two_dates(d: dict, lang: str = "en") -> str:
-    t = tr(lang)
-    text = t["why"].format(e=day_range(d["energy_window"]["from"], d["energy_window"]["to"], lang),
-                           w=day_range(d["work_window"]["from"], d["work_window"]["to"], lang))
+    """Which days the energy figures and the field-work counts cover, and why they can differ."""
+    t = tr(lang, d)
+    kind, _ = period_of(d)
+    ew, ww = d["energy_window"], d["work_window"]
+    if kind == "custom":
+        text = t["why_custom"].format(w=day_range(ww["from"], ww["to"], lang), n=d["period"]["days"])
+    else:
+        text = t["why"].format(e=day_range(ew["from"], ew["to"], lang), w=day_range(ww["from"], ww["to"], lang))
+    data = d.get("energy_data") or {}
+    if not data.get("days"):
+        text += t["why_nodata"]
+    elif data["days"] < data["of"]:
+        text += t["why_cover"].format(d=data["days"], m=data["of"], e=day_range(data["from"], data["to"], lang))
     gap = d["window_gap_days"]
     if gap > 3:
         key = "why_sim" if d["data_mode"]["simulated"] else "why_late"
-        text += t[key].format(last=day_text(d["energy_window"]["to"], lang), n=gap)
+        text += t[key].format(last=day_text(ew["to"], lang), n=gap)
     return text
 
 
 def assumptions(d: dict, lang: str = "en") -> list[str]:
-    t = tr(lang)
+    t = tr(lang, d)
     items = []
     if d["data_mode"]["simulated"]:
         items.append(t["a_sim"])
@@ -530,7 +603,7 @@ def assumptions(d: dict, lang: str = "en") -> list[str]:
 
 
 def value_text(d: dict, lang: str = "en") -> str:
-    t, v = tr(lang), d["value"]
+    t, v = tr(lang, d), d["value"]
     rate = v["rm_per_kwh"]
     if rate is None or v["kwh_per_month"] is None:
         rm, rm_above = t["rm_unset"], ""
@@ -538,13 +611,13 @@ def value_text(d: dict, lang: str = "en") -> str:
         src = f"; {v['tariff_source']}" if v["tariff_source"] else ""
         rm = t["rm_set"].format(v=num(v["kwh_per_month"] * rate), t=f"{rate:g}", src=html.escape(src))
         rm_above = t["rm_above"].format(v=num(v["kwh_per_month_above_threshold"] * rate))
-    return t["value"].format(avg=num(d["week_average"]["this"]), month=num(v["kwh_per_month"]), rm=rm,
+    return t["value"].format(avg=num(d["period_average"]["this"]), month=num(v["kwh_per_month"]), rm=rm,
                              above=num(v["kwh_per_month_above_threshold"]), rm_above=rm_above)
 
 
 def dashboard_text(d: dict, lang: str = "en") -> dict:
     """The report's rule-based sentences as plain text, for the in-app dashboard: same rules as the PDF."""
-    t = tr(lang)
+    t = tr(lang, d)
     if d.get("empty"):
         return {"empty": t["empty"]}
 
@@ -560,9 +633,25 @@ def dashboard_text(d: dict, lang: str = "en") -> dict:
             "next_steps": [plain(step_text(rule, figs, d, lang)) for rule, figs in next_steps(d)]}
 
 
+def message_label(d: dict, lang: str = "en") -> str:
+    """The message title: "Weekly summary", "Monthly summary", "Ringkasan bulanan"..."""
+    title = WORDS.get(lang, WORDS["en"])["title"][period_of(d)[0]]
+    return title[:1].upper() + title[1:]
+
+
+def page_link(d: dict) -> str:
+    """The summary page for this report's period, for the message link (/#/weekly?period=month)."""
+    kind, _ = period_of(d)
+    if kind == "week":
+        return "weekly"
+    if kind == "custom":
+        return f"weekly?period=custom&from={d['work_window']['from']}&to={d['work_window']['to']}"
+    return f"weekly?period={kind}"
+
+
 def headline(d: dict, lang: str = "en") -> str:
     """Telegram text: headline numbers and the top action; zone-level counts only."""
-    t = tr(lang)
+    t = tr(lang, d)
     if d.get("empty"):
         return t["empty"]
     k = d["kpis"]
@@ -592,7 +681,7 @@ def _ticks(lo: float, hi: float, n: int = 4) -> list[float]:
 
 
 def chart_energy(d: dict, lang: str = "en") -> str:
-    t, pts = tr(lang), d["daily_gap"]
+    t, pts = tr(lang, d), d["gap_series"]
     if len(pts) < 2:
         return f"<p class='cap'>{t['t_none']}</p>"
     W, H, x0, x1, y0, y1 = 680, 230, 52, 664, 18, 196
@@ -611,10 +700,10 @@ def chart_energy(d: dict, lang: str = "en") -> str:
     parts.append(f"<polygon points='{top} {bottom}' class='band'/>")
     parts.append("<polyline points='" + " ".join(f"{X(i):.1f},{Y(p['gap_kwh']):.1f}" for i, p in enumerate(pts)) + "' class='series'/>")
     start = next((i for i, p in enumerate(pts) if p["date"] >= d["energy_window"]["from"]), len(pts) - 1)
-    # Average labels sit outside the margin band (above for last week, below for this week), clear of the line.
+    # Average labels sit outside the margin band (above for the period before, below for this one), clear of the line.
     margin = d.get("region_margin_kwh") or 0
-    for key, a, b, value, above in (("prev_avg", 0, start - 1, d["week_average"]["prev"], True),
-                                    ("this_avg", start, len(pts) - 1, d["week_average"]["this"], False)):
+    for key, a, b, value, above in (("prev_avg", 0, start - 1, d["period_average"]["prev"], True),
+                                    ("this_avg", start, len(pts) - 1, d["period_average"]["this"], False)):
         if value is None or b < a:
             continue
         label_y = Y(value + margin) - 6 if above else Y(value - margin) + 14
@@ -624,8 +713,9 @@ def chart_energy(d: dict, lang: str = "en") -> str:
         wx = (X(start - 1) + X(start)) / 2
         parts.append(f"<line x1='{wx:.1f}' x2='{wx:.1f}' y1='{y0 - 4}' y2='{y1}' class='week'/>"
                      f"<text x='{wx + 5:.1f}' y='{y0 + 6}' class='lab'>{t['week_starts']}</text>")
+    every = max(1, math.ceil(len(pts) / 8))          # at most 8 date labels, however long the period
     for i, p in enumerate(pts):
-        if i % 2 == 0:
+        if i % every == 0:
             parts.append(f"<text x='{X(i):.1f}' y='{y1 + 20}' text-anchor='middle'>{p['date'][5:]}</text>")
     parts.append(f"<text x='4' y='12' class='axis'>{t['axis_kwh']}</text>")
     return (f"<svg viewBox='0 0 {W} {H}' role='img' aria-label='{html.escape(t['c_energy'])}'>" + "".join(parts) + "</svg>")
@@ -651,12 +741,12 @@ def chart_zones(d: dict, lang: str = "en") -> str:
                      f"<text x='{max(X(g + z['margin_kwh']), X(z['threshold_kwh'])) + 8:.1f}' y='{y + 13}' class='val'>{num(g)} kWh/day</text>")
     for v in _ticks(0, hi):
         parts.append(f"<text x='{X(v):.1f}' y='{H - 6}' text-anchor='middle'>{num(v)}</text>")
-    t = tr(lang)
+    t = tr(lang, d)
     return f"<svg viewBox='0 0 {W} {H}' role='img' aria-label='{html.escape(t['c_zones'])}'>" + "".join(parts) + "</svg>"
 
 
 def chart_hits(d: dict, lang: str = "en") -> str:
-    t = tr(lang)
+    t = tr(lang, d)
     rows = [(key, d["hit_rates"][key]) for key in ("model_ranked", "random_sample") if d["hit_rates"].get(key)]
     if not rows:
         return ""
@@ -744,7 +834,7 @@ def _kpis(d: dict, t: dict, lang: str) -> str:
          t["k_month_d"].format(avg=num(k["unexplained_kwh_per_day"]), rm=rm), t["k_month_c"]),
         (f"{k['cases_opened']} / {k['cases_closed']}", t["k_cases"], t["k_cases_d"], t["k_cases_c"].format(n=k["cases_closed_total"])),
         (str(k["cases_overdue"]), t["k_overdue"], t["k_overdue_d"].format(h=d["thresholds"]["escalation_hours"]), "&nbsp;"),
-        (f"{k['reports_exported']} · {k['open_alerts']}", t["k_rep"], t["k_rep_d"], t["k_rep_c"].format(n=k["alerts_this_week"])),
+        (f"{k['reports_exported']} · {k['open_alerts']}", t["k_rep"], t["k_rep_d"], t["k_rep_c"].format(n=k["alerts_in_period"])),
     ]
     return "".join(f"<div class='kpi'><div class='v'>{v}</div><div class='l'>{l}</div><div class='d'>{dd}</div><div class='c'>{c}</div></div>"
                    for v, l, dd, c in tiles)
@@ -796,7 +886,7 @@ def _hits_table(d: dict, t: dict) -> str:
 
 def render_html(d: dict, lang: str = "en") -> str:
     lang = lang if lang in T else "en"
-    t, esc = tr(lang), html.escape
+    t, esc = tr(lang, d), html.escape
     if d.get("empty"):
         return f"<!doctype html><html lang='{lang}'><head><meta charset='utf-8'><style>{CSS}</style></head><body><p>{t['empty']}</p></body></html>"
     sentences, actions = summary(d, lang)
@@ -814,7 +904,7 @@ def render_html(d: dict, lang: str = "en") -> str:
     no_bal = ""
     if d["no_balance_zones"]:
         no_bal = (f"<h3>{t['no_balance_h']}</h3><p>" + t["no_balance"].format(zones=esc(", ".join(z["transformer_id"] for z in d["no_balance_zones"]))) + "</p>")
-    outcomes = "".join(f"<tr><td>{t['o_' + o]}</td><td class='n'>{d['outcomes_this_week'].get(o, 0)}</td><td class='n'>{d['outcomes_all_time'].get(o, 0)}</td></tr>"
+    outcomes = "".join(f"<tr><td>{t['o_' + o]}</td><td class='n'>{d['outcomes_in_period'].get(o, 0)}</td><td class='n'>{d['outcomes_all_time'].get(o, 0)}</td></tr>"
                        for o in ("confirmed_theft", "false_alarm", "inconclusive", "no_access"))
     statuses = "".join(f"<tr><td>{t['s_' + s]}</td><td class='n'>{d['cases_by_status'].get(s, 0)}</td><td>{t['m_' + s]}</td></tr>"
                        for s in ("new", "assigned", "visited", "reporting", "closed"))
@@ -883,7 +973,7 @@ def render_html(d: dict, lang: str = "en") -> str:
 <div><h3>{t['model_h']}</h3><table>
 <tr><td>{t['m_scoring']}</td><td>{esc(m['scoring'] or '–')}</td></tr>
 <tr><td>{t['m_retrained']}</td><td>{retrained}</td></tr>
-<tr><td>{t['m_alerts']}</td><td class="n">{d['kpis']['alerts_this_week']}</td></tr>
+<tr><td>{t['m_alerts']}</td><td class="n">{d['kpis']['alerts_in_period']}</td></tr>
 <tr><td>{t['m_thresholds']}</td><td>{thresholds}</td></tr></table></div>
 </div>
 <div class="avoid"><h3>{t['assume_h']}</h3>
@@ -901,7 +991,7 @@ def render_html(d: dict, lang: str = "en") -> str:
 
 
 def pdf_bytes(d: dict, lang: str = "en") -> bytes:
-    t = tr(lang)
+    t = tr(lang, d)
     footer = f"VoltGuard AI · {d.get('report_id', '')} · {d.get('region', '')}"
     data, _engine = pdf.html_to_pdf(render_html(d, lang), footer=footer, page_label=t["page_label"])
     return data

@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from datetime import date
+
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import HTMLResponse, Response
 
 from voltguard import db
-from voltguard.api.deps import connection, not_found, require
+from voltguard.api.deps import bad_request, connection, not_found, require
 from voltguard.db import Caller
 from voltguard.service import digest, jobs, learning, notify
 
@@ -42,44 +44,75 @@ def acknowledge(alert_id: int, c: Caller = Depends(require("data_scientist", "ad
 LANGS = Query("en", pattern="^(en|ms)$", description="Report language: en or ms (Bahasa Melayu)")
 
 
+class Period:
+    """?period=day|week|month|year|custom, with from and to (YYYY-MM-DD) for custom. Default: week."""
+
+    def __init__(self, period: str, start: date | None, end: date | None):
+        self.period, self.start, self.end = period, start, end
+
+    def build(self, conn, c: Caller) -> dict:
+        try:
+            return digest.build(conn, c, period=self.period, start=self.start, end=self.end)
+        except digest.PeriodError as exc:
+            raise bad_request(str(exc)) from exc
+
+    def detail(self, lang: str | None = None) -> dict:
+        return {"period": self.period, "from": self.start and self.start.isoformat(), "to": self.end and self.end.isoformat(),
+                **({"lang": lang} if lang else {})}
+
+
+# A function, not the class itself, as the dependency: FastAPI resolves a function's annotations in this module,
+# while a class's __init__ annotations stay unresolved strings under `from __future__ import annotations`.
+def period_params(period: str = Query("week", pattern="^(day|week|month|year|custom)$",
+                                      description="day, week (default), month, year, or custom with from and to"),
+                  start: date | None = Query(None, alias="from", description="First day, for period=custom"),
+                  end: date | None = Query(None, alias="to", description="Last day, for period=custom")) -> Period:
+    return Period(period, start, end)
+
+
 @router.get("/weekly")
-def weekly(lang: str = LANGS, c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
-    """Weekly summary of the caller's region: zone-level energy, cases, outcomes and hit rates (figures), plus the
-    report's rule-based sentences in `lang` for the dashboard."""
+def weekly(lang: str = LANGS, p: Period = Depends(period_params), c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
+    """Summary of the caller's region for the chosen period (a week by default): zone-level energy, cases,
+    outcomes and hit rates (figures), plus the report's rule-based sentences in `lang` for the dashboard."""
     from voltguard.service import digest_render
 
-    d = digest.build(conn, c)
-    db.audit(conn, c.user_id, "digest.view", f"region:{c.region}", None)
+    d = p.build(conn, c)
+    db.audit(conn, c.user_id, "digest.view", f"region:{c.region}", p.detail())
     return {**d, "text": digest_render.dashboard_text(d, lang)}
 
 
 @router.get("/weekly/html")
-def weekly_html(lang: str = LANGS, c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
+def weekly_html(lang: str = LANGS, p: Period = Depends(period_params), c: Caller = Depends(require("manager", "supervisor")),
+                conn=Depends(connection)):
     """The self-explanatory report page, as shown in the app and printed to PDF."""
-    d = digest.build(conn, c)
-    db.audit(conn, c.user_id, "digest.view", f"region:{c.region}", {"lang": lang})
+    d = p.build(conn, c)
+    db.audit(conn, c.user_id, "digest.view", f"region:{c.region}", p.detail(lang))
     return HTMLResponse(digest.render_html(d, lang), headers={"Cache-Control": "no-store"})
 
 
 @router.get("/weekly/pdf")
-def weekly_pdf(lang: str = LANGS, c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
-    d = digest.build(conn, c)
-    db.audit(conn, c.user_id, "digest.download", f"region:{c.region}", {"lang": lang})
-    name = f"{d.get('report_id', 'voltguard-weekly')}{'-ms' if lang == 'ms' else ''}.pdf"
+def weekly_pdf(lang: str = LANGS, p: Period = Depends(period_params), c: Caller = Depends(require("manager", "supervisor")),
+               conn=Depends(connection)):
+    d = p.build(conn, c)
+    db.audit(conn, c.user_id, "digest.download", f"region:{c.region}", p.detail(lang))
+    name = f"{d.get('report_id', 'voltguard-summary')}{'-ms' if lang == 'ms' else ''}.pdf"
     return Response(digest.pdf_bytes(d, lang), media_type="application/pdf",
                     headers={"Content-Disposition": f'attachment; filename="{name}"', "Cache-Control": "no-store"})
 
 
 @router.post("/weekly/send")
-def weekly_send(lang: str = LANGS, c: Caller = Depends(require("manager", "supervisor")), conn=Depends(connection)):
-    """Send this week's summary to the caller now: headline and link, plus the PDF on Telegram when Settings
-    allow it (weekly.send_pdf). Both pass the output check first."""
+def weekly_send(lang: str = LANGS, p: Period = Depends(period_params), c: Caller = Depends(require("manager", "supervisor")),
+                conn=Depends(connection)):
+    """Send the chosen period's summary to the caller now: headline and link, plus the PDF on Telegram when
+    Settings allow it (weekly.send_pdf). Both pass the output check first."""
     from voltguard.service import digest_render, settings
 
-    d = digest.build(conn, c)
+    d = p.build(conn, c)
     document = None
     if not d.get("empty") and int(settings.thresholds(conn).get("weekly", {}).get("send_pdf", 1)):
         data = digest_render.pdf_bytes(d, lang)
         digest_render.check_document(data)
         document = (f"{d['report_id']}.pdf", data)
-    return notify.send(conn, "weekly", None, c.region, c.user_id, digest_render.headline(d, lang), buttons=[], document=document)
+    label = None if p.period == "week" else digest_render.message_label(d, lang)
+    return notify.send(conn, "weekly", None, c.region, c.user_id, digest_render.headline(d, lang), buttons=[], document=document,
+                       label=label, page=digest_render.page_link(d))

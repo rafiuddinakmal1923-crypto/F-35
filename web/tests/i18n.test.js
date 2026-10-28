@@ -29,6 +29,8 @@ const DYNAMIC = {
   kind_: ["full_bypass_mining", "partial_bypass", "confirmed_theft"],
   guide: [1, 2, 3, 4, 5, 6, 7].flatMap((n) => [`${n}Title`, `${n}Say`, `${n}Pass`]),
   reason_: ["solar_confirmed_no_theft", "solar_plus_bypass"],
+  // Summary periods (pages/Weekly.jsx).
+  ...Object.fromEntries(["period_", "ptitle_", "pthis_", "plast_", "punit_"].map((p) => [p, ["day", "week", "month", "year", "custom"]])),
 };
 // Keys referenced through maps (menu items, pills, tags, SHAP texts, limits, concept rules).
 const INDIRECT = ["work", "overview", "cases", "assistant", "weekly", "dispatch", "models", "validation", "backtest", "concept", "dataManager",

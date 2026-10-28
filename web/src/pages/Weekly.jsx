@@ -1,11 +1,13 @@
-// Weekly summary (managers and supervisors): a dashboard of the region's week, in the interface language
-// (English or Bahasa Melayu). Download PDF gives the full printed report (every chart, table, the glossary and
-// the assumptions); Send puts it in Telegram or the in-app chat. Every figure comes from the database and every
-// sentence from the same fixed rules as the PDF (GET /weekly?lang= returns both), never from the language model.
+// Manager summary (managers and supervisors): a dashboard of the region for a day, week (default), month, year or
+// the manager's own dates, in the interface language (English or Bahasa Melayu). The period lives in the address
+// (#/weekly?period=month, or period=custom&from=…&to=…), so a message link or a reload opens the same view.
+// Download PDF gives the full printed report (every chart, table, the glossary and the assumptions); Send puts it in
+// Telegram or the in-app chat. Every figure comes from the database and every sentence from the same fixed rules
+// as the PDF (GET /weekly?lang=&period= returns both), never from the language model.
 import { Activity, Banknote, ClipboardList, Clock, Crosshair, Database, Download, FileCheck, Info, ListChecks, Map as MapIcon,
   Send, TriangleAlert } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { get, post, request } from "../api.js";
 import { LineChart } from "../components/Charts.jsx";
 import { ErrorBox } from "../components/Common.jsx";
@@ -17,12 +19,20 @@ import { LinkTelegram } from "./Dispatch.jsx";
 const STATUSES = ["new", "assigned", "visited", "reporting", "closed"];
 const OUTCOMES = ["confirmed_theft", "false_alarm", "inconclusive", "no_access"];
 
-// "-2.6% vs last week" from the backend's change, or a plain note when there is nothing to compare with.
-function vsLast(now, before, pctChange) {
-  if (pctChange != null) return pctChange === 0 ? t("wkSameAsLast") : t("wkVsLast", { s: `${pctChange > 0 ? "+" : "−"}${Math.abs(pctChange)}%` });
-  if (before == null) return t("wkNoPrev");
+const PERIODS = ["day", "week", "month", "year", "custom"];
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+// The period's words for the labels: { unit: "month", last: "last month" }.
+function words(kind) {
+  return { unit: t(`punit_${kind}`), last: t(`plast_${kind}`) };
+}
+
+// "-2.6% vs last month" from the backend's change, or a plain note when there is nothing to compare with.
+function vsLast(w, now, before, pctChange) {
+  if (pctChange != null) return pctChange === 0 ? t("wkSameAsLast", w) : t("wkVsLast", { ...w, s: `${pctChange > 0 ? "+" : "−"}${Math.abs(pctChange)}%` });
+  if (before == null) return t("wkNoPrev", w);
   const delta = (now ?? 0) - before;
-  return delta === 0 ? t("wkSameAsLast") : t("wkVsLast", { s: `${delta > 0 ? "+" : "−"}${Math.abs(delta)}` });
+  return delta === 0 ? t("wkSameAsLast", w) : t("wkVsLast", { ...w, s: `${delta > 0 ? "+" : "−"}${Math.abs(delta)}` });
 }
 
 // Same month names as the PDF ("24–30 Sep", "Ogo" in Bahasa Melayu).
@@ -35,7 +45,47 @@ function day(iso, lang) {
 }
 
 function span(a, b, lang) {
+  if (a === b) return day(a, lang);
+  if (a.slice(0, 4) !== b.slice(0, 4)) return `${day(a, lang)} ${a.slice(0, 4)} – ${day(b, lang)} ${b.slice(0, 4)}`;
   return a.slice(0, 7) === b.slice(0, 7) ? `${Number(a.slice(8))}–${day(b, lang)}` : `${day(a, lang)} – ${day(b, lang)}`;
+}
+
+// Day, week, month, year or own dates. Own dates are applied with Show, after a check that they are in order.
+function PeriodPicker({ kind, from, to, suggest, onPick }) {
+  const [picking, setPicking] = useState(kind === "custom");
+  const [start, setStart] = useState(from || suggest?.from || "");
+  const [end, setEnd] = useState(to || suggest?.to || "");
+  useEffect(() => { setPicking(kind === "custom"); }, [kind]);
+  const valid = ISO_DAY.test(start) && ISO_DAY.test(end) && start <= end;
+  function choose(p) {
+    if (p !== "custom") {
+      setPicking(false);
+      onPick({ period: p });
+      return;
+    }
+    setPicking(true);
+    if (!start && suggest?.from) setStart(suggest.from);
+    if (!end && suggest?.to) setEnd(suggest.to);
+  }
+  return (
+    <div className="stack wk-period" style={{ gap: 8 }}>
+      <div className="segmented" role="group" aria-label={t("wkPeriod")}>
+        {PERIODS.map((p) => (
+          <button key={p} type="button" className={(picking ? p === "custom" : p === kind) ? "active" : ""} aria-pressed={picking ? p === "custom" : p === kind}
+            onClick={() => choose(p)}>{t(`period_${p}`)}</button>
+        ))}
+      </div>
+      {picking ? (
+        <form className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "flex-end" }}
+          onSubmit={(e) => { e.preventDefault(); if (valid) onPick({ period: "custom", from: start, to: end }); }}>
+          <label>{t("wkFrom")}<input type="date" value={start} max={end || undefined} onChange={(e) => setStart(e.target.value)} required /></label>
+          <label>{t("wkTo")}<input type="date" value={end} min={start || undefined} onChange={(e) => setEnd(e.target.value)} required /></label>
+          <button type="submit" className="primary" disabled={!valid}>{t("wkShow")}</button>
+          <small className="muted" role={start && end && !valid ? "alert" : undefined}>{start && end && !valid ? t("wkRangeBad") : t("wkRangeHelp")}</small>
+        </form>
+      ) : null}
+    </div>
+  );
 }
 
 // Each zone: unexplained kWh/day as a bar (amber when flagged), the margin of error as a whisker and the zone's
@@ -102,6 +152,14 @@ function Takeaway({ children }) {
 
 export default function Weekly() {
   const lang = useLang();
+  const [params, setParams] = useSearchParams();
+  const asked = params.get("period");
+  const kind = PERIODS.includes(asked) ? asked : "week";
+  const from = params.get("from") || "";
+  const to = params.get("to") || "";
+  const canAsk = kind !== "custom" || (ISO_DAY.test(from) && ISO_DAY.test(to));
+  const query = new URLSearchParams({ lang, period: kind, ...(kind === "custom" ? { from, to } : {}) }).toString();
+  const w = words(kind);
   const [d, setD] = useState(null);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
@@ -109,18 +167,25 @@ export default function Weekly() {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
+    if (!canAsk) return undefined;
     let live = true;
     setError(null);
-    get(`/weekly?lang=${lang}`).then((r) => live && setD(r)).catch((e) => live && setError(e));
+    setMessage(null);
+    get(`/weekly?${query}`).then((r) => live && setD(r)).catch((e) => live && setError(e));
     return () => { live = false; };
-  }, [lang, tick]);
+  }, [query, tick, canAsk]);
+
+  function pick(next) {
+    setD(null);
+    setParams(next.period === "week" ? {} : next);
+  }
 
   async function download() {
     setError(null);
     setBusy(true);
     try {
-      const res = await request(`/weekly/pdf?lang=${lang}`, { raw: true });
-      const name = (res.headers.get("content-disposition") || "").match(/filename="([^"]+)"/)?.[1] || "voltguard-weekly.pdf";
+      const res = await request(`/weekly/pdf?${query}`, { raw: true });
+      const name = (res.headers.get("content-disposition") || "").match(/filename="([^"]+)"/)?.[1] || "voltguard-summary.pdf";
       const url = URL.createObjectURL(await res.blob());
       Object.assign(document.createElement("a"), { href: url, download: name }).click();
       URL.revokeObjectURL(url);
@@ -134,7 +199,7 @@ export default function Weekly() {
   async function send() {
     setError(null);
     try {
-      const r = await post(`/weekly/send?lang=${lang}`);
+      const r = await post(`/weekly/send?${query}`);
       setMessage(r.channel === "telegram" ? t("weeklySentTelegram") : t("weeklySentApp"));
     } catch (e) {
       setError(e);
@@ -144,17 +209,24 @@ export default function Weekly() {
   const text = d?.text || {};
   const k = d?.kpis;
   const ready = d && !d.empty;
-  const loading = !d && !error;
+  const loading = canAsk && !d && !error;
+  const custom = kind === "custom";
+  const coverage = ready && d.energy_data.days < d.energy_data.of ? ` · ${t("wkCoverage", { n: d.energy_data.days, m: d.energy_data.of })}` : "";
 
   return (
     <div className="page">
       <div className="page-head">
         <div>
-          <h1>{t("weekly")}{ready ? <small className="muted wk-id"> · {d.report_id}</small> : null}</h1>
+          <h1>{t(`ptitle_${kind}`)}{ready ? <small className="muted wk-id"> · {d.report_id}</small> : null}</h1>
           <span className="sub">{t("weeklyNote")}</span>
           {ready ? (
             <span className="sub wk-windows">
-              {t("wkMeterWeek")}: <b>{span(d.energy_window.from, d.energy_window.to, lang)}</b> · {t("wkFieldWeek")}: <b>{span(d.work_window.from, d.work_window.to, lang)}</b>
+              {custom ? (
+                <>{t("wkFieldWeek")} · {t("wkMeterWeek")}: <b>{span(d.work_window.from, d.work_window.to, lang)}</b></>
+              ) : (
+                <>{t("wkMeterWeek")}: <b>{span(d.energy_window.from, d.energy_window.to, lang)}</b> · {t("wkFieldWeek")}: <b>{span(d.work_window.from, d.work_window.to, lang)}</b></>
+              )}
+              {" "}({t("wkCompared", { span: span(d.energy_window.prev_from, d.energy_window.prev_to, lang) })}{coverage})
               <span className="help" tabIndex={0} role="note" aria-label={text.why_two_dates} data-tip={text.why_two_dates}>?</span>
             </span>
           ) : null}
@@ -164,6 +236,8 @@ export default function Weekly() {
           <button className="primary" onClick={download} disabled={!ready || busy}><Download size={15} aria-hidden="true" />{busy ? t("wkPreparing") : t("weeklyDownload")}</button>
         </div>
       </div>
+      <PeriodPicker key={`${kind}:${from}:${to}`} kind={kind} from={from} to={to} onPick={pick}
+        suggest={d && !d.empty ? { from: d.energy_window.from, to: d.energy_window.to } : null} />
       <ErrorBox error={error} />
       {message ? <div className="notice ok">{message}</div> : null}
       {text.banner ? <div className="notice warn"><TriangleAlert size={15} aria-hidden="true" />{text.banner}</div> : null}
@@ -173,7 +247,7 @@ export default function Weekly() {
       {ready ? (
         <>
           <section className="panel wk-summary" aria-labelledby="wk-summary-title">
-            <h2 id="wk-summary-title">{t("wkThisWeek")}</h2>
+            <h2 id="wk-summary-title">{t(`pthis_${kind}`)}</h2>
             <p>{text.summary.join(" ")}</p>
             {text.actions.length ? (
               <ol>{text.actions.map((a, i) => <li key={i}><b>{t("wkAction", { n: i + 1 })}:</b> {a}</li>)}</ol>
@@ -183,24 +257,24 @@ export default function Weekly() {
 
           <div className="grid wk-kpis">
             <KpiTile icon={TriangleAlert} label={t("wkFlagged")} value={k.flagged_zones} unit={` ${t("wkFlaggedOf", { n: k.zones_with_balance })}`}
-              note={vsLast(k.flagged_zones, k.flagged_zones_prev)} help={t("wkHelpFlagged", { k: d.thresholds.consecutive_days })} />
+              note={vsLast(w, k.flagged_zones, k.flagged_zones_prev)} help={t("wkHelpFlagged", { k: d.thresholds.consecutive_days })} />
             <KpiTile icon={Activity} label={t("wkUnexplained")} value={int(k.unexplained_kwh_per_day, lang)} unit=" kWh/d"
-              note={vsLast(k.unexplained_kwh_per_day, k.unexplained_kwh_per_day_prev, k.unexplained_change_pct)} help={t("wkHelpUnexplained")} />
+              note={vsLast(w, k.unexplained_kwh_per_day, k.unexplained_kwh_per_day_prev, k.unexplained_change_pct)} help={t("wkHelpUnexplained", w)} />
             <KpiTile icon={Banknote} label={t("wkMonth")} estimate value={k.unexplained_kwh_per_month != null ? `~${int(k.unexplained_kwh_per_month, lang)}` : null}
               unit=" kWh" note={d.value.rm_per_kwh ? k.value_at_risk : t("wkTariffUnset")} help={text.value} />
             <KpiTile icon={ClipboardList} label={t("wkCases")} value={`${k.cases_opened} / ${k.cases_closed}`}
-              note={t("wkClosedTotal", { n: k.cases_closed_total })} help={t("wkHelpCases")} />
+              note={t("wkClosedTotal", { n: k.cases_closed_total })} help={t("wkHelpCases", w)} />
             <KpiTile icon={Clock} label={t("wkOverdue")} value={k.cases_overdue} note={t("wkOverdueHelp", { h: d.thresholds.escalation_hours })} />
             <KpiTile icon={FileCheck} label={t("wkReportsAlerts")} value={`${k.reports_exported} · ${k.open_alerts}`}
-              note={t("wkAlertsWeek", { n: k.alerts_this_week })} help={t("wkHelpReports")} />
+              note={t("wkAlertsWeek", { ...w, n: k.alerts_in_period })} help={t("wkHelpReports", w)} />
           </div>
 
           <div className="grid two">
-            <Panel title={t("wkEnergyTitle")} icon={Activity} empty={d.daily_gap.length < 2} emptyText={text.energy}>
-              <EnergyChart d={d} lang={lang} />
+            <Panel title={t("wkEnergyTitle")} icon={Activity} empty={d.gap_series.length < 2} emptyText={text.energy}>
+              <EnergyChart d={d} lang={lang} w={w} />
               <Takeaway>{text.energy}</Takeaway>
             </Panel>
-            <Panel title={t("wkZonesTitle")} icon={MapIcon} empty={!d.zones.length} emptyText={text.zones}>
+            <Panel title={t("wkZonesTitle", w)} icon={MapIcon} empty={!d.zones.length} emptyText={text.zones}>
               <ZoneBars zones={d.zones} lang={lang} />
               <small className="muted">{t("wkLegendZones")}</small>
               {d.no_balance_zones.length ? <small className="muted wk-block">{t("wkNoDtm", { zones: d.no_balance_zones.map((z) => z.transformer_id).join(", ") })}</small> : null}
@@ -216,14 +290,14 @@ export default function Weekly() {
                 <tbody>{STATUSES.map((s) => <tr key={s}><td>{t(`status_${s}`)}</td><td className="num">{d.cases_by_status[s] ?? 0}</td></tr>)}</tbody>
               </table>
               <table className="wk-table">
-                <thead><tr><th>{t("wkOutcomes")}</th><th className="num">{t("wkThisWeekCol")}</th><th className="num">{t("wkAllTime")}</th></tr></thead>
+                <thead><tr><th>{t("wkOutcomes")}</th><th className="num">{t(`pthis_${kind}`)}</th><th className="num">{t("wkAllTime")}</th></tr></thead>
                 <tbody>{OUTCOMES.map((o) => (
                   <tr key={o}><td>{t(o)}{o === "no_access" ? <small className="muted"> · {t("wkNotLearned")}</small> : null}</td>
-                    <td className="num">{d.outcomes_this_week[o] ?? 0}</td><td className="num">{d.outcomes_all_time[o] ?? 0}</td></tr>
+                    <td className="num">{d.outcomes_in_period[o] ?? 0}</td><td className="num">{d.outcomes_all_time[o] ?? 0}</td></tr>
                 ))}</tbody>
               </table>
             </Panel>
-            <Panel title={t("wkStepsTitle")} icon={ListChecks} empty={!text.next_steps.length} emptyText={t("wkNoSteps")}>
+            <Panel title={t("wkStepsTitle")} icon={ListChecks} empty={!text.next_steps.length} emptyText={t("wkNoSteps", w)}>
               <ol className="wk-steps">{text.next_steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
               <small className="muted">{t("wkRuleNote")}</small>
             </Panel>
@@ -247,14 +321,16 @@ export default function Weekly() {
   );
 }
 
-function EnergyChart({ d, lang }) {
-  const pts = d.daily_gap;
-  const start = Math.max(pts.findIndex((p) => p.date >= d.energy_window.from), 0);
-  const avg = pts.map((_, i) => (i < start ? d.week_average.prev : d.week_average.this));
-  const summary = t("wkEnergyAria", { avg: int(d.week_average.this, lang), prev: d.week_average.prev != null ? int(d.week_average.prev, lang) : "–" });
+// Daily points for up to a month; weekly (or 30-day) averages for longer periods, each labelled by its first day.
+function EnergyChart({ d, lang, w }) {
+  const pts = d.gap_series;
+  const found = pts.findIndex((p) => p.date >= d.energy_window.from);
+  const start = found < 0 ? pts.length : found;
+  const avg = pts.map((_, i) => (i < start ? d.period_average.prev : d.period_average.this));
+  const summary = t("wkEnergyAria", { ...w, avg: int(d.period_average.this, lang), prev: d.period_average.prev != null ? int(d.period_average.prev, lang) : "–" });
   return (
     <LineChart height={230} yLabel="kWh/day" summary={summary} xLabels={pts.map((p) => day(p.date, lang))}
-      markers={start > 0 ? [{ index: start, label: t("wkWeekStarts") }] : []}
+      markers={start > 0 && start < pts.length ? [{ index: start, label: t("wkWeekStarts", w) }] : []}
       series={[
         { name: t("wkBand"), values: [], band: pts.map((p) => [p.gap_kwh - p.margin_kwh, p.gap_kwh + p.margin_kwh]) },
         { name: t("wkGapSeries"), values: pts.map((p) => p.gap_kwh), color: "var(--series-gap)" },
