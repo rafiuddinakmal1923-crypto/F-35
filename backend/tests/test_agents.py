@@ -248,6 +248,15 @@ def test_FR_AG_04_field_assistant_mode_says_who_answered(monkeypatch):
     leaked = rag.answer(None, caller, "What should I photograph at the meter seal?")
     assert leaked["answer"] == rag.NOT_FOUND and leaked["sources"] == []
 
+    # A section asked for by number, and the model cites nothing: that section is quoted, not keyword matches.
+    s37 = rag.Passage("c37", "esa_1990", "Electricity Supply Act 1990 (Act 447)", "Section 37", "1", "approved", "document",
+                      "37. (1) Mana-mana orang yang mengganggu pepasangan melakukan suatu kesalahan.", 2.0)
+    monkeypatch.setattr(rag, "section_passages", lambda conn, q: [s37])
+    monkeypatch.setattr(llm, "complete", lambda *a, **k: llm.Completion("It is an offence.", "ollama", "qwen"))
+    section = rag.answer(None, caller, "What does Section 37 of the Electricity Supply Act say?")
+    assert section["mode"] == "extractive" and section["answer"].startswith("Electricity Supply Act 1990 (Act 447), Section 37: 37. (1)")
+    assert [s["doc_id"] for s in section["sources"]] == ["esa_1990"]
+
 
 def test_FR_AG_04_legal_sections_by_number_and_no_index():
     from voltguard.agents import rag
@@ -259,6 +268,9 @@ def test_FR_AG_04_legal_sections_by_number_and_no_index():
             "\nINDEX TO THE PENAL CODE\n(This Index does not form part of the Code)\nCHEQUE—See Document 418")
     sections = rag._sections_legal(text)
     assert [s for s, _ in sections][-1] == "Section 37" and "CHEQUE" not in sections[-1][1]
+    # The arrangement of sections at the front repeats numbers with titles only: the section text wins.
+    with_contents = "\n36. Tafsiran\n37. Kesalahan\n" + text
+    assert dict(rag._sections_legal(with_contents))["Section 37"].startswith("37. (1) Mana-mana orang")
 
 
 def test_FR_UI_05_pdf_fallback_without_a_browser(monkeypatch):
