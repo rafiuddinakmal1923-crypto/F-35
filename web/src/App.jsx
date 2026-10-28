@@ -3,6 +3,7 @@ import { HashRouter, Navigate, NavLink, Route, Routes, useLocation } from "react
 import { get, onSessionChange, session, signOut } from "./api.js";
 import FieldApp from "./field/FieldApp.jsx";
 import { setLang, t, useLang } from "./i18n.js";
+import Logo from "./components/Logo.jsx";
 import { EXTRA_PAGES } from "./pages/extra.js";
 import Audit from "./pages/Audit.jsx";
 import Case from "./pages/Case.jsx";
@@ -38,23 +39,27 @@ function Shell({ children }) {
   return (
     <>
       <header className="topbar">
-        <span className="logo"><img src="/icon.svg" alt="" width="22" height="22" /> VoltGuard AI</span>
-        {health?.llm_mode === "mock" ? <span className="badge-mode" title="Agents use deterministic templates">mock</span> : null}
-        <span className="badge-mode" style={{ background: "transparent", color: "inherit", border: "1px solid rgba(255,255,255,.4)" }}>R0 · simulated data</span>
+        <span className="logo"><Logo size={24} /><span>VoltGuard <span className="logo-word-sub">AI</span></span></span>
+        <span className="topbar-badges">
+          {health?.llm_mode === "mock" ? <span className="badge-mode warn" title="Agents use deterministic templates">mock</span> : null}
+          <span className="badge-mode">R0 · simulated data</span>
+        </span>
         <span className="spacer" />
-        <select value={lang} onChange={(e) => setLang(e.target.value)} aria-label="Language">
-          <option value="en">English</option><option value="ms">Bahasa Melayu</option>
-        </select>
-        {user ? <button onClick={signOut}>{t("signOut")}</button> : null}
+        <span className="topbar-actions">
+          <select value={lang} onChange={(e) => setLang(e.target.value)} aria-label="Language">
+            <option value="en">English</option><option value="ms">Bahasa Melayu</option>
+          </select>
+          {user ? <button className="ghost" onClick={signOut}>{t("signOut")}</button> : null}
+        </span>
       </header>
       <div className="layout">
-        <nav className="nav">
-          <div className="who">{user?.user_id}<br />{user?.role} · {user?.region}{user?.team ? ` · ${user.team}` : ""}</div>
+        <nav className="nav" aria-label={t("mainNav")}>
+          <div className="who"><span className="who-id">{user?.user_id}</span><span>{user?.role} · {user?.region}{user?.team ? ` · ${user.team}` : ""}</span></div>
           {NAV.filter((n) => n.roles.includes(user?.role)).map((n) => (
             <NavLink key={n.to} to={n.to} end={n.to === "/"}>{t(n.key)}</NavLink>
           ))}
         </nav>
-        <main>{children}</main>
+        <main id="main">{children}</main>
       </div>
     </>
   );

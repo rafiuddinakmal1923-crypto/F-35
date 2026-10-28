@@ -1,0 +1,170 @@
+/* Harbor Paper Console, TNB edition: design tokens.
+   Over 90% of every screen is paper, white and ink. Tenaga Blue marks action and
+   selection; Tenaga Red is rationed to the logo mark, the header accent line and the
+   active-nav bar. Status colours are deliberately distinct from brand red.
+   Contrast ratios (WCAG 2.2) are noted next to each text/UI token. */
+
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces */
+  --bg: #f7f6f2;              /* paper canvas */
+  --surface: #ffffff;         /* cards, header, tables, inputs */
+  --surface-raised: #ffffff;  /* menus, popovers (light mode uses shadow instead) */
+  --surface-sunken: #f1efe9;  /* code, table header strip, skeletons */
+
+  /* Ink */
+  --text: #17170f;            /* 16.66 on bg, 18.01 on surface */
+  --text-secondary: #52525c;  /* 7.14 on bg, 7.72 on surface, 6.71 on sunken */
+  --text-on-primary: #ffffff;
+
+  /* Lines */
+  --border: #e4e2dc;          /* hairline: table rows, card borders (decorative) */
+  --border-strong: #c0c0c0;   /* strong dividers (decorative) */
+  --border-control: #8c8a82;  /* input and select edges: 3.46 on surface, 3.20 on bg */
+
+  /* Brand */
+  --brand-blue: #0033a0;      /* Tenaga Blue, Pantone 286 C: 10.60 on surface, 9.80 on bg */
+  --brand-blue-hover: #00287f;
+  --primary-fill: #0033a0;    /* white on it: 10.60 */
+  --primary-fill-hover: #00287f; /* white on it: 13.04 */
+  --blue-tint: #e8edf8;       /* active nav, selected row; ink on it 15.35, blue 9.04 */
+  --brand-red: #d22630;       /* Tenaga Red, Pantone 1795 C: 5.17 on surface (accent only) */
+  --focus-ring: #0033a0;      /* 9.80 on bg */
+
+  /* Status (never brand red) */
+  --risk: #c2410c;            /* 5.18 on surface */
+  --risk-soft: #fdf0e8;       /* risk text on it: 4.64 */
+  --warning: #8a5a00;         /* amber, darkened from #FFD230: 5.93 on surface */
+  --warning-soft: #fff4cc;    /* warning text on it: 5.38 */
+  --success: #1a7a3a;         /* 5.40 on surface */
+  --success-soft: #e6f4ea;    /* success text on it: 4.76 */
+  --info: #0033a0;
+  --info-soft: #e8edf8;       /* info text on it: 9.04 */
+
+  /* Chart series: hue plus line style, never hue alone */
+  --series-1: #0033a0;        /* solid */
+  --series-2: #0f766e;        /* 5.47 on surface */
+  --series-3: #5b5b66;        /* use dashed */
+  --series-4: #c2410c;        /* the gap / risk series */
+  --band: rgba(0, 51, 160, 0.12);
+  --marker: #8a5a00;          /* event markers on charts: 5.93 on surface */
+
+  /* Typography */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fs-display: 64px;
+  --fs-title: 28px;
+  --fs-section: 18px;
+  --fs-sub: 15px;
+  --fs-body: 15px;
+  --fs-table: 14px;
+  --fs-label: 13px;
+  --fs-meta: 13px;
+  --fs-eyebrow: 12px;
+  --fs-metric: 28px;
+  --lh-body: 1.5;
+  --lh-tight: 1.25;
+
+  /* Spacing: 4px base */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --content-max: 1240px;
+  --sidebar-w: 232px;
+  --header-h: 56px;
+  --accent-line: 2px;
+
+  /* Radius */
+  --radius-control: 4px;
+  --radius-card: 14px;
+  --radius-pill: 999px;
+
+  /* Elevation (light mode only) */
+  --shadow-card: rgba(26, 25, 24, 0.06) 0 2px 3px 0, rgba(26, 25, 24, 0.12) 0 12px 22px -8px,
+    rgba(26, 25, 24, 0.2) 0 32px 60px -24px;
+  --shadow-secondary: rgba(26, 25, 24, 0.05) 0 1px 0 0, rgba(26, 25, 24, 0.04) 0 1px 2px 0,
+    rgba(26, 25, 24, 0.08) 0 4px 12px -2px;
+  --shadow-secondary-hover: rgba(26, 25, 24, 0.06) 0 1px 0 0, rgba(26, 25, 24, 0.06) 0 2px 3px 0,
+    rgba(26, 25, 24, 0.12) 0 6px 16px -4px;
+  --shadow-primary: rgba(0, 0, 0, 0.06) 0 1px 0 0, rgba(26, 25, 24, 0.14) 0 2px 4px 0,
+    rgba(26, 25, 24, 0.28) 0 8px 22px -4px;
+  --shadow-primary-hover: rgba(0, 0, 0, 0.08) 0 1px 0 0, rgba(26, 25, 24, 0.18) 0 3px 6px 0,
+    rgba(26, 25, 24, 0.34) 0 12px 26px -6px;
+  --shadow-popover: rgba(26, 25, 24, 0.08) 0 2px 4px 0, rgba(26, 25, 24, 0.16) 0 12px 28px -8px;
+
+  /* Motion */
+  --ease-out: ease-out;
+  --ease-move: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-colour: 140ms;
+  --dur-move: 180ms;
+
+  /* Legacy aliases: the existing pages and charts reference these names. */
+  --muted: var(--text-secondary);
+  --surface-2: var(--surface-sunken);
+  --brand: var(--primary-fill);
+  --brand-ink: var(--text-on-primary);
+  --accent: var(--marker);
+  --ok: var(--success);
+  --ok-soft: var(--success-soft);
+  --warn: var(--warning);
+  --warn-soft: var(--warning-soft);
+  --radius: var(--radius-card);
+  --shadow: var(--shadow-card);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #11120d;
+    --surface: #1a1b15;
+    --surface-raised: #24251e;
+    --surface-sunken: #15160f;
+
+    --text: #f2f1ec;            /* 16.64 on bg, 15.33 on surface, 13.67 on raised */
+    --text-secondary: #a1a1aa;  /* 7.34 on bg, 6.76 on surface, 6.03 on raised */
+    --text-on-primary: #ffffff;
+
+    --border: #2e2f27;
+    --border-strong: #4a4b42;
+    --border-control: #75766b;  /* 3.76 on surface, 3.36 on raised */
+
+    --brand-blue: #8fb0f7;      /* links, active text: 8.02 on surface, 7.16 on raised */
+    --brand-blue-hover: #adc5fa;
+    --primary-fill: #3a6ad8;    /* white on it: 4.96 */
+    --primary-fill-hover: #2f5cc4; /* white on it: 6.09 */
+    --blue-tint: #1d2842;       /* ink on it 12.95, blue 6.78 */
+    --brand-red: #f26b73;       /* 5.88 on surface */
+    --focus-ring: #8fb0f7;
+
+    --risk: #ff9a5c;            /* 8.28 on surface */
+    --risk-soft: #3b2418;       /* risk text on it: 6.91 */
+    --warning: #f2c94c;         /* 10.92 on surface */
+    --warning-soft: #372e10;    /* 8.48 */
+    --success: #5dcb8b;         /* 8.57 on surface */
+    --success-soft: #14301f;    /* 7.05 */
+    --info: #8fb0f7;
+    --info-soft: #1d2842;       /* 6.78 */
+
+    --series-1: #8fb0f7;
+    --series-2: #3cc7b8;
+    --series-3: #b9b9c2;
+    --series-4: #ff9a5c;
+    --band: rgba(143, 176, 247, 0.18);
+    --marker: #f2c94c;
+
+    /* Dark mode: borders and surface steps, no shadows */
+    --shadow-card: none;
+    --shadow-secondary: none;
+    --shadow-secondary-hover: none;
+    --shadow-primary: none;
+    --shadow-primary-hover: none;
+    --shadow-popover: none;
+  }
+}

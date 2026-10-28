@@ -19,6 +19,7 @@ const LABELS = {
     outcome: "Outcome", notes: "Notes", photo: "Photo", submit: "Submit", safety: "Safety checklist",
     confirmed_theft: "Confirmed theft", false_alarm: "False alarm", inconclusive: "Inconclusive", no_access: "No access",
     routine: "Routine meter check", address: "Address", wipeNotice: "Case data on this phone is encrypted and wiped after sync or within 24 hours.",
+    mainNav: "Main navigation",
   },
   ms: {
     signIn: "Log masuk", signOut: "Log keluar", username: "Nama pengguna", password: "Kata laluan",
@@ -37,6 +38,7 @@ const LABELS = {
     outcome: "Keputusan", notes: "Catatan", photo: "Foto", submit: "Hantar", safety: "Senarai semak keselamatan",
     confirmed_theft: "Kecurian disahkan", false_alarm: "Penggera palsu", inconclusive: "Tidak muktamad", no_access: "Tiada akses",
     routine: "Pemeriksaan meter rutin", address: "Alamat", wipeNotice: "Data kes di telefon ini disulitkan dan dipadam selepas segerak atau dalam 24 jam.",
+    mainNav: "Navigasi utama",
   },
 };
 
