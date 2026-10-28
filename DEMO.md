@@ -1,6 +1,6 @@
 # VoltGuard AI demo script (R0)
 
-Seven live steps in five minutes (SDD 10.5), with backup steps 8-15 for judges' questions. Everything
+Seven live steps in five minutes (SDD 10.5), with backup steps 8-16 for judges' questions. Everything
 runs on simulated data with fake personal details. The same build is reachable by judges through
 the tunnel link.
 
@@ -37,6 +37,20 @@ the tunnel link.
       window for the other role in steps 4 and 6.
 - [ ] `.\make.ps1 demo` again after a rehearsal resets the cases (the audit log is kept).
 - [ ] Automated check: `pytest -m e2e` (browser run of steps 1-7 on a throwaway stack).
+
+## Driving the demo from the screen (`DEMO_MODE=true`)
+
+- **Sign-in page**: the test accounts are role cards; one click signs in as that role (no password; demo
+  only, simulated data and fake details). "Sign in with a password instead" opens the normal form.
+- **Demo guide** (amber button, bottom right): the 7 live steps below, each with a one-line narration, a
+  button that opens the right page as the right role, and a check mark once its pass criterion holds in
+  the database. Judges on the tunnel link can follow it on their own.
+- **Reset demo** (admin, in the guide or on the Data manager page): resets the rehearsal cases, reseeds and
+  reruns detection in under 30 seconds, like `.\make.ps1 demo`. The audit log is kept.
+- Screens that answer judges' questions: **Validation** (held-out results, where detection breaks, hit rate
+  per model version, limits), **Back-test** (replay a zone day by day; time to detection), the premise
+  **Solar check** and the zone's **Cleared as legitimate** list (step 16), and the theme toggle (light for
+  projectors). The **Concept** page (landlord alert, R2, opt-in only) shows only in demo mode.
 
 ## Live steps (5 minutes)
 

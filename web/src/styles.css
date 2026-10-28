@@ -52,7 +52,7 @@
   --ok-text: #0F766E;
   --ok-soft: #D5F3EE;
   --theft: #C2410C;
-  --theft-text: #C2410C;
+  --theft-text: #B23A0A;      /* 4.9:1 on --theft-soft (WCAG AA); #C2410C was 4.2:1 */
   --theft-soft: #FDE3D6;
   --info: #1D4ED8;
   --info-soft: #E3ECFB;
