@@ -105,6 +105,7 @@ def plan(conn: psycopg.Connection, caller: Caller, team: str) -> dict:
                     "label": "Routine meter check" if s["origin"] == "random_sample" else "Inspection",
                     "joint_operation": s["joint_operation"], "address": s["address"], "lat": s["lat"], "lon": s["lon"],
                     "leg_km": round(leg, 1), "total_km": round(total_km, 1), "arrive_after_min": round(minutes),
+                    "base_km": round(haversine_km(start[0], start[1], s["lat"], s["lon"]), 1),   # straight line from base
                     "navigate": maps_links(s["lat"], s["lon"])})
         minutes += cfg["visit_minutes"]
         here = (s["lat"], s["lon"])

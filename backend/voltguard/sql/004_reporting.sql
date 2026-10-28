@@ -9,8 +9,16 @@ SELECT z.transformer_id AS zone, z.region, z.district, z.run_date, z.flagged, z.
        round(z.uncertainty_kwh_recent::numeric, 1) AS uncertainty_kwh_per_day, round(z.flatness_cv::numeric, 3) AS flatness_cv,
        (z.flatness_cv < 0.2) AS flat_24_7, z.gap_start, z.gap_since_start, z.n_premises,
        round(t.lat::numeric, 3) AS zone_lat, round(t.lon::numeric, 3) AS zone_lon,     -- transformer position, ~100 m precision
-       (SELECT count(*) FROM inspection_case c WHERE c.transformer_id = z.transformer_id AND c.status <> 'closed') AS open_cases
+       (SELECT count(*) FROM inspection_case c WHERE c.transformer_id = z.transformer_id AND c.status <> 'closed') AS open_cases,
+       -- Value at risk (UI brief 3.1), flagged zones only, always an estimate: the gap above the uncertainty
+       -- margin x 30 days, in RM when an admin has set the tariff (config/tariffs.yaml, copied into `setting`).
+       v.excess_kwh_per_day, round(v.excess_kwh_per_day * 30, 0) AS excess_kwh_per_month_estimate,
+       round(v.excess_kwh_per_day * 30 * (SELECT (s.value->>'rm_per_kwh')::numeric FROM setting s WHERE s.key = 'tariff'), 0)
+         AS rm_at_risk_per_month_estimate
 FROM zone_run z JOIN transformer t USING (transformer_id)
+CROSS JOIN LATERAL (SELECT CASE WHEN z.flagged AND z.balance_available
+                                THEN round(greatest(coalesce(z.gap_kwh_recent, 0) - coalesce(z.uncertainty_kwh_recent, 0), 0)::numeric, 1)
+                           END AS excess_kwh_per_day) v
 WHERE z.run_date = (SELECT max(run_date) FROM zone_run);
 
 CREATE OR REPLACE VIEW rpt_zone_daily AS

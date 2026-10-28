@@ -22,7 +22,7 @@ from voltguard.api import routes_admin, routes_auth, routes_zones
 from voltguard.service import scheduler
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
-OPTIONAL_ROUTERS = ("routes_cases", "routes_agents", "routes_models", "routes_telegram")
+OPTIONAL_ROUTERS = ("routes_cases", "routes_agents", "routes_models", "routes_telegram", "routes_ui")
 _requests: Counter = Counter()
 _latency: Counter = Counter()
 
@@ -38,6 +38,14 @@ async def lifespan(app: FastAPI):
     # Sends once a week at the day and time in Settings (weekly.*, Malaysia time); changes apply without a restart.
     scheduler.register("weekly_summary", digest.weekly_tick, minutes=15)
     scheduler.start()
+    try:                                # tariff from config/tariffs.yaml into `setting` for the rpt_ views
+        from voltguard.service import value
+
+        with db.admin_connection() as conn:
+            with conn.transaction():
+                value.sync_setting(conn)
+    except Exception as exc:  # noqa: BLE001 - the API still starts without a database
+        logging.getLogger(__name__).warning("Tariff not synced: %s", exc)
     telegram.start_polling()            # only when TELEGRAM_BOT_TOKEN is set
     yield
     telegram.stop_polling()

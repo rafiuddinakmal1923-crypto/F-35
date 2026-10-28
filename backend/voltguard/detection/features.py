@@ -184,6 +184,8 @@ def build_features(z: ZoneInput, bal: BalanceResult, volt: VoltageResult, filled
             fx = pattern.window_features(series, peer_level_all)
             X[i, 8] = float(pm.predict(fx[None, :])[0])
             subs.append(pm.sub_reasons(fx) if X[i, 8] >= 0.5 else [])
+            if X[i, 8] >= 0.5:
+                d["pattern_shap"] = pm.sub_reason_values(fx)
             if night_only:
                 pass  # the weekly-shape autoencoder would flag the new solar shape itself
             elif np.isfinite(errors[i]) and np.isfinite(median_error) and median_error > 0:

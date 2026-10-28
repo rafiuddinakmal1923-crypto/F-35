@@ -1,6 +1,6 @@
 # Simulation report
 
-Generated 2026-10-27T08:28:19 in 55 s by `make.ps1 simreport`. Failures are reported as they are.
+Generated 2026-10-28T11:46:50 in 95 s by `make.ps1 simreport`. Failures are reported as they are.
 ## Summary (copy into the pitch deck)
 
 | Result | Value |
@@ -12,7 +12,7 @@ Generated 2026-10-27T08:28:19 in 55 s by `make.ps1 simreport`. Failures are repo
 | Partial bypass in the demo zone flagged and in the top 5% | yes (rank 2) |
 | EV, rooftop solar, metered mining or tenancy-only homes in the top suspects (demo zone) | none |
 | Same, held-out settings | none |
-| Pattern model AUC on a held-out split (synthetic_sgcc_patterns) | 0.9833 |
+| Pattern model AUC on a held-out split (synthetic_sgcc_patterns) | 0.9839 |
 | Smallest total theft that flagged its zone (stress tests, share of zone supply) | 6% |
 | Largest total theft that did not flag its zone (held-out settings) | 1% |
 | Clean held-out zones wrongly flagged | 0 of 6 |
@@ -94,3 +94,19 @@ Every row is the same: the thefts missed here are about 1% of zone supply or les
 | tenancy_only | P-CEN-001-048 | 27 |  |
 | solar | P-CEN-001-001 | 36 | solar |
 | solar | P-CEN-001-063 | 68 | solar |
+
+## Where it breaks: noise and monthly-read meters
+
+| Household noise level | Smallest zone theft flagged | Theft zones flagged | All thefts in top 5% | Clean zones wrongly flagged |
+| --- | --- | --- | --- | --- |
+| 0.15 | 8% | 67% | 75% | 0/2 |
+| 0.30 | 8% | 67% | 75% | 0/2 |
+| 0.45 | 8% | 67% | 75% | 0/2 |
+| 0.60 | 8% | 67% | 75% | 0/2 |
+
+| Share of monthly-read meters | Theft zones flagged | Thefts in top 5% (ranked zones) | All thefts in top 5% |
+| --- | --- | --- | --- |
+| 0% | 67% | 100% | 75% |
+| 25% | 67% | 100% | 75% |
+| 50% | 67% | 100% | 75% |
+| 75% | 50% | 100% | 62% |

@@ -13,7 +13,7 @@ from statistics import median
 from fastapi import APIRouter, Depends, Query
 
 from voltguard import db
-from voltguard.service import settings
+from voltguard.service import explain, settings, value
 from voltguard.api.deps import connection, forbidden, not_found, require
 from voltguard.db import Caller
 
@@ -52,7 +52,27 @@ def zones(date_: date | None = Query(None, alias="date"), district: str | None =
            FROM zone_daily_balance b JOIN transformer t USING (transformer_id)
            WHERE b.balance_available AND b.date > %s::date - 14 AND b.date <= %s AND (%s::text IS NULL OR t.district = %s)
            GROUP BY b.date ORDER BY b.date""", (run_date, run_date, district, district)).fetchall()
-    return {"run_date": run_date, "zones": rows, "districts": districts, "totals": totals,
+    # Per-zone 14-day gap line for the leaderboard sparklines (zone level only).
+    spark: dict[str, list[float | None]] = {}
+    for r in conn.execute(
+            """SELECT transformer_id, date, gap_kwh FROM zone_daily_balance
+               WHERE balance_available AND date > %s::date - 14 AND date <= %s AND transformer_id = ANY(%s) ORDER BY date""",
+            (run_date, run_date, [r["transformer_id"] for r in rows])).fetchall():
+        spark.setdefault(r["transformer_id"], []).append(round(r["gap_kwh"], 1) if r["gap_kwh"] is not None else None)
+    rate = value.tariff_info()
+    for r in rows:
+        r["spark"] = spark.get(r["transformer_id"], [])
+        r["value"] = value.zone_value(r, rate["rm_per_kwh"])
+    totals["value"] = value.totals([r["value"] for r in rows], rate["rm_per_kwh"])
+    # Model-ranked vs random-sample hit rate on the caller's region's outcomes (training_label runs as the caller).
+    hits = {h["kind"]: h for h in conn.execute(
+        """SELECT CASE WHEN origin = 'random_sample' THEN 'random_sample' ELSE 'model_ranked' END AS kind,
+                  count(*) AS inspections, sum(is_theft::int) AS confirmed FROM training_label GROUP BY 1""").fetchall()}
+    totals["hit_rates"] = {k: {"inspections": h["inspections"], "confirmed_theft": h["confirmed"],
+                               "hit_rate": round(h["confirmed"] / h["inspections"], 3) if h["inspections"] else None}
+                           for k, h in hits.items()}
+    totals["open_cases"] = sum(int(r["open_cases"] or 0) for r in rows)
+    return {"run_date": run_date, "zones": rows, "districts": districts, "totals": totals, "tariff": rate,
             "trend": [{"date": r["date"], "gap_kwh": float(r["gap_kwh"]), "flagged": r["flagged"]} for r in trend]}
 
 
@@ -72,9 +92,12 @@ def zone_balance(transformer_id: str, from_: date | None = Query(None, alias="fr
         """SELECT date, supplied_kwh, metered_kwh, estimated_kwh, tech_loss_kwh, uncertainty_kwh, gap_kwh, gap_pct, over_threshold
            FROM zone_daily_balance WHERE transformer_id = %s AND (%s::date IS NULL OR date >= %s) AND (%s::date IS NULL OR date <= %s)
            ORDER BY date""", (transformer_id, from_, from_, to, to)).fetchall()
+    rate = value.tariff_info()
     return {"zone": {k: zone[k] for k in ("transformer_id", "district", "region", "flagged", "priority", "balance_available", "gap_start",
-                                          "gap_since_start", "flatness_cv", "loss_method", "notes", "gap_pct_recent", "gap_kwh_recent")},
-            "hourly_gap_kwh": zone["hourly_gap_kwh"], "days": days}
+                                          "gap_since_start", "flatness_cv", "loss_method", "notes", "gap_pct_recent", "gap_kwh_recent",
+                                          "uncertainty_kwh_recent", "n_premises")},
+            "hourly_gap_kwh": zone["hourly_gap_kwh"], "days": days, "value": value.zone_value(zone, rate["rm_per_kwh"]), "tariff": rate,
+            "flat_cv": settings.thresholds(conn)["zone"]["flat_cv"]}
 
 
 @router.get("/zones/{transformer_id}/suspects")
@@ -161,18 +184,24 @@ def premise_view(premise_id: str, c: Caller = Depends(require("analyst", "superv
     if zone and zone["voltage"] and zone["voltage"].get("groups"):
         neighbours = next((g for g in zone["voltage"]["groups"] if premise_id in g.get("premises", [])), None)
     contact = None
+    case_events = []
     if case:
         row = conn.execute("SELECT * FROM vg_case_contact(%s)", (case["case_id"],)).fetchone()
         contact = dict(row) if row else None
+        # For the evidence timeline: what happened and when (no actors, no notes).
+        case_events = conn.execute("SELECT event_type, ts FROM case_event WHERE case_id = %s ORDER BY ts", (case["case_id"],)).fetchall()
+    cfg = settings.thresholds(conn)
     db.audit(conn, c.user_id, "premise.view", f"premise:{premise_id}", {"case_id": case["case_id"] if case else None,
                                                                         "personal_details_shown": contact is not None})
     return {
         "premise": premise, "score": score, "reasons": reasons,
         "features": features["features"] if features else None, "details": features["details"] if features else None,
         "score_history": history, "account_events": events, "usage": _usage(conn, premise),
-        "neighbour_voltage": neighbours, "voltage_min_drop_v": settings.thresholds(conn)["voltage"]["min_drop_v"], "zone": {"flagged": zone["flagged"], "gap_start": zone["gap_start"],
+        "neighbour_voltage": neighbours, "voltage_min_drop_v": cfg["voltage"]["min_drop_v"], "zone": {"flagged": zone["flagged"], "gap_start": zone["gap_start"],
                                                   "gap_since_start": zone["gap_since_start"]} if zone else None,
-        "case": case, "contact": contact,
+        "case": case, "contact": contact, "case_events": case_events,
+        "why_cleared": explain.why_cleared(score["tags"] if score else (features["tags"] if features else []),
+                                           features["details"] if features else None, events, cfg["zone"]["flat_cv"]),
         "masked": contact is None,
         "masking_note": None if contact else "Personal details and exact location appear only on an open case, for its assigned analyst, "
                                               "the supervisor and the assigned inspector.",

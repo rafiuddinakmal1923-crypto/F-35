@@ -58,7 +58,16 @@ def report_mode() -> str:
 
 
 def demo_mode() -> bool:
-    return _env("DEMO_MODE", "1") == "1"
+    """Shortened reminder and escalation timers (on unless DEMO_MODE is set to something else)."""
+    return _env("DEMO_MODE", "1").strip().lower() in ("1", "true", "yes", "on")
+
+
+def demo_ui() -> bool:
+    """Demo-only screens: one-click role cards, the demo guide and reset, concept screens.
+
+    Off unless DEMO_MODE is set explicitly (1 or true), because the role cards sign anyone with the
+    link in as any test account. Never set it on a system with real data."""
+    return os.environ.get("DEMO_MODE", "").strip().lower() in ("1", "true", "yes", "on")
 
 
 def jwt_secret() -> str:

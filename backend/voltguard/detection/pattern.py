@@ -128,6 +128,13 @@ class PatternModel:
         order = np.argsort(-contrib)
         return [FEATURE_TEXT[FEATURES[i]] for i in order[:top] if contrib[i] > 0]
 
+    def sub_reason_values(self, x_row: np.ndarray, top: int = 4) -> list[dict]:
+        """SHAP contributions (log-odds) of the strongest inputs, for the premise page's expandable bar."""
+        contrib = self.contributions(x_row[None, :])[0]
+        order = np.argsort(-np.abs(contrib))
+        return [{"feature": FEATURES[i], "text": FEATURE_TEXT[FEATURES[i]], "shap": round(float(contrib[i]), 3)}
+                for i in order[:top] if abs(contrib[i]) >= 1e-3]
+
 
 def train(X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None, seed: int = 7):
     import xgboost as xgb

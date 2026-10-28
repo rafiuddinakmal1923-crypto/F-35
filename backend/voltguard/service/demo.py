@@ -51,8 +51,10 @@ BACKUP_STEPS = [
 ]
 
 
-def reset_rehearsal() -> dict:
-    """Delete live cases, reports, messages and model versions from earlier rehearsals (seeded H- cases stay)."""
+def reset_rehearsal(keep_job: int | None = None) -> dict:
+    """Delete live cases, reports, messages and model versions from earlier rehearsals (seeded H- cases stay).
+
+    `keep_job`: the job running this reset from the web app (Data manager -> Reset demo) keeps its row."""
     with db.admin_connection() as conn:
         with conn.transaction():
             live = "(SELECT case_id FROM inspection_case WHERE case_id NOT LIKE 'H-%%')"
@@ -61,7 +63,7 @@ def reset_rehearsal() -> dict:
                 counts[table] = conn.execute(f"DELETE FROM {table} WHERE case_id IN {live}").rowcount
             counts["inspection_case"] = conn.execute("DELETE FROM inspection_case WHERE case_id NOT LIKE 'H-%%'").rowcount
             conn.execute("DELETE FROM model_version")
-            conn.execute("DELETE FROM job_run")
+            conn.execute("DELETE FROM job_run WHERE job_id IS DISTINCT FROM %s", (keep_job,))
             conn.execute("DELETE FROM alert")
             conn.execute("SELECT setval('case_seq', 1, false), setval('report_seq', 1, false)")
     return counts
