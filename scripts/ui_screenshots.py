@@ -72,7 +72,8 @@ def sign_in(page, base: str, user: str, password: str) -> None:
         page.wait_for_selector("input[autocomplete=username]")
     else:
         page.goto(f"{base}/#/login")
-        # The demo role picker may hide the form behind a link; open it when present.
+        # The demo role picker hides the form behind a link; wait for one of the two, then open the form.
+        page.wait_for_selector("input[autocomplete=username], [data-manual-sign-in]", timeout=20000)
         manual = page.locator("[data-manual-sign-in]")
         if manual.count():
             manual.first.click()

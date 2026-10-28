@@ -446,6 +446,10 @@ button.wf-row:hover { background: var(--panel-2); }
 .zone-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 340px; gap: 14px; align-items: start; }
 .zone-grid .suspects-col { grid-column: 3; grid-row: 1 / span 2; position: sticky; top: calc(var(--top-h) + 14px); max-height: calc(100vh - var(--top-h) - 28px); }
 .zone-grid .schematic-panel { grid-column: 1 / span 2; }
+/* The suspect list scrolls inside its sticky column instead of running over the panels below. */
+.zone-grid .suspects-col > .panel { flex: 1; min-height: 0; overflow: hidden; }
+.zone-grid .suspects-col > .panel > .panel-body { min-height: 0; }
+.suspect-list > .suspect { flex: none; }
 @media (max-width: 1240px) { .zone-grid { grid-template-columns: 1fr 1fr; } .zone-grid .suspects-col { grid-column: 1 / -1; grid-row: auto; position: static; max-height: none; } }
 @media (max-width: 760px) { .zone-grid { grid-template-columns: minmax(0, 1fr); } .zone-grid .schematic-panel, .zone-grid .suspects-col { grid-column: auto; } }
 

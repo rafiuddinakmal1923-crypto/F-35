@@ -152,7 +152,7 @@ export default function Zone() {
               {cleared.data.cleared.map((c) => (
                 <li key={c.premise_id}>
                   <button type="button" className="linklike" onClick={() => open(c.premise_id)}>{c.premise_id}</button>
-                  <small className="muted"> ? {t("rankInZone", { rank: c.rank })}</small>
+                  <small className="muted"> · {t("rankInZone", { rank: c.rank })}</small>
                   {c.follow_up === "unregistered_export" ? <span className="chip info" style={{ marginLeft: 6 }}>{t("unregExportChip")}</span> : null}
                   {c.items.map((item) => (
                     <div key={item.kind}><b>{t(`cleared_${item.kind}`)}</b>: {clearedText(item)}</div>

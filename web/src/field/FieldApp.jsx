@@ -143,7 +143,7 @@ function SolarChecklist({ solar }) {
       <h3 className="row" style={{ gap: 6 }}><Sun size={18} aria-hidden="true" />{t("solarVisitTitle")}</h3>
       <small className="muted">
         {solar.registered ? t("solarVisitRegistered", { kwp: solar.capacity_kwp ?? "?" }) : t("solarVisitUnregistered")}
-        {solar.has_battery ? ` ? ${t("solarVisitBattery")}` : ""}
+        {solar.has_battery ? ` · ${t("solarVisitBattery")}` : ""}
       </small>
       <ul style={{ margin: 0 }}>
         {solar.checklist.map((key) => (

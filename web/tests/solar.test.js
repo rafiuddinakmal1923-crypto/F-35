@@ -49,3 +49,16 @@ test("Bahasa Melayu wording", () => {
     "2026-09-02, 3.5 kWp, bateri rumah");
   setLang("en");
 });
+
+test("a drop to zero stays -100%; the zeroed midday is named when it decided the sun check", () => {
+  setLang("en");
+  assert.match(checkValue({ check: "day_vs_night", status: "pass", values: { day_drop: 1.0, night_drop: 0.59 } }), /^daytime use −100%/);
+  assert.equal(checkValue({ check: "sun_shape", status: "pass", values: { shape_corr: -0.23, sun_corr: 0.04, midday_zero_share: 0.97 } }),
+    "drop shape vs daylight -0.23; daytime use vs sunshine 0.04; midday reads almost zero on 97% of half-hours");
+});
+
+test("a daytime drop past 100% (the home exports at midday) is worded, not shown as 1446%", () => {
+  setLang("en");
+  const c = { check: "day_vs_night", status: "pass", values: { day_drop: 14.46, night_drop: 0.01, window: "19:00-07:00" } };
+  assert.equal(checkValue(c), "daytime use over 100% (it sends energy to the grid), night use −1% (19:00-07:00)");
+});

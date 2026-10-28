@@ -69,7 +69,8 @@ export default function Login() {
   }
 
   const demo = accounts?.length > 0;
-  const formOpen = !demo || showForm;
+  // Wait until we know whether demo mode is on, so the password form does not flash and then disappear.
+  const formOpen = accounts !== null && (!demo || showForm);
   return (
     <div className="login-page">
       <section className="login-brand">

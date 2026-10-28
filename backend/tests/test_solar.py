@@ -179,3 +179,70 @@ def test_FR_PS_10_registration_carries_capacity_and_battery(solar_sim):
     from voltguard.data.canonical import TABLES
     assert {"capacity_kwp", "has_battery"} <= set(TABLES["account_event"].names)
     assert not TABLES["account_event"].column("capacity_kwp").required
+
+
+# --------------------------------------------------------------------------- shown in the API and the report
+
+SOLAR_THIEF = "P-CEN-001-069"        # demo zone: registered solar home that also bypasses part of its night load
+
+
+def _demo_case(truth_kind: str, nth: int = 0) -> str:
+    scn = simulator.demo_scenario()
+    _, truth = simulator.simulate(scn)
+    return case_premise(truth, DEMO_ZONE, truth_kind, nth)
+
+
+def test_FR_PS_10_api_marks_solar_with_unexplained_night_use(api):
+    from tests.conftest import login
+
+    analyst = login(api, "analyst.cen")
+    suspects = {s["premise_id"]: s for s in api.get(f"/zones/{DEMO_ZONE}/suspects?limit=500", headers=analyst).json()["suspects"]}
+    assert suspects[SOLAR_THIEF]["solar_unexplained"] and "solar" in suspects[SOLAR_THIEF]["tags"]
+    assert not any(s["solar_unexplained"] for pid, s in suspects.items() if pid != SOLAR_THIEF and "solar" not in s["tags"])
+    check = api.get(f"/premises/{SOLAR_THIEF}", headers=analyst).json()["solar_check"]
+    assert check["verdict"] == "night_unexplained" and check["night_by"] in ("drop", "peers")
+    names = [c["check"] for c in check["checks"]]
+    assert names[:7] == ["registration", "export", "day_vs_night", "sun_shape", "rain_rebound", "energy_budget", "voltage"]
+    assert next(c for c in check["checks"] if c["check"] == "day_vs_night")["status"] == "against"
+    assert {c["status"] for c in check["checks"]} <= {"pass", "against", "not_seen", "no_data"}
+
+
+def test_FR_PS_10_cleared_list_shows_plain_solar_with_reasons(api):
+    from tests.conftest import login
+
+    body = api.get(f"/zones/{DEMO_ZONE}/cleared", headers=login(api, "analyst.cen")).json()
+    cleared = {c["premise_id"]: c for c in body["cleared"]}
+    for nth in (0, 1):
+        pid = _demo_case("solar", nth)
+        assert pid in cleared and any(i["kind"] == "solar" for i in cleared[pid]["items"])
+    assert SOLAR_THIEF not in cleared or not any(i["kind"] == "solar" for i in cleared[SOLAR_THIEF]["items"])
+    ev = _demo_case("ev_charging")
+    assert ev in cleared and cleared[ev]["items"][0]["kind"] == "ev_charging"
+    plain = api.get(f"/premises/{_demo_case('solar', 0)}", headers=login(api, "analyst.cen")).json()["solar_check"]
+    assert plain["verdict"] == "explained"
+    # Zone-level users never get premise lists (FR-UI-01); other regions are refused by row-level security.
+    assert api.get(f"/zones/{DEMO_ZONE}/cleared", headers=login(api, "manager.cen")).status_code == 403
+    assert api.get(f"/zones/{DEMO_ZONE}/cleared", headers=login(api, "analyst.nor")).status_code in (403, 404)
+
+
+def test_FR_PS_10_inspector_gets_solar_checklist(api):
+    from voltguard import db
+    from voltguard.service import cases
+
+    with db.admin_connection() as conn:
+        visit = cases._solar_visit(conn, SOLAR_THIEF)
+        assert visit["checklist"] == list(cases.SOLAR_CHECKLIST) and visit["registered"]
+        assert visit["capacity_kwp"] and visit["expected_kwh_per_day"] > 0
+        assert visit["reason_tags"] == {"false_alarm": "solar_confirmed_no_theft", "confirmed_theft": "solar_plus_bypass"}
+        assert cases._solar_visit(conn, _demo_case("full_bypass_mining")) is None
+
+
+def test_FR_PS_10_weekly_report_counts_solar(api):
+    from tests.conftest import login
+
+    manager = login(api, "manager.cen")
+    s = api.get("/weekly", headers=manager).json()["solar"]
+    assert s["tagged"] >= 3 and s["suspected"] >= 1 and s["registrations"] >= 2
+    for lang, heading in (("en", "Rooftop solar in ranked zones"), ("ms", "Solar bumbung dalam zon yang disenaraikan")):
+        html = api.get(f"/weekly/html?lang={lang}", headers=manager).text
+        assert heading in html and SOLAR_THIEF not in html          # counts only: zone-level report

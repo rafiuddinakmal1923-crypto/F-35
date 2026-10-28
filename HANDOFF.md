@@ -145,13 +145,38 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 - **Fixed**: `training_label` ran as its owner, so hit rates counted every region (now `security_invoker`).
 - Windows: database tests run against a throwaway `timescale/timescaledb-ha:pg16` container via
   `TEST_DATABASE_URL` (126 pass).
-- Not done: the UI upgrade brief (`VoltGuard_UI_Upgrade_Prompt.md`).
+## UI upgrade and solar round (2026-10-28, branch `claude/ui-upgrade`, worktree `D:\VoltGuard\wt-ui`)
+
+- **Where the work is**: the branch is checked out in a second git worktree at `D:\VoltGuard\wt-ui`; the
+  main folder `C:\...\F-35` stays on `claude/practical-clarke-t5uwrc`. The running Docker stack was built
+  from the main folder, so it does not show this branch until it is rebuilt.
+- **UI brief** (`VoltGuard_UI_Upgrade_Prompt.md`): design system, redesigned pages and the new pages are
+  in place (see `reports/ui/PLAN.md` and `reports/ui/CHANGES.md`); web unit tests in `web/tests/` (`npm test`).
+- **Solar brief** (`VoltGuard_Solar_Prompt.md`, FR-PS-10): scoring loophole closed and the missing checks
+  added in `detection/features.py` (`_solar_checks`, `_solar_decision`) and `scoring.py`; settings under
+  `solar:` in `config/thresholds.yaml`; new simulator cases; shown on the premise page (Solar check), the
+  zone page (Cleared as legitimate, night-use marker), the weekly report and the inspector app. Tests:
+  `tests/test_solar.py`, `web/tests/solar.test.js`. Choices that differ from the brief are in `DEVIATIONS.md`.
+- **Data**: the Kaggle London and SGCC downloads in `DATA_ROOT/raw/` are converted (`python -m voltguard
+  convert`); the pattern model is trained on SGCC (`pattern_training: sgcc`; the synthetic model is kept in
+  `DATA_ROOT/models/backup_synthetic/`). Public documents in `DATA_ROOT/docs_rag/` are listed in
+  `data/docs_rag/sources.yaml`.
+- **Hand-off script**: `scripts/handoff.py` (Windows and Linux; `make.ps1 handoff`) refreshes graphify,
+  `TRACEABILITY.md` and this file's auto part. Run it after every finished section.
+- **Database tests on Windows**: the throwaway container keeps its data, so create a fresh database before
+  each full run: `docker exec vg-ui-pg psql -U voltguard -c "DROP DATABASE IF EXISTS vgtest WITH (FORCE)"`,
+  then `CREATE DATABASE vgtest OWNER voltguard`, and set `TEST_DATABASE_URL=postgresql://voltguard@127.0.0.1:55432/vgtest`.
+  On a reused database, the case tests fail because of the cases left by the previous run.
 
 ## Known issues
 
-- NFR-09 holds for ranked zones (18/18) but not overall (18/24): partial bypasses of about 1% of
-  supply in zones with no other theft stay inside the uncertainty margin u, so no flag threshold
-  makes them visible (`reports/simulation_report.md`, sweep section). Narrowing u needs TNB inputs.
+- NFR-09 on held-out settings that now include theft hidden behind solar (`reports/simulation_report.md`):
+  - ranked zones: 26 of 27 thefts in the top 5%. The miss is a 1.3% partial bypass at rank 4 where the top 5% is 3 homes.
+  - overall: 26 of 36 thefts in the top 5%. Most of the misses are about 1% of supply or less, inside the
+    uncertainty margin u; narrowing u needs TNB inputs.
+  - TX-NOR-107 (7.3% gap) is not flagged: the rule needs 7 days in a row above the threshold, and noise
+    breaks the run twice in 14 days. A "k of the last n days" rule would catch it (to agree with TNB, OI-7).
+- The SGCC-trained pattern model has a held-out AUC of only 0.55 on 28-day windows (OI-3).
 - Fixed this session: metered mining no longer reaches the held-out top 5% (re-tuned weights);
   the sweep now varies both parts of the flag rule.
 - Not exercised here: a live Ollama model, a real Telegram bot token (the bot path is tested with a

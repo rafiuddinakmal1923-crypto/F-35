@@ -3,7 +3,8 @@
 import { t } from "../i18n.js";
 import { fmt } from "./format.js";
 
-const pc = (v) => (v == null ? "–" : `${v < 0 ? "+" : "−"}${Math.round(Math.abs(v) * 100)}%`);   // a drop shows as minus
+// A drop shows as minus. A home that exports at midday reads below zero, so a daytime drop can pass 100%.
+const pc = (v) => (v == null ? "–" : v > 1.005 ? t("dropNetExport") : `${v < 0 ? "+" : "−"}${Math.round(Math.abs(v) * 100)}%`);
 const share = (v) => (v == null ? "–" : `${Math.round(Math.abs(v) * 100)}%`);
 
 export const CHECK_NAMES = ["registration", "export", "day_vs_night", "sun_shape", "rain_rebound", "energy_budget", "voltage", "timing"];
@@ -26,8 +27,12 @@ export function checkValue(c) {
       if (v.confidence === "low") s += t("solarVal_lowConf");
       return s;
     }
-    case "sun_shape":
-      return c.status === "no_data" ? t("solarMark_no_data") : t("solarVal_sun", { shape: fmt(v.shape_corr, 2), sun: fmt(v.sun_corr, 2) });
+    case "sun_shape": {
+      if (c.status === "no_data") return t("solarMark_no_data");
+      const s = t("solarVal_sun", { shape: fmt(v.shape_corr, 2), sun: fmt(v.sun_corr, 2) });
+      // A system that covers all midday use leaves no day-to-day variation: the zeroed midday is the sign then.
+      return v.midday_zero_share != null && v.midday_zero_share >= 0.5 ? s + t("solarVal_middayZero", { share: share(v.midday_zero_share) }) : s;
+    }
     case "rain_rebound":
       return v.rebound == null ? t("solarVal_reboundNone") : t("solarVal_rebound", { v: share(v.rebound) });
     case "energy_budget":

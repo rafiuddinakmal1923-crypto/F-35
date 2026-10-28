@@ -218,6 +218,7 @@ const LABELS = {
     noLocation: "no location", noCasesOnPhone: "No assigned cases on this phone.", routeOrderNote: "Ordered by the shortest route from the team base (straight-line distances).",
 
     // Rooftop solar (FR-PS-10, Solar brief 4)
+    dropNetExport: "over 100% (it sends energy to the grid)", solarVal_middayZero: "; midday reads almost zero on {share} of half-hours",
     solarCheck: "Solar check", solarCheckIntro: "Solar can explain a daytime drop only. Each check uses this run's own evidence.",
     solarMark_pass: "supports solar", solarMark_against: "points to hidden use", solarMark_not_seen: "not seen", solarMark_no_data: "no data",
     solarCheckName_registration: "Registration", solarCheckName_export: "Export readings", solarCheckName_day_vs_night: "Daytime vs night change",
@@ -463,6 +464,7 @@ const LABELS = {
     todaysCases: "Kes hari ini", routeTotals: "{n} hentian · laluan {km} km", joint: "bersama", fromBaseStraight: "dari pangkalan, garis lurus",
     noLocation: "tiada lokasi", noCasesOnPhone: "Tiada kes ditugaskan di telefon ini.", routeOrderNote: "Disusun mengikut laluan terpendek dari pangkalan pasukan (jarak garis lurus).",
 
+    dropNetExport: "lebih 100% (ia menghantar tenaga ke grid)", solarVal_middayZero: "; tengah hari membaca hampir sifar pada {share} setengah jam",
     solarCheck: "Semakan solar", solarCheckIntro: "Solar hanya boleh menjelaskan penurunan waktu siang. Setiap semakan menggunakan bukti larian ini.",
     solarMark_pass: "menyokong solar", solarMark_against: "menunjukkan penggunaan tersembunyi", solarMark_not_seen: "tidak dilihat", solarMark_no_data: "tiada data",
     solarCheckName_registration: "Pendaftaran", solarCheckName_export: "Bacaan eksport", solarCheckName_day_vs_night: "Perubahan siang lawan malam",
