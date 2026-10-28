@@ -222,9 +222,9 @@
     "semantic_hash": ""
   },
   "make.ps1": {
-    "mtime": 1793115521.5075238,
-    "seen": 1793119904.9418433,
-    "ast_hash": "dbd3f0308a8528bdf4f9aa675b0020ce",
+    "mtime": 1793152802.2334654,
+    "seen": 1793152860.8253298,
+    "ast_hash": "5f8c952959abc52583ce8ce7883b628e",
     "semantic_hash": ""
   },
   "scripts/handoff.sh": {
@@ -246,9 +246,9 @@
     "semantic_hash": ""
   },
   "scripts/tunnel.sh": {
-    "mtime": 1793085230.278025,
-    "seen": 1793085328.167542,
-    "ast_hash": "f4f2a93bc811b6a9950bbd2d8fc54606",
+    "mtime": 1793152792.01114,
+    "seen": 1793152860.8255546,
+    "ast_hash": "346762c068526fc6ed57024e7ea244e6",
     "semantic_hash": ""
   },
   "DEVIATIONS.md": {
@@ -258,27 +258,27 @@
     "semantic_hash": ""
   },
   "HANDOFF.md": {
-    "mtime": 1793123894.7398567,
-    "seen": 1793148525.325653,
-    "ast_hash": "95f7b9f3ca543babdb956fcac4c25730",
+    "mtime": 1793148526.9553483,
+    "seen": 1793152860.8263803,
+    "ast_hash": "06f541c5f29ed65e5d818f62bfef4731",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1793123889.9308672,
-    "seen": 1793123893.5954032,
-    "ast_hash": "36b201a7adffaab0c4862fe6eb22e8b0",
+    "mtime": 1793152855.3715293,
+    "seen": 1793152860.826429,
+    "ast_hash": "50276e636b14fc3e1365c0bf712e05b1",
     "semantic_hash": ""
   },
   "TRACEABILITY.md": {
-    "mtime": 1793123893.8834064,
-    "seen": 1793148525.3257139,
+    "mtime": 1793148525.6749554,
+    "seen": 1793152860.8264308,
     "ast_hash": "fabc1f385725ce48260adf8889e2eca7",
     "semantic_hash": ""
   },
   "docker-compose.yml": {
-    "mtime": 1793115521.5050004,
-    "seen": 1793119904.941841,
-    "ast_hash": "6d2fac476c7ddf2b3c6a286660b25afa",
+    "mtime": 1793152792.0086424,
+    "seen": 1793152860.8253253,
+    "ast_hash": "0b4031f01ed0a655b60aba9b573172b4",
     "semantic_hash": ""
   },
   "backend/tests/test_data_layer.py": {
@@ -975,6 +975,12 @@
     "mtime": 1793148376.6185896,
     "seen": 1793148525.3249886,
     "ast_hash": "113bd9f831c93e86bc2348ba02762265",
+    "semantic_hash": ""
+  },
+  "HOW_TO_RUN.md": {
+    "mtime": 1793152841.037339,
+    "seen": 1793152860.8263826,
+    "ast_hash": "82db197e68b7bc121cdeef153cfad2ec",
     "semantic_hash": ""
   },
   "web/package-lock.json": {

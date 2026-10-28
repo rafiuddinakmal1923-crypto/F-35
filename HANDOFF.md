@@ -154,8 +154,8 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.sh)
 
-- Generated: 2026-10-28T00:48
-- Branch: `claude/practical-clarke-t5uwrc`; last commit: `bae6984 Second-round recheck: docs, deviations and test counts`
+- Generated: 2026-10-28T02:01
+- Branch: `claude/practical-clarke-t5uwrc`; last commit: `a65531f Map background: CARTO first, with automatic fallback`
 - Tests collected: 100 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
@@ -163,8 +163,8 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 
 ### Graph summary
 
-- 2197 nodes · 5196 edges · 132 communities (119 shown, 13 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 286 edges (avg confidence: 0.93)
+- 2220 nodes · 5219 edges · 137 communities (124 shown, 13 thin omitted)
+- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 286 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
@@ -181,7 +181,7 @@ Most connected (core abstractions):
 
 ### File tree
 
-- `./`: .dockerignore, .env.example, .gitignore, DEMO.md, DEVIATIONS.md, HANDOFF.md, MODELS.md, Makefile, PLAN.md, README.md, TRACEABILITY.md, VoltGuard AI Software Design Document (SDD).pdf, ... (+6)
+- `./`: .dockerignore, .env.example, .gitignore, DEMO.md, DEVIATIONS.md, HANDOFF.md, HOW_TO_RUN.md, MODELS.md, Makefile, PLAN.md, README.md, TRACEABILITY.md, ... (+7)
 - `backend/`: Dockerfile, pytest.ini, requirements.txt
 - `backend/tests/`: conftest.py, local_stack.py, pg_server.py, test_agents.py, test_api_security.py, test_cases.py, test_data_layer.py, test_detection.py, test_digest.py, test_learning.py, test_pipeline_batches.py, test_reporting.py, ... (+3)
 - `backend/tests/e2e/`: __init__.py, test_demo_rehearsal.py, test_web_flow.py

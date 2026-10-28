@@ -5,6 +5,9 @@ most likely responsible, then supports inspection, reporting and model learning.
 Hackspire Lumina, Domain 1. Requirements: `VoltGuard_SRS.md`; design: `VoltGuard_SDD.md`;
 build brief: `VoltGuard_ClaudeCode_Prompt.md`.
 
+**New here? Start with [`HOW_TO_RUN.md`](HOW_TO_RUN.md)**: set-up, accounts, everyday commands,
+troubleshooting, and how to share the app with a public `https://` link instead of `localhost`.
+
 **R0 runs on simulated data and fake personal details only.** Scores rank risk; they never say
 that anyone stole electricity, and people decide after inspection.
 
@@ -82,8 +85,10 @@ Rules:
 
 ## Public link for judges (Cloudflare Tunnel)
 
-- Judging: a named tunnel with a stable hostname. Copy `deploy/cloudflared/config.example.yml`
-  to `config.yml` (git-ignored), fill it in, set `TUNNEL_HOSTNAME`, run `.\make.ps1 tunnel-named`.
+- Judging: a stable hostname. Easiest: create a tunnel in the Cloudflare dashboard with public hostname
+  -> `http://proxy:80`, put `TUNNEL_TOKEN` and `TUNNEL_HOSTNAME` in `.env`, run `.\make.ps1 tunnel-token`
+  (step by step in `HOW_TO_RUN.md`). Alternative: copy `deploy/cloudflared/config.example.yml` to
+  `config.yml` (git-ignored), fill it in, run `.\make.ps1 tunnel-named`. `.\make.ps1 tunnel-stop` ends sharing.
 - Testing: `.\make.ps1 tunnel` starts a quick tunnel (random trycloudflare.com address, no account,
   no uptime guarantee, no server-sent events: the app polls). It writes the address to
   `PUBLIC_BASE_URL` so case links in messages work, and refuses to restart a running tunnel: a new

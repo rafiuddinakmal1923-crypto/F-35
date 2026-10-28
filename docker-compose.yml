@@ -87,6 +87,17 @@ services:
     depends_on: [proxy]
     restart: unless-stopped
 
+  # Named tunnel from the Cloudflare dashboard (Zero Trust -> Networks -> Tunnels): only a token is
+  # needed (TUNNEL_TOKEN in .env); the public hostname -> http://proxy:80 is set in the dashboard.
+  tunnel-token:
+    profiles: ["tunnel-token"]
+    image: cloudflare/cloudflared:2025.4.2
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:-}
+    depends_on: [proxy]
+    restart: unless-stopped
+
   # ------------------------------------------------------------------ full profile (optional)
   keycloak:
     profiles: ["full"]

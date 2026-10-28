@@ -11,7 +11,7 @@ PY := $(COMPOSE) run --rm api python
 endif
 
 .PHONY: help setup up down build logs migrate seed simulate train tune simreport pipeline ingest \
-        models fetch test demo tunnel tunnel-named snapshot backtest web handoff venv
+        models fetch test demo tunnel tunnel-named tunnel-token tunnel-stop snapshot backtest web handoff venv
 
 help:
 	@grep -E '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t/'
@@ -80,6 +80,12 @@ tunnel: ## Quick Cloudflare tunnel (random address); writes PUBLIC_BASE_URL into
 
 tunnel-named: ## Named Cloudflare tunnel with a stable hostname (deploy/cloudflared/config.yml)
 	bash scripts/tunnel.sh named
+
+tunnel-token: ## Stable link from a Cloudflare dashboard tunnel (TUNNEL_TOKEN, TUNNEL_HOSTNAME in .env)
+	bash scripts/tunnel.sh token
+
+tunnel-stop: ## Stop every public link
+	bash scripts/tunnel.sh stop
 
 snapshot: ## Export the rpt_ views to CSV for Power BI (powerbi/snapshot/)
 	$(PY) -m voltguard snapshot

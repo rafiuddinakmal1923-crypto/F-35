@@ -65,7 +65,7 @@ function Invoke-Setup {
 
 function Invoke-Tunnel([string]$Mode) {
     if ($Mode -eq "quick") {
-        $running = docker compose ps --status running --services 2>$null | Select-String -SimpleMatch "tunnel"
+        $running = docker compose ps --status running --services 2>$null | Where-Object { $_.Trim() -eq "tunnel" }
         if ($running) {
             Write-Warning "A quick tunnel is already running. Restarting it would change the address and break saved phone sign-ins, offline cases and every Telegram link already sent. Not restarting."
         } else {
@@ -79,10 +79,17 @@ function Invoke-Tunnel([string]$Mode) {
             Start-Sleep -Seconds 2
         }
         if (-not $url) { throw "No tunnel address yet; check: docker compose --profile tunnel logs tunnel" }
+    } elseif ($Mode -eq "token") {
+        $token = ((Get-Content .env | Where-Object { $_ -match "^TUNNEL_TOKEN=" }) -replace "^TUNNEL_TOKEN=", "" -replace "\s+#.*$", "").Trim()
+        if (-not $token) { throw "Set TUNNEL_TOKEN in .env first (Cloudflare dashboard -> Zero Trust -> Networks -> Tunnels; see HOW_TO_RUN.md)." }
+        docker compose --profile tunnel-token up -d tunnel-token
+        $hostLine = (Get-Content .env | Where-Object { $_ -match "^TUNNEL_HOSTNAME=" }) -replace "^TUNNEL_HOSTNAME=", "" -replace "\s+#.*$", ""
+        if (-not $hostLine.Trim()) { throw "Set TUNNEL_HOSTNAME in .env to the public hostname you gave the tunnel." }
+        $url = "https://$($hostLine.Trim())"
     } else {
         if (-not (Test-Path deploy\cloudflared\config.yml)) { throw "Copy deploy\cloudflared\config.example.yml to config.yml and fill it in first." }
         docker compose --profile tunnel-named up -d tunnel-named
-        $hostLine = (Get-Content .env | Where-Object { $_ -match "^TUNNEL_HOSTNAME=" }) -replace "^TUNNEL_HOSTNAME=", ""
+        $hostLine = (Get-Content .env | Where-Object { $_ -match "^TUNNEL_HOSTNAME=" }) -replace "^TUNNEL_HOSTNAME=", "" -replace "\s+#.*$", ""
         $url = "https://$($hostLine.Trim())"
     }
     $text = Get-Content .env -Raw
@@ -144,6 +151,14 @@ switch ($Target) {
         Invoke-Tunnel "quick" }
     "tunnel-named" { # Named Cloudflare tunnel with a stable hostname
         Invoke-Tunnel "named" }
+    "tunnel-token" { # Stable link from a Cloudflare dashboard tunnel (TUNNEL_TOKEN and TUNNEL_HOSTNAME in .env)
+        Invoke-Tunnel "token" }
+    "tunnel-stop" { # Stop every public link (the app keeps running on this laptop)
+        docker compose --profile tunnel --profile tunnel-named --profile tunnel-token stop tunnel tunnel-named tunnel-token
+        $text = Get-Content .env -Raw
+        Set-Content .env ($text -replace "(?m)^PUBLIC_BASE_URL=.*$", "PUBLIC_BASE_URL=") -NoNewline
+        docker compose up -d api | Out-Null
+        Write-Host "Public links stopped; case links point at this laptop again." }
     "snapshot" { # Export rpt_ views to CSV for Power BI
         Invoke-Py @("-m", "voltguard", "snapshot") }
     "backtest" { # Day-by-day back-test on simulated history
