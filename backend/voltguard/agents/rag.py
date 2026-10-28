@@ -78,7 +78,14 @@ def _sections_markdown(body: str) -> list[tuple[str | None, str]]:
 LEGAL_SECTION = re.compile(r"(?m)^\s*(\d{1,3}[A-Z]?)\.\s+(?=\(?[1-9A-Z(])")
 
 
+LEGAL_INDEX = re.compile(r"\n\s*INDEX TO THE\b|\(This Index does not form part", re.IGNORECASE)
+
+
 def _sections_legal(text: str) -> list[tuple[str | None, str]]:
+    # A reprint's alphabetical index is not law and, left in, became one huge "last section" of keywords.
+    index = LEGAL_INDEX.search(text)
+    if index:
+        text = text[:index.start()]
     marks = list(LEGAL_SECTION.finditer(text))
     if not marks:
         return [(None, text)]
@@ -259,6 +266,26 @@ def search(conn: psycopg.Connection, query: str, kind: str = "document", k: int 
     return out[:k]
 
 
+SECTION_ASKED = re.compile(r"\b(?:section|seksyen|sec\.|s\.)\s*(\d{1,3}[A-Z]?)\b", re.IGNORECASE)
+ACT_NAMES = {"esa_1990": ("electricity supply", "bekalan elektrik", "act 447", "akta 447"),
+             "penal_code": ("penal code", "kanun keseksaan", "act 574", "akta 574")}
+
+
+def section_passages(conn: psycopg.Connection, question: str) -> list[Passage]:
+    """Passages of a section the question names ("Section 37", "seksyen 37"), from the named Act when one
+    is named. Exact lookup: similarity search does not match section numbers."""
+    asked = SECTION_ASKED.search(question)
+    if not asked:
+        return []
+    q = question.lower()
+    docs = [doc for doc, names in ACT_NAMES.items() if any(n in q for n in names)]
+    rows = conn.execute("SELECT chunk_id, doc_id, title, section, version, source_ref, kind, text FROM doc_chunk "
+                        "WHERE kind = 'document' AND section = %s AND (%s::text[] IS NULL OR doc_id = ANY(%s::text[])) "
+                        "ORDER BY chunk_id LIMIT 3", (f"Section {asked.group(1).upper()}", docs or None, docs or None)).fetchall()
+    return [Passage(r["chunk_id"], r["doc_id"], r["title"], r["section"], r["version"], r["source_ref"], r["kind"], r["text"], 2.0)
+            for r in rows]
+
+
 def _sentences(text: str) -> list[str]:
     return [s.strip() for s in re.split(r"(?<=[.!?])\s+|\n+-\s*|\n{2,}", text) if len(s.strip()) > 20]
 
@@ -284,6 +311,9 @@ def answer(conn: psycopg.Connection, caller: Caller, question: str, agent: str =
         result = {"answer": guardrails.REFUSAL, "sources": [], "mode": "rule", "refused": True}
     else:
         passages = [p for p in search(conn, question) if embed.keyword_overlap(question, f"{p.title} {p.section or ''} {p.text}") >= MIN_RELEVANCE]
+        named = section_passages(conn, question)
+        if named:   # a section asked for by number comes first; similar passages follow
+            passages = named + [p for p in passages if p.chunk_id not in {n.chunk_id for n in named}]
         # Mode says who answered: "ollama" (the model, from the passages), "extractive" (sentences quoted from the
         # passages) or, when no approved document matches, the assistant's state ("ollama" when the model is
         # online, "mock" when not): the model is never asked without passages, so "not found" is not a mock answer.
@@ -309,7 +339,14 @@ def answer(conn: psycopg.Connection, caller: Caller, question: str, agent: str =
                 text, used = extractive_answer(question, passages)
                 if used:
                     mode = "extractive"
-        text = guardrails.check_output(text)
+        # Answers come from approved documents only (never case notes or customer records), and the question
+        # was checked before it reached the model: the pattern check (IC numbers, phones, addresses) applies,
+        # while Presidio's name guesses do not; they read capitalised Malay statute text as people's names.
+        # Anything still blocked becomes "not found" rather than an error for the inspector.
+        try:
+            text = guardrails.check_output(text, presidio=False)
+        except guardrails.OutputBlocked:
+            text, used = NOT_FOUND, []
         result = {"answer": text, "sources": [passages[i].citation() for i in used] if text != NOT_FOUND else [], "mode": mode,
                   "refused": False}
     db.audit(conn, caller.user_id, f"agent.{agent}.answer", None,

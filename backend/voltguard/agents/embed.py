@@ -18,6 +18,7 @@ from pathlib import Path
 import numpy as np
 
 DIM = 384
+BATCH = 16                      # passages per model run: bounded memory however long the document
 MODEL_ID = os.environ.get("EMBED_MODEL", "intfloat/multilingual-e5-small")
 TOKEN = re.compile(r"[a-z0-9]+")
 STOP = set("the a an and or of to in on at for is are was were be by with this that it its as from into than then there their "
@@ -73,15 +74,22 @@ def embed(texts: list[str], kind: str = "passage") -> np.ndarray:
     if model is None:
         return np.array([_hash_embed(t) for t in texts]) if texts else np.zeros((0, DIM))
     tok, session = model
-    enc = tok.encode_batch([f"{kind}: {t}" for t in texts])
-    ids = np.array([e.ids for e in enc], dtype=np.int64)
-    mask = np.array([e.attention_mask for e in enc], dtype=np.int64)
-    feeds = {"input_ids": ids, "attention_mask": mask}
-    if "token_type_ids" in [i.name for i in session.get_inputs()]:
-        feeds["token_type_ids"] = np.zeros_like(ids)
-    hidden = session.run(None, feeds)[0]
-    pooled = (hidden * mask[..., None]).sum(axis=1) / np.maximum(mask.sum(axis=1, keepdims=True), 1)
-    return pooled / np.maximum(np.linalg.norm(pooled, axis=1, keepdims=True), 1e-9)
+    if not texts:
+        return np.zeros((0, DIM))
+    out = []
+    # Small batches: one batch of every passage (the Penal Code alone has ~1,100), padded to 512 tokens,
+    # needs several GB and was killed by the out-of-memory check.
+    for start in range(0, len(texts), BATCH):
+        enc = tok.encode_batch([f"{kind}: {t}" for t in texts[start:start + BATCH]])
+        ids = np.array([e.ids for e in enc], dtype=np.int64)
+        mask = np.array([e.attention_mask for e in enc], dtype=np.int64)
+        feeds = {"input_ids": ids, "attention_mask": mask}
+        if "token_type_ids" in [i.name for i in session.get_inputs()]:
+            feeds["token_type_ids"] = np.zeros_like(ids)
+        hidden = session.run(None, feeds)[0]
+        pooled = (hidden * mask[..., None]).sum(axis=1) / np.maximum(mask.sum(axis=1, keepdims=True), 1)
+        out.append(pooled / np.maximum(np.linalg.norm(pooled, axis=1, keepdims=True), 1e-9))
+    return np.vstack(out)
 
 
 def cosine(a: np.ndarray, b: np.ndarray) -> float:

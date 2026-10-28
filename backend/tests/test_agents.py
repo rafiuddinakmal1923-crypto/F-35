@@ -239,6 +239,27 @@ def test_FR_AG_04_field_assistant_mode_says_who_answered(monkeypatch):
     quoted = rag.answer(None, caller, "What should I photograph at the meter seal?")
     assert quoted["mode"] == "extractive" and "meter seal" in quoted["answer"]
 
+    # Statute text: capitalised Malay words are not people's names; it is answered, not blocked.
+    statute = ("Menurut Akta Bekalan Elektrik 1990, Mana-Mana Orang Yang mengganggu pepasangan melakukan suatu kesalahan [1].")
+    monkeypatch.setattr(llm, "complete", lambda *a, **k: llm.Completion(statute, "ollama", "qwen"))
+    assert rag.answer(None, caller, "What should I photograph at the meter seal?")["answer"] == statute
+    # A real personal detail in the model's answer is still withheld, as "not found" rather than an error.
+    monkeypatch.setattr(llm, "complete", lambda *a, **k: llm.Completion("Call 012-345 6789 at the meter seal [1].", "ollama", "qwen"))
+    leaked = rag.answer(None, caller, "What should I photograph at the meter seal?")
+    assert leaked["answer"] == rag.NOT_FOUND and leaked["sources"] == []
+
+
+def test_FR_AG_04_legal_sections_by_number_and_no_index():
+    from voltguard.agents import rag
+
+    assert rag.SECTION_ASKED.search("What does Section 37 of the Electricity Supply Act say?").group(1) == "37"
+    assert rag.SECTION_ASKED.search("Apakah hukuman di bawah seksyen 37 Akta Bekalan Elektrik?").group(1) == "37"
+    assert rag.SECTION_ASKED.search("Photograph the meter seals. Then record it.") is None
+    text = ("\n36. First.\n37. (1) Mana-mana orang yang mengganggu pepasangan.\n"
+            "\nINDEX TO THE PENAL CODE\n(This Index does not form part of the Code)\nCHEQUE—See Document 418")
+    sections = rag._sections_legal(text)
+    assert [s for s, _ in sections][-1] == "Section 37" and "CHEQUE" not in sections[-1][1]
+
 
 def test_FR_UI_05_pdf_fallback_without_a_browser(monkeypatch):
     """Without Chromium (e.g. a minimal image) the export still produces a PDF with every line."""
