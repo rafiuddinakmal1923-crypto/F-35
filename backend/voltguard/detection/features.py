@@ -175,6 +175,7 @@ def _solar_decision(solar: dict, i: int, slots: np.ndarray, recent: slice, befor
     solar["night"] = {"drop_share": None if drop is None else round(float(drop), 3), "below_peers_share": below,
                       "below_peers_before_share": below_before,
                       "dip_v": dip, "dip_supports": bool(by_dip), "strong": strong,
+                      "by": "drop" if by_drop else ("peers" if by_peers else None),
                       "window": "00:00-07:00" if night is LATE_NIGHT else "19:00-07:00"}
     return {"applies": verdict == "explained", "verdict": verdict,
             "confidence": "low" if solar.get("has_battery") else "normal"}

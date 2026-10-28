@@ -121,10 +121,39 @@ def zone_suspects(transformer_id: str, limit: int = Query(50, le=500), c: Caller
         by_premise.setdefault(r["premise_id"], []).append({k: r[k] for k in ("feature", "contribution", "reason_text")})
     for r in rows:
         r["reasons"] = by_premise.get(r["premise_id"], [])
+        # "Solar with unexplained night use": the solar tag is there but its penalty was not applied (FR-PS-10).
+        r["solar_unexplained"] = any(x["feature"] == "solar_unexplained" for x in r["reasons"])
     db.audit(conn, c.user_id, "zone.suspects.view", f"zone:{transformer_id}", {"run_date": str(run_date)})
     top_k = max(1, -(-zone["n_premises"] * 5 // 100))
     return {"transformer_id": transformer_id, "run_date": run_date, "flagged": zone["flagged"], "balance_available": zone["balance_available"],
             "top_k": top_k, "suspects": rows}
+
+
+@router.get("/zones/{transformer_id}/cleared")
+def zone_cleared(transformer_id: str, c: Caller = Depends(require("analyst", "supervisor")), conn=Depends(connection)):
+    """'Cleared as legitimate': homes whose drop or high use has a legitimate explanation (rooftop solar,
+    EV charging, metered mining, vacancy), each with the facts behind it (FR-PS-05, FR-PS-10).
+    Pseudonymised IDs only, like the suspect list."""
+    run_date = latest_run_date(conn)
+    _zone(conn, transformer_id, run_date)
+    cfg = settings.thresholds(conn)
+    rows = conn.execute(
+        """SELECT s.premise_id, s.score, s.rank, s.tags, s.smart, f.details
+           FROM premise_score s JOIN premise_feature f ON f.premise_id = s.premise_id AND f.run_date = s.run_date
+           WHERE s.transformer_id = %s AND s.run_date = %s ORDER BY s.rank""", (transformer_id, run_date)).fetchall()
+    regs = {r["premise_id"]: r for r in conn.execute(
+        """SELECT e.premise_id, e.event_type, e.event_date FROM account_event e JOIN premise p USING (premise_id)
+           WHERE p.transformer_id = %s AND e.event_type = 'solar_registration'""", (transformer_id,)).fetchall()}
+    out = []
+    for r in rows:
+        events = [regs[r["premise_id"]]] if r["premise_id"] in regs else []
+        items = explain.why_cleared(r["tags"], r["details"], events, cfg["zone"]["flat_cv"])
+        if items:
+            check = explain.solar_check(r["tags"], r["details"], r["smart"], cfg) if "solar" in (r["tags"] or []) else None
+            out.append({"premise_id": r["premise_id"], "rank": r["rank"], "score": r["score"], "items": items,
+                        "follow_up": (check or {}).get("follow_up")})
+    db.audit(conn, c.user_id, "zone.cleared.view", f"zone:{transformer_id}", {"run_date": str(run_date)})
+    return {"transformer_id": transformer_id, "run_date": run_date, "cleared": out}
 
 
 @router.get("/zones/{transformer_id}/voltage")
@@ -202,6 +231,8 @@ def premise_view(premise_id: str, c: Caller = Depends(require("analyst", "superv
         "case": case, "contact": contact, "case_events": case_events,
         "why_cleared": explain.why_cleared(score["tags"] if score else (features["tags"] if features else []),
                                            features["details"] if features else None, events, cfg["zone"]["flat_cv"]),
+        "solar_check": explain.solar_check(score["tags"] if score else (features["tags"] if features else []),
+                                           features["details"] if features else None, score["smart"] if score else None, cfg),
         "masked": contact is None,
         "masking_note": None if contact else "Personal details and exact location appear only on an open case, for its assigned analyst, "
                                               "the supervisor and the assigned inspector.",

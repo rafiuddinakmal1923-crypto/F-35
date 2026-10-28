@@ -680,3 +680,14 @@ button.wf-row:hover { background: var(--panel-2); }
 .report-frame iframe { width: 100%; max-width: 900px; min-height: 600px; border: 0; border-radius: 4px; background: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 12px 28px rgba(0,0,0,0.25); }
 @media (max-width: 760px) { .report-frame { padding: 6px; } }
+
+/* Solar check (FR-PS-10) and the zone's "Cleared as legitimate" list */
+.solar-checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 0.88rem; }
+.solar-checks li { display: flex; gap: 8px; align-items: flex-start; }
+.solar-checks li svg { flex: none; margin-top: 2px; }
+.solar-checks li.ok svg { color: var(--ok-text); }
+.solar-checks li.warn svg { color: var(--accent-text); }
+.solar-checks li.muted, .solar-checks .mark { color: var(--muted); }
+.cleared-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; font-size: 0.88rem; }
+.cleared-list li { padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-2); }
+.linklike { background: none; border: 0; padding: 0; min-height: 0; color: var(--accent-text); font: inherit; font-weight: 600; cursor: pointer; text-decoration: underline; }

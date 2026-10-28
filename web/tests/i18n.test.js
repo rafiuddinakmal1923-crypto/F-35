@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { KEYS, t } from "../src/i18n.js";
+import { CHECK_NAMES, MARKS, VERDICTS } from "../src/lib/solar.js";
 
 const SRC = fileURLToPath(new URL("../src/", import.meta.url));
 
@@ -27,6 +28,7 @@ const DYNAMIC = {
   fallback_: ["AS2", "AS3", "AS7", "AS8", "AS9"],
   kind_: ["full_bypass_mining", "partial_bypass", "confirmed_theft"],
   guide: [1, 2, 3, 4, 5, 6, 7].flatMap((n) => [`${n}Title`, `${n}Say`, `${n}Pass`]),
+  reason_: ["solar_confirmed_no_theft", "solar_plus_bypass"],
 };
 // Keys referenced through maps (menu items, pills, tags, SHAP texts, limits, concept rules).
 const INDIRECT = ["work", "overview", "cases", "assistant", "weekly", "dispatch", "models", "validation", "backtest", "concept", "dataManager",
@@ -34,7 +36,10 @@ const INDIRECT = ["work", "overview", "cases", "assistant", "weekly", "dispatch"
   "inconclusive", "no_access", "tagEv", "tagSolar", "tagVacancy", "limitVoltage", "limitSgcc", "limitSimulation", "limitPilot",
   "conceptRule1", "conceptRule2", "conceptRule3", "conceptRule4", "conceptRule5",
   ...["cv", "min_ratio", "max_ratio", "zero_day_share", "trend", "half_ratio", "max_drop", "weekly_autocorr", "low_day_share",
-    "last_first_week_ratio", "level_vs_peers"].map((f) => `shap_${f}`)];
+    "last_first_week_ratio", "level_vs_peers"].map((f) => `shap_${f}`),
+  // Rooftop-solar check (camel-case families the pattern above does not pick up).
+  ...CHECK_NAMES.map((c) => `solarCheckName_${c}`), ...MARKS.map((m) => `solarMark_${m}`), ...VERDICTS.map((v) => `solarVerdict_${v}`),
+  ...["panels_inverter_seen", "inverter_total_vs_expected", "registration_seen", "wiring_before_meter"].map((k) => `solarCheck_${k}`)];
 
 function usedKeys() {
   const keys = new Set(INDIRECT);

@@ -2,7 +2,7 @@
 // score ring and reason waterfall, evidence timeline, use vs similar homes, "why cleared" for tagged
 // homes, and the masked contact panel. Personal details and the exact location appear only when the
 // API returns them: an open case, for that case's people (FR-UI-03).
-import { Activity, CalendarRange, ClipboardList, Contact, ListTree, ShieldCheck, Zap } from "lucide-react";
+import { Activity, CalendarRange, ClipboardList, Contact, ListTree, ShieldCheck, Sun, Zap } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { get, post, session } from "../api.js";
@@ -12,6 +12,7 @@ import { Confidence, Masked, Tags, useLoad } from "./Common.jsx";
 import EvidenceTimeline from "./EvidenceTimeline.jsx";
 import { ErrorState, Panel, ScoreRing, Skeleton, StatusPill } from "./ui.jsx";
 import Waterfall from "./Waterfall.jsx";
+import SolarCheck from "./SolarCheck.jsx";
 import WhyCleared from "./WhyCleared.jsx";
 
 export default function PremiseDetail({ id, compact = false }) {
@@ -62,6 +63,7 @@ export default function PremiseDetail({ id, compact = false }) {
           <small className="muted">{t("riskNote")}</small>
         </Panel>
         <div className={`${compact ? "span-12" : "span-5"} stack`}>
+          {p.solar_check ? <Panel title={t("solarCheck")} icon={Sun}><SolarCheck check={p.solar_check} /></Panel> : null}
           {p.why_cleared?.length ? (
             <Panel title={t("whyCleared")} icon={ShieldCheck}><WhyCleared items={p.why_cleared} /></Panel>
           ) : null}

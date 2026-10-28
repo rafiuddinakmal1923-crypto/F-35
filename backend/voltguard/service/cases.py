@@ -312,6 +312,27 @@ def list_cases(conn, caller: Caller, status: str | None = None, team: str | None
     return rows
 
 
+SOLAR_CHECKLIST = ("panels_inverter_seen", "inverter_total_vs_expected", "registration_seen", "wiring_before_meter")
+SOLAR_REASON_TAGS = {"false_alarm": "solar_confirmed_no_theft", "confirmed_theft": "solar_plus_bypass"}
+
+
+def _solar_visit(conn, premise_id: str) -> dict | None:
+    """Rooftop-solar items for the visit (Solar brief 4): the checklist keys (worded on the phone in English or
+    Bahasa Melayu), the registered capacity and the daily generation the scorer expected, for comparison with
+    the inverter's own reading. None when the home shows no sign of solar."""
+    row = conn.execute(
+        """SELECT f.tags, f.details->'solar' AS solar FROM premise_feature f
+           WHERE f.premise_id = %s ORDER BY f.run_date DESC LIMIT 1""", (premise_id,)).fetchone()
+    s = (row or {}).get("solar") or {}
+    if not row or not ("solar" in (row["tags"] or []) or s.get("registered") or s.get("export")):
+        return None
+    budget = s.get("budget") or {}
+    return {"checklist": list(SOLAR_CHECKLIST), "registered": bool(s.get("registered")),
+            "capacity_kwp": s.get("capacity_kwp"), "has_battery": bool(s.get("has_battery")),
+            "expected_kwh_per_day": budget.get("expected_kwh"), "psh_source": budget.get("psh_source"),
+            "reason_tags": SOLAR_REASON_TAGS}
+
+
 def inspector_view(conn, caller: Caller, case: dict) -> dict:
     """What the phone keeps offline: address, top reasons (model cases) and the safety checklist.
 
@@ -321,6 +342,7 @@ def inspector_view(conn, caller: Caller, case: dict) -> dict:
     view = {"case_id": case["case_id"], "premise_id": case["premise_id"], "status": case["status"],
             "joint_operation": case["joint_operation"], "contact": dict(contact) if contact else None,
             "safety_checklist": SAFETY_CHECKLIST}
+    view["solar"] = _solar_visit(conn, case["premise_id"])
     if case["origin"] == "random_sample":
         view.update({"label": ROUTINE_LABEL, "reasons": []})
     else:

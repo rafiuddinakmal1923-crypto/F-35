@@ -1,13 +1,14 @@
 // Zone view (FR-UI-02; UI brief 2.2, the main demo screen): energy balance with the uncertainty band and a
 // "gap opens" marker, hourly gap profile with a "flat 24/7" badge, the feeder schematic, and ranked suspects
 // as cards. A card or a schematic node opens the premise in the right-hand drawer without leaving the zone.
-import { BarChart3, Banknote, ExternalLink, Network, Users, Waves } from "lucide-react";
+import { BarChart3, Banknote, ExternalLink, Network, ShieldCheck, Sun, Users, Waves } from "lucide-react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { get, session } from "../api.js";
 import { BarChart, LineChart } from "../components/Charts.jsx";
 import { reasonLabel, Tags, useLoad } from "../components/Common.jsx";
 import FeederSchematic from "../components/FeederSchematic.jsx";
 import PremiseDetail from "../components/PremiseDetail.jsx";
+import { clearedText } from "../components/WhyCleared.jsx";
 import { Drawer, Panel, ScoreRing, StatusPill, zoneStatus } from "../components/ui.jsx";
 import { t, useLang } from "../i18n.js";
 import { fmt, int, pct, riskValue } from "../lib/format.js";
@@ -34,6 +35,7 @@ function SuspectCard({ s, topK, active, onOpen }) {
         <span className="tags">
           {s.rank <= topK ? <StatusPill kind="flagged">{t("top5")}</StatusPill> : null}
           <Tags tags={s.tags} />
+          {s.solar_unexplained ? <span className="chip warn"><Sun size={12} aria-hidden="true" />{t("solarUnexplainedMark")}</span> : null}
           {s.confidence === "low" ? <span className="chip warn">{t("lowConfidence")}</span> : null}
           {s.open_case_id ? <span className="chip info">{s.open_case_id}</span> : null}
         </span>
@@ -52,6 +54,7 @@ export default function Zone() {
   const canSuspects = ["analyst", "supervisor"].includes(user?.role);
   const suspects = useLoad(() => (canSuspects ? get(`/zones/${id}/suspects?limit=500`) : Promise.resolve(null)), [id]);
   const voltage = useLoad(() => (canSuspects ? get(`/zones/${id}/voltage`) : Promise.resolve(null)), [id]);
+  const cleared = useLoad(() => (canSuspects ? get(`/zones/${id}/cleared`) : Promise.resolve(null)), [id]);
   const b = balance.data;
   const z = b?.zone;
   const days = b?.days || [];
@@ -139,6 +142,27 @@ export default function Zone() {
           ) : null}
         </Panel>
       </div>
+
+      {canSuspects ? (
+        <Panel title={t("clearedLegit")} icon={ShieldCheck} loading={cleared.loading && !cleared.data} error={cleared.error} onRetry={cleared.reload}
+          empty={cleared.data && !cleared.data.cleared.length} emptyText={t("noCleared")}
+          actions={<small className="muted">{t("clearedLegitIntro")}</small>}>
+          {cleared.data?.cleared.length ? (
+            <ul className="cleared-list">
+              {cleared.data.cleared.map((c) => (
+                <li key={c.premise_id}>
+                  <button type="button" className="linklike" onClick={() => open(c.premise_id)}>{c.premise_id}</button>
+                  <small className="muted"> ? {t("rankInZone", { rank: c.rank })}</small>
+                  {c.follow_up === "unregistered_export" ? <span className="chip info" style={{ marginLeft: 6 }}>{t("unregExportChip")}</span> : null}
+                  {c.items.map((item) => (
+                    <div key={item.kind}><b>{t(`cleared_${item.kind}`)}</b>: {clearedText(item)}</div>
+                  ))}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </Panel>
+      ) : null}
 
       {openPremise && canSuspects ? (
         <Drawer title={`${t("premise")} ${openPremise}`} onClose={() => open(null)}

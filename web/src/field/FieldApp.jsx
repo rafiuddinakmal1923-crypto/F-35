@@ -2,7 +2,7 @@
 // order with distance, one-screen outcome form with big outcome buttons and a camera button, and a clear
 // "saved offline / synced" banner. Outcomes are kept in the encrypted store until sync, then wiped.
 import { Bot, Camera, CircleCheck, CircleHelp, ClipboardList, CloudOff, DoorClosed, MessageCircle, Navigation, RefreshCw, ShieldAlert,
-  User, Wifi, WifiOff } from "lucide-react";
+  Sun, User, Wifi, WifiOff } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ApiError, request } from "../api.js";
@@ -135,8 +135,31 @@ function SyncBanner({ online, queue, message, lastSync }) {
     <span>{lastSync ? t("syncedAt", { time: new Date(lastSync).toLocaleTimeString() }) : t("online")}<small>{message && !message.startsWith("Synced") ? message : t("wipeNotice")}</small></span></div>;
 }
 
+// Rooftop-solar homes (FR-PS-10): what to look at on site, with the generation the scorer expected so the
+// inspector can compare it with the inverter's own total. Solar never rules out a bypass before the meter.
+function SolarChecklist({ solar }) {
+  return (
+    <div className="card stack" style={{ gap: 6 }}>
+      <h3 className="row" style={{ gap: 6 }}><Sun size={18} aria-hidden="true" />{t("solarVisitTitle")}</h3>
+      <small className="muted">
+        {solar.registered ? t("solarVisitRegistered", { kwp: solar.capacity_kwp ?? "?" }) : t("solarVisitUnregistered")}
+        {solar.has_battery ? ` ? ${t("solarVisitBattery")}` : ""}
+      </small>
+      <ul style={{ margin: 0 }}>
+        {solar.checklist.map((key) => (
+          <li key={key}><small>{key === "inverter_total_vs_expected" && solar.expected_kwh_per_day != null
+            ? t("solarCheck_inverter_total_vs_expected_n", { kwh: solar.expected_kwh_per_day })
+            : t(`solarCheck_${key}`)}</small></li>
+        ))}
+      </ul>
+      {solar.psh_source === "assumed" ? <small className="muted">{t("solarPshAssumed")}</small> : null}
+    </div>
+  );
+}
+
 function OutcomeForm({ item, onSaved }) {
   const [outcome, setOutcome] = useState(null);
+  const [reasonTag, setReasonTag] = useState(null);
   const [notes, setNotes] = useState("");
   const [photos, setPhotos] = useState([]);
   const [busy, setBusy] = useState(false);
@@ -154,7 +177,8 @@ function OutcomeForm({ item, onSaved }) {
   async function save() {
     setBusy(true);
     const queue = (await store.get("queue")) || [];
-    queue.push({ clientRef: newRef(), caseId: item.case_id, outcome, notes, photos: photos.map(({ id, type }) => ({ id, type })), savedAt: Date.now() });
+    queue.push({ clientRef: newRef(), caseId: item.case_id, outcome, reasonTag, notes, photos: photos.map(({ id, type }) => ({ id, type })),
+      savedAt: Date.now() });
     await store.put("queue", queue);
     photos.forEach((p) => URL.revokeObjectURL(p.preview));
     setBusy(false);
@@ -166,11 +190,19 @@ function OutcomeForm({ item, onSaved }) {
       <h2>{t("outcome")}</h2>
       <div className="outcomes" role="radiogroup" aria-label={t("outcome")}>
         {OUTCOMES.map(({ key, Icon, cls }) => (
-          <button key={key} type="button" role="radio" aria-checked={outcome === key} className={`${cls} ${outcome === key ? "selected" : ""}`} onClick={() => setOutcome(key)}>
+          <button key={key} type="button" role="radio" aria-checked={outcome === key} className={`${cls} ${outcome === key ? "selected" : ""}`}
+            onClick={() => { setOutcome(key); setReasonTag(null); }}>
             <Icon size={26} aria-hidden="true" />{t(key)}
           </button>
         ))}
       </div>
+      {item.solar && item.solar.reason_tags?.[outcome] ? (
+        <label className="row" style={{ gap: 8, minHeight: 44 }}>
+          <input type="checkbox" checked={reasonTag === item.solar.reason_tags[outcome]}
+            onChange={(e) => setReasonTag(e.target.checked ? item.solar.reason_tags[outcome] : null)} />
+          {t(`reason_${item.solar.reason_tags[outcome]}`)}
+        </label>
+      ) : null}
       <label className="camera-btn"><Camera size={24} aria-hidden="true" />{photos.length ? t("photoAnother", { n: photos.length }) : t("takePhoto")}
         <input type="file" accept="image/*" capture="environment" onChange={addPhoto} aria-label={t("takePhoto")} /></label>
       {photos.length ? <div className="row">{photos.map((p) => <img key={p.id} className="thumb" src={p.preview} alt={t("evidencePhoto")} />)}</div> : null}
@@ -239,7 +271,7 @@ export default function FieldApp() {
           keys.push((await call(s.token, `/cases/${item.caseId}/photos`, { method: "POST", form })).photo_key);
         }
         await call(s.token, `/cases/${item.caseId}/outcome`, { method: "POST",
-          body: { outcome: item.outcome, notes: item.notes || null, photo_keys: keys, client_ref: item.clientRef } });
+          body: { outcome: item.outcome, reason_tag: item.reasonTag || null, notes: item.notes || null, photo_keys: keys, client_ref: item.clientRef } });
         for (const photo of item.photos) await store.remove(`photo:${photo.id}`);
         pending = pending.filter((q) => q.clientRef !== item.clientRef);
         await store.put("queue", pending);
@@ -364,6 +396,7 @@ export default function FieldApp() {
             <h3>{t("safety")}</h3>
             <ul style={{ margin: 0 }}>{item.safety_checklist.map((s, i) => <li key={i}><small>{s}</small></li>)}</ul>
           </div>
+          {item.solar ? <SolarChecklist solar={item.solar} /> : null}
           {queuedFor(item.case_id) ? <div className="sync-banner pending"><CloudOff size={20} aria-hidden="true" /><span>{t("outcomeSavedOffline")}</span></div>
             : <OutcomeForm item={item} onSaved={async () => { await loadLocal(); sync(); }} />}
         </div>

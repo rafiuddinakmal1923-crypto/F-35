@@ -115,6 +115,12 @@ T = {
         "f_AS-7": "phase or branch missing: voltage evidence at low confidence (AS-7)",
         "f_AS-8": "network parameters missing: technical loss compared with similar zones (AS-8)",
         "f_AS-9": "no solar registrations: rooftop solar recognised from its daytime pattern only (AS-9)",
+        "solar_h": "Rooftop solar in ranked zones", "sol_tagged": "Homes tagged as rooftop solar",
+        "sol_tagged_e": "their daytime drop is explained by solar, so a penalty lowers their score",
+        "sol_suspected": "Solar homes still suspected",
+        "sol_suspected_e": "solar explains only the daytime drop; night-time use fell or the drop is more than the panels can produce",
+        "sol_unreg": "Solar export with no registration",
+        "sol_unreg_e": "check the Solar ATAP / NEM / SelCo record; not counted as theft",
         "model_h": "Model in use", "m_scoring": "Scoring version", "m_retrained": "Last retrained",
         "m_retrained_v": "{at}, version {v}; {n} labels available", "m_not_retrained": "not retrained yet; {n} labels available",
         "m_alerts": "Data or drift alerts this week", "m_thresholds": "Thresholds",
@@ -246,6 +252,12 @@ T = {
         "f_AS-7": "fasa atau cabang tiada: bukti voltan berkeyakinan rendah (AS-7)",
         "f_AS-8": "parameter rangkaian tiada: kehilangan teknikal dibandingkan dengan zon serupa (AS-8)",
         "f_AS-9": "tiada pendaftaran solar: solar bumbung dikenal pasti daripada corak siang sahaja (AS-9)",
+        "solar_h": "Solar bumbung dalam zon yang disenaraikan", "sol_tagged": "Premis ditanda sebagai solar bumbung",
+        "sol_tagged_e": "penurunan waktu siang dijelaskan oleh solar, jadi penalti menurunkan skornya",
+        "sol_suspected": "Premis solar yang masih disyaki",
+        "sol_suspected_e": "solar hanya menjelaskan penurunan waktu siang; penggunaan malam turun atau penurunan melebihi keupayaan panel",
+        "sol_unreg": "Eksport solar tanpa pendaftaran",
+        "sol_unreg_e": "semak rekod Solar ATAP / NEM / SelCo; tidak dikira sebagai kecurian",
         "model_h": "Model yang digunakan", "m_scoring": "Versi pemarkahan", "m_retrained": "Latihan semula terakhir",
         "m_retrained_v": "{at}, versi {v}; {n} label tersedia", "m_not_retrained": "belum dilatih semula; {n} label tersedia",
         "m_alerts": "Amaran data atau hanyutan minggu ini", "m_thresholds": "Ambang",
@@ -739,6 +751,16 @@ def _zone_table(d: dict, t: dict) -> str:
     return f"<table><tr>{head}</tr>{''.join(rows)}</table>"
 
 
+def _solar_table(d: dict, t: dict) -> str:
+    """Rooftop-solar counts with a one-line explanation each (Solar brief 4); hidden when no solar is seen."""
+    s = d.get("solar") or {}
+    if not any(s.get(k) for k in ("tagged", "suspected", "unregistered_export")):
+        return ""
+    rows = "".join(f"<tr><td>{t[label]}<div class='meta'>{t[label + '_e']}</div></td><td class='n'>{int(s.get(key) or 0)}</td></tr>"
+                   for label, key in (("sol_tagged", "tagged"), ("sol_suspected", "suspected"), ("sol_unreg", "unregistered_export")))
+    return f"<h3>{t['solar_h']}</h3><table>{rows}</table>"
+
+
 def _hits_table(d: dict, t: dict) -> str:
     rows = []
     for key, means in (("model_ranked", "means_model"), ("random_sample", "means_random")):
@@ -838,7 +860,8 @@ def render_html(d: dict, lang: str = "en") -> str:
 <tr><td>{t['q_monthly']}</td><td class="n">{pct(q['monthly_read_pct'])}</td></tr>
 <tr><td>{t['q_no_dtm']}</td><td class="n">{q['zones_without_dtm']}</td></tr>
 <tr><td>{t['q_dup']}</td><td>{t['q_dup_v']}</td></tr>
-<tr><td>{t['q_fallbacks']}</td><td>{esc(fallbacks)}</td></tr></table></div>
+<tr><td>{t['q_fallbacks']}</td><td>{esc(fallbacks)}</td></tr></table>
+{_solar_table(d, t)}</div>
 <div><h3>{t['model_h']}</h3><table>
 <tr><td>{t['m_scoring']}</td><td>{esc(m['scoring'] or '–')}</td></tr>
 <tr><td>{t['m_retrained']}</td><td>{retrained}</td></tr>

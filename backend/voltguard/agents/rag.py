@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+import logging
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -25,6 +26,7 @@ from voltguard import config, db
 from voltguard.agents import embed, guardrails, llm, scrubber
 from voltguard.db import Caller
 
+log = logging.getLogger("voltguard.rag")
 NOT_FOUND = "Not found in approved documents."
 CHUNK_WORDS, OVERLAP_WORDS = 350, 50          # ~500 tokens with a small overlap
 MIN_RELEVANCE = 1.0                           # keyword overlap needed to count a passage (or a quoted sentence) as relevant
@@ -114,18 +116,37 @@ def collect_documents() -> list[dict]:
         docs.append({"doc_id": path.stem, "title": meta.get("title", path.stem), "version": str(meta.get("version", "")),
                      "owner": meta.get("owner"), "date": str(meta.get("date", "")), "role_scope": meta.get("role_scope", ALL_ROLES),
                      "source_ref": f"data/docs_rag/{path.name}", "sections": _sections_markdown(body)})
-    sources = yaml.safe_load((config.REPO_ROOT / "data" / "docs_rag" / "sources.yaml").read_text(encoding="utf-8")) or {}
-    public = {d["id"]: d for d in sources.get("documents", [])}
-    fetched = config.data_root() / "docs_rag"
-    for path in sorted(fetched.glob("*")) if fetched.exists() else []:
-        meta = public.get(path.stem)
-        if meta is None or path.suffix.lower() not in (".pdf", ".txt", ".md"):
-            continue
+    for meta, path in public_document_files():
         text = _pdf_text(path) if path.suffix.lower() == ".pdf" else path.read_text(encoding="utf-8", errors="ignore")
-        if text.strip():
-            docs.append({"doc_id": meta["id"], "title": meta["title"], "version": "public text", "owner": meta.get("owner"),
-                         "role_scope": meta.get("role_scope", ALL_ROLES), "source_ref": path.name, "sections": _sections_legal(text)})
+        if len(text.split()) < MIN_TEXT_WORDS:
+            # A scanned PDF has pages but no text layer: nothing to index until an OCR'd copy is saved.
+            log.warning("RAG: %s has no text layer (%d words); skipped until an OCR'd copy is saved", path.name, len(text.split()))
+            continue
+        docs.append({"doc_id": meta["id"], "title": meta["title"], "version": "public text", "owner": meta.get("owner"),
+                     "role_scope": meta.get("role_scope", ALL_ROLES),
+                     "source_ref": path.relative_to(config.data_root() / "docs_rag").as_posix(),
+                     "sections": _sections_legal(text)})
     return docs
+
+
+MIN_TEXT_WORDS = 200
+
+
+def public_document_files() -> list[tuple[dict, Path]]:
+    """Public documents listed in sources.yaml that are present in DATA_ROOT/docs_rag/: the `file` path when
+    given (subfolders allowed), otherwise <id>.pdf / .txt / .md. Files not listed are never indexed."""
+    sources = yaml.safe_load((config.REPO_ROOT / "data" / "docs_rag" / "sources.yaml").read_text(encoding="utf-8")) or {}
+    folder = config.data_root() / "docs_rag"
+    out = []
+    for meta in sources.get("documents", []):
+        if meta.get("file"):
+            candidates = [folder / meta["file"]]
+        else:
+            candidates = [folder / f"{meta['id']}{ext}" for ext in (".pdf", ".txt", ".md")]
+        path = next((p for p in candidates if p.is_file()), None)
+        if path is not None and path.suffix.lower() in (".pdf", ".txt", ".md"):
+            out.append((meta, path))
+    return out
 
 
 # --------------------------------------------------------------------------- index

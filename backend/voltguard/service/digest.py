@@ -201,6 +201,12 @@ def build(conn: psycopg.Connection, caller: Caller, now: datetime | None = None)
         fallbacks.append("AS-9")
     model = conn.execute("SELECT version_id, trained_at FROM model_version ORDER BY trained_at DESC LIMIT 1").fetchone()
     labels = conn.execute("SELECT count(*) AS n FROM training_label").fetchone()["n"]
+    # Rooftop solar in the ranked zones of the latest run (FR-PS-10): tagged, still suspected, unregistered export.
+    solar = conn.execute(
+        """SELECT count(*) FILTER (WHERE 'solar' = ANY(f.tags)) AS tagged,
+                  count(*) FILTER (WHERE 'solar' = ANY(f.tags) AND (f.details->'solar'->'penalty'->>'applies') = 'false') AS suspected,
+                  count(*) FILTER (WHERE f.details->'solar'->>'follow_up' = 'unregistered_export') AS unregistered_export
+           FROM premise_feature f WHERE f.run_date = (SELECT max(run_date) FROM premise_feature)""").fetchone()
 
     rate = tariff()
     kwh_month = round(avg_now * 30) if avg_now is not None else None
@@ -238,6 +244,8 @@ def build(conn: psycopg.Connection, caller: Caller, now: datetime | None = None)
         "quality": {"meter_days_complete_pct": round(100 - short_days / max(meters["smart"] * 7, 1) * 100, 1) if meters["smart"] else None,
                     "monthly_read_pct": round((meters["total"] - meters["smart"]) / meters["total"] * 100, 1) if meters["total"] else None,
                     "zones_without_dtm": len(no_balance), "fallbacks": fallbacks},
+        "solar": {"tagged": solar["tagged"], "suspected": solar["suspected"],
+                  "unregistered_export": solar["unregistered_export"], "registrations": solar_registrations},
         "model": {"scoring": run.get("model_version") if run else None,
                   "retrained": model["version_id"] if model else None,
                   "retrained_at": model["trained_at"].astimezone(MYT).isoformat(timespec="minutes") if model else None,
