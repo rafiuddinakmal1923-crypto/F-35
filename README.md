@@ -69,7 +69,9 @@ Prometheus/Grafana to show the R1 architecture; the app keeps using the lite imp
 
 ## Telegram dispatch bot
 
-Dispatch runs through a Telegram bot (SRS 5.1–5.2):
+Dispatch runs through a Telegram bot (SRS 5.1–5.2). In R0 the bot simulates the phone notifications
+the inspector app will send itself in a later release; the app already shows every message and button.
+
 1. A new case sends the supervisor a **dispatch suggestion** with *Approve / Reject*.
 2. Approval sends the team the **assignment** with *Accept / On my way / Can't attend*.
 3. *Can't attend* tells the supervisors to reassign.
