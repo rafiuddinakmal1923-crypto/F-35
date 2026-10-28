@@ -180,6 +180,8 @@ def parse_mock(question: str) -> tuple[str, dict]:
 
 
 def parse(question: str) -> tuple[str, dict, str]:
+    """(template, params, mode). mode is "ollama" whenever the model answered with valid JSON, also when it
+    says no template fits (a greeting, say); "mock" only when the keyword rules decided alone."""
     template, params = parse_mock(question)
     try:
         completion = _ask_model(question)
@@ -188,11 +190,27 @@ def parse(question: str) -> tuple[str, dict, str]:
     if completion:
         try:
             choice = json.loads(re.search(r"\{.*\}", completion.text, re.S).group(0))
-            if choice.get("template") in TEMPLATES:
-                return choice["template"], choice.get("params") or {}, "ollama"
         except (AttributeError, ValueError):
-            pass
+            choice = None
+        if isinstance(choice, dict):
+            chosen = choice.get("template") or ""
+            if chosen in TEMPLATES:
+                return chosen, _model_params(chosen, choice.get("params"), template, params), "ollama"
+            if chosen == "":
+                # The model found no fit; the keyword rules may still match a phrasing it missed.
+                return template, params, "ollama"
     return template, params, "mock"
+
+
+def _model_params(chosen: str, raw, rule_template: str, rule_params: dict) -> dict:
+    """The model's parameters, cleaned: only a JSON object counts (it once sent ["0.1", 7] for "10% this
+    week"), empty values and unknown names are dropped, and values the keyword rules read literally from
+    the question (a percentage, a zone ID, a number of days) win, so templates' defaults fill the rest."""
+    allowed = TEMPLATES[chosen].params
+    cleaned = {k: v for k, v in raw.items() if k in allowed and v not in (None, "")} if isinstance(raw, dict) else {}
+    if rule_template == chosen:
+        cleaned.update(rule_params)
+    return cleaned
 
 
 def _ask_model(question: str):

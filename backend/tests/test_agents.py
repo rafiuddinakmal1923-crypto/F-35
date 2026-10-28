@@ -195,6 +195,24 @@ def test_FR_AG_01_live_model_gets_figures_with_units(monkeypatch):
     assert small["inspection_outcomes"] == ["not inspected yet"]
 
 
+def test_FR_AG_03_live_model_choice_is_cleaned_and_labelled(monkeypatch):
+    """Replies recorded from qwen2.5:7b-instruct: a list of params with 10% as 0.1, a null day count, and an
+    empty template for a greeting (which is still a live answer, not mock)."""
+    from voltguard.agents import chatbot
+
+    replies = {"Which zones had a gap above 10% this week?": '{"template": "zones_gap_above", "params": ["0.1", 7]}',
+               "Show the gap trend for TX-CEN-001": '{"template": "zone_gap_trend", "params": {"zone": "TX-CEN-001", "days": null}}',
+               "hi": '{"template": ""}',
+               "which district loses the most energy": '{"template": "gap_by_district", "params": {"bogus": 1}}'}
+    monkeypatch.setattr(chatbot, "_ask_model", lambda q: llm.Completion(replies[q], "ollama", "qwen"))
+    assert chatbot.parse("Which zones had a gap above 10% this week?") == ("zones_gap_above", {"pct": 10.0, "days": 7}, "ollama")
+    assert chatbot.parse("Show the gap trend for TX-CEN-001") == ("zone_gap_trend", {"zone": "TX-CEN-001"}, "ollama")
+    assert chatbot.parse("hi") == ("", {}, "ollama")
+    assert chatbot.parse("which district loses the most energy") == ("gap_by_district", {}, "ollama")
+    monkeypatch.setattr(chatbot, "_ask_model", lambda q: None)        # model unavailable
+    assert chatbot.parse("hi") == ("", {}, "mock")
+
+
 def test_FR_UI_05_pdf_fallback_without_a_browser(monkeypatch):
     """Without Chromium (e.g. a minimal image) the export still produces a PDF with every line."""
     from pypdf import PdfReader
