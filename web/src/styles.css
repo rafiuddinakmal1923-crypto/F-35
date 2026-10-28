@@ -870,6 +870,12 @@ input[type="file"]::file-selector-button {
   transform: translateX(-50%);
   pointer-events: none;
   opacity: var(--aurora-opacity);
+}
+/* the colour field, blurred */
+.login-aurora::before {
+  content: "";
+  position: absolute;
+  inset: 0;
   filter: blur(var(--aurora-blur));
   background:
     radial-gradient(34% 58% at 20% 58%, var(--aurora-1) 0%, transparent 72%),
@@ -877,24 +883,56 @@ input[type="file"]::file-selector-button {
     radial-gradient(30% 56% at 64% 56%, var(--aurora-3) 0%, transparent 72%),
     radial-gradient(24% 46% at 84% 40%, var(--aurora-4) 0%, transparent 72%);
 }
+/* film grain over the colour: a sibling layer so the blur never softens it, masked to the field */
+.login-aurora::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  background-size: 180px 180px;
+  mix-blend-mode: overlay;
+  opacity: var(--grain-opacity);
+  -webkit-mask-image: radial-gradient(ellipse 46% 44% at 50% 52%, #000 35%, transparent 100%);
+  mask-image: radial-gradient(ellipse 46% 44% at 50% 52%, #000 35%, transparent 100%);
+}
 .glass {
+  position: relative;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   box-shadow: 0 0 0 1px var(--glass-edge), var(--shadow-card);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
   backdrop-filter: blur(var(--glass-blur)) saturate(140%);
 }
-/* No backdrop support, or the user asks for less transparency: solid surface. */
+/* frosted texture: a finer, quieter noise than the gradient's grain */
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: var(--frost);
+  background-size: 120px 120px;
+  mix-blend-mode: var(--frost-blend);
+  opacity: var(--frost-opacity);
+}
+.glass > * { position: relative; }
+/* No backdrop support, or the user asks for less transparency or more contrast: solid, untextured. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass { background: var(--surface); border-color: var(--border); }
+  .glass::before { display: none; }
 }
 @media (prefers-reduced-transparency: reduce) {
   .glass { background: var(--surface); border-color: var(--border); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .glass::before { display: none; }
   .login-aurora { opacity: calc(var(--aurora-opacity) * 0.6); }
+}
+@media (prefers-contrast: more) {
+  .glass::before, .login-aurora::after { display: none; }
 }
 /* fields stay solid so typing is always legible over the glass */
 .glass input { background: var(--surface); }
-.login-lede { margin: 0; font-size: 17px; line-height: 1.5; color: var(--text-secondary); }
+/* ink, not secondary grey: this line sits over the gradient and must stay above 4.5:1 */
+.login-lede { margin: 0; font-size: 17px; line-height: 1.5; color: var(--text); }
 .login-form { display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-7); }
 .login-form label { gap: var(--space-2); }
 .login-form input { min-height: 44px; font-size: 15px; padding: 10px 12px; }
