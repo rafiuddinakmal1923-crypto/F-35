@@ -73,11 +73,14 @@ services:
     restart: unless-stopped
 
   # ------------------------------------------------------------------ public link (prompt 7.4)
+  # All tunnels use HTTP/2 over TCP 443: QUIC (UDP 7844) is blocked or throttled on many campus, office
+  # and hotel networks; on this laptop's network it timed out for minutes, and the link showed
+  # Cloudflare error 1033 until it finally connected.
   # Quick tunnel: random trycloudflare.com address; start once on demo day, never restart.
   tunnel:
     profiles: ["tunnel"]
     image: cloudflare/cloudflared:2025.4.2
-    command: ["tunnel", "--no-autoupdate", "--url", "http://proxy:80"]
+    command: ["tunnel", "--no-autoupdate", "--protocol", "http2", "--url", "http://proxy:80"]
     depends_on: [proxy]
     restart: unless-stopped
 
@@ -85,7 +88,7 @@ services:
   tunnel-named:
     profiles: ["tunnel-named"]
     image: cloudflare/cloudflared:2025.4.2
-    command: ["tunnel", "--no-autoupdate", "--config", "/etc/cloudflared/config.yml", "run"]
+    command: ["tunnel", "--no-autoupdate", "--protocol", "http2", "--config", "/etc/cloudflared/config.yml", "run"]
     volumes:
       - ./deploy/cloudflared:/etc/cloudflared:ro
     depends_on: [proxy]
@@ -96,7 +99,7 @@ services:
   tunnel-token:
     profiles: ["tunnel-token"]
     image: cloudflare/cloudflared:2025.4.2
-    command: ["tunnel", "--no-autoupdate", "run"]
+    command: ["tunnel", "--no-autoupdate", "--protocol", "http2", "run"]
     environment:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN:-}
     depends_on: [proxy]

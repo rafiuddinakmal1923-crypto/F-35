@@ -216,6 +216,7 @@ The app keeps running on the laptop; the public link stops working and case link
 | Phone app says the data was wiped | It was signed out remotely, or the data was older than 24 hours. Sign in again |
 | Browser: *Hmmm… can't reach this page*, `DNS_PROBE_FINISHED_NXDOMAIN` on a `trycloudflare.com` link | The address is stale or not known yet. Run `.\make.ps1 tunnel`: it checks the link and says which problem it is. If it says the tunnel isn't connected, run `.\make.ps1 tunnel -New` for a fresh address. If it says this network's DNS doesn't know it, run `ipconfig /flushdns`, wait a minute, try a phone on mobile data, or turn off antivirus "web protection" for a moment |
 | `No tunnel address yet` | Run `docker compose --profile tunnel logs tunnel` and check the laptop is online. Office networks sometimes block Cloudflare tunnels; try a phone hotspot |
+| Cloudflare **Error 1033** *Cloudflare Tunnel error* on the link | The tunnel has not connected yet. Wait one minute and reload. The tunnel uses HTTP/2 over port 443, which most networks allow; if the logs (`docker compose --profile tunnel logs tunnel`) keep showing `Failed to dial`, the network blocks Cloudflare: use a phone hotspot |
 | Public link opens but case links in messages show `localhost` | Restart the tunnel command; it writes `PUBLIC_BASE_URL` in `.env` and restarts the API |
 | Anything else | `.\make.ps1 logs` and send a screenshot of the red error lines |
 
