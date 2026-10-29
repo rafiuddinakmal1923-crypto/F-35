@@ -232,7 +232,7 @@ Figures below are design targets set by the team, to be confirmed with the pilot
 - **Manager dashboard:** network overview built only on zone-level, pseudonymised reporting views (Power BI in R0, where every manager sees all regions; web app or Power BI with row-level security by region in R1)
 - **Inspector view:** case list, case details, outcome form with photo upload, usable on a phone
 - **Chat panel:** questions to the analyst chatbot and field assistant
-- **Notifications:** case assignments and reminders through the utility's chosen channel (e.g. Microsoft Teams, SMS); a Telegram bot in R0
+- **Notifications:** case assignments and reminders through the utility's chosen channel (e.g. Microsoft Teams, SMS). In R0 a Telegram bot simulates them; in a later release the inspector app sends them to inspectors as phone notifications itself
 
 ### 5.2 Software interfaces
 
@@ -243,7 +243,7 @@ Figures below are design targets set by the team, to be confirmed with the pilot
 | Network / GIS model | Meter-to-transformer links, feeder branch, phase, street positions | In | Weekly | Simulated network file |
 | Billing / customer system | Account holder, tenancy changes, tariff | In | Daily | Simulated account events |
 | Workforce / roster system | On-duty teams and base locations | In | Each shift | Simulated roster of three teams |
-| Messaging service | Assignments, reminders, escalations | Out | On event | Telegram bot |
+| Messaging service | Assignments, reminders, escalations | Out | On event | Telegram bot, simulating the inspector app's later phone notifications |
 | Single sign-on directory | User identity and roles | In | On sign-in | Keycloak with one test account per role |
 
 All inbound connections are read-only. Messages carry a case ID and secure link, never customer names or addresses.

@@ -92,7 +92,7 @@ The detection engine is the core: it reads clean readings from the data store ea
 | Language model runtime | Hosts the open-weight language model and embedding model | Ollama (R0), vLLM on a GPU server (R1) | FR-AG-01–05 |
 | Document indexer | Splits approved documents and past cases into chunks and stores their embeddings | Python, pgvector | FR-AG-04–05 |
 | Job scheduler | Timed reminders and escalations (24 h, 72 h), retrain jobs, daily copy of the latest audit hash | Celery + Redis | FR-AG-02, FR-ML-01, NFR-12 |
-| Notification service | Sends assignment, reminder and escalation messages with a case link only | Telegram bot (R0); Microsoft Teams or SMS gateway (R1) | FR-AG-02 |
+| Notification service | Sends assignment, reminder and escalation messages with a case link only | Telegram bot simulating the inspector app's phone notifications (R0); the app's own phone notifications, Microsoft Teams or SMS gateway (R1) | FR-AG-02 |
 | Monitoring | Pipeline health, data quality, model drift, uptime | Prometheus + Grafana | FR-ML-03, NFR-03 |
 
 ## 4. Data design
@@ -344,7 +344,7 @@ Numeric questions ("Which zones had a gap above 20% this week?") go to the analy
 | Data | Simulated zone, SGCC, London profiles, data.gov.my; uploads through the Data manager | One TNB zone, anonymised extracts |
 | Dashboard | Power BI Desktop / free service on the zone-level reporting views | Web app; Power BI if the utility prefers |
 | Language model | Ollama on the laptop, or mock mode | vLLM on an internal GPU server |
-| Messaging | Telegram bot, or console notifier when no token is set | Microsoft Teams or SMS gateway |
+| Messaging | Telegram bot, simulating the phone notifications the inspector app will send later; in-app chat only when no token is set | The inspector app's own phone notifications, or Microsoft Teams or SMS gateway |
 | Sign-in | Test accounts per role and region (Keycloak in the full profile; built-in sign-in with the same roles in the lite profile) | Utility single sign-on |
 | Internet access | Outbound only, for the tunnel, Telegram and first-time downloads | None for VoltGuard services |
 

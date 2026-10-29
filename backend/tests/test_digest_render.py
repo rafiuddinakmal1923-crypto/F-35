@@ -23,15 +23,19 @@ def week(**over) -> dict:
     d = {
         "region": "CEN", "report_id": "VG-WK-CEN-2026-W44", "generated_at": "2026-10-28T02:13:00+00:00",
         "generated_myt": "2026-10-28T10:13+08:00", "empty": False,
-        "energy_window": {"from": "2026-09-24", "to": "2026-09-30"}, "work_window": {"from": "2026-10-21", "to": "2026-10-28"},
+        "period": {"kind": "week", "days": 7, "bucket_days": 1},
+        "energy_window": {"from": "2026-09-24", "to": "2026-09-30", "prev_from": "2026-09-17", "prev_to": "2026-09-23"},
+        "work_window": {"from": "2026-10-22", "to": "2026-10-28", "prev_from": "2026-10-15", "prev_to": "2026-10-21"},
+        "energy_data": {"from": "2026-09-24", "to": "2026-09-30", "days": 7, "of": 7},
         "window_gap_days": 28, "data_mode": {"simulated": True, "outcomes_simulated": True, "sources": {}},
         "kpis": {"flagged_zones": 2, "flagged_zones_prev": 2, "zones_with_balance": 3, "zones_without_balance": 1,
                  "unexplained_kwh_per_day": 285, "unexplained_kwh_per_day_prev": 292, "unexplained_change_pct": -2.5,
                  "unexplained_kwh_per_month": 8554, "value_at_risk": "[TNB tariff: to be supplied]", "cases_opened": 0,
                  "cases_closed": 0, "cases_opened_prev": 0, "cases_closed_prev": 0, "cases_closed_total": 10, "cases_overdue": 0,
-                 "reports_exported": 0, "reports_exported_prev": 0, "open_alerts": 0, "alerts_this_week": 0},
-        "region_margin_kwh": 58, "week_average": {"this": 285, "prev": 292},
-        "daily_gap": [{"date": f"2026-09-{17 + i:02d}", "gap_kwh": 290 - i, "margin_kwh": 58} for i in range(14)],
+                 "reports_exported": 0, "reports_exported_prev": 0, "open_alerts": 0, "alerts_in_period": 0},
+        "region_margin_kwh": 58, "period_average": {"this": 285, "prev": 292},
+        "gap_series": [{"date": f"2026-09-{17 + i:02d}", "to": f"2026-09-{17 + i:02d}", "days": 1, "gap_kwh": 290 - i, "margin_kwh": 58}
+                       for i in range(14)],
         "zones": [
             {"transformer_id": "TX-CEN-002", "district": "Petaling", "gap_kwh_per_day": 156.0, "gap_pct": 16.2, "margin_kwh": 31.0,
              "threshold_kwh": 48.0, "supply_kwh_per_day": 960, "flagged": True, "priority": "large_load", "gap_start": "2026-08-31",
@@ -46,7 +50,7 @@ def week(**over) -> dict:
         "top_zones": [],
         "value": {"kwh_per_month": 8554, "kwh_per_month_above_threshold": 4980, "rm_per_kwh": None, "tariff_source": None},
         "cases_by_status": {"closed": 10},
-        "outcomes_this_week": {}, "outcomes_all_time": {"confirmed_theft": 8, "false_alarm": 10, "inconclusive": 2, "no_access": 1},
+        "outcomes_in_period": {}, "outcomes_all_time": {"confirmed_theft": 8, "false_alarm": 10, "inconclusive": 2, "no_access": 1},
         "hit_rates": {"model_ranked": {"inspections": 16, "confirmed_theft": 7, "hit_rate_pct": 43.8, "ci_low_pct": 23.1, "ci_high_pct": 66.8},
                       "random_sample": {"inspections": 4, "confirmed_theft": 1, "hit_rate_pct": 25.0, "ci_low_pct": 4.6, "ci_high_pct": 69.9}},
         "quality": {"meter_days_complete_pct": 100.0, "monthly_read_pct": 12.0, "zones_without_dtm": 1, "fallbacks": ["AS-2", "AS-3-simulated", "AS-9"]},
@@ -79,7 +83,7 @@ def test_summary_rules_steady_week_with_flat_priority_zone():
     busy = week()
     busy["kpis"]["cases_opened"] = 5
     assert r.summary(busy)[0][2] == "5 case(s) were opened and 0 closed this week; no inspections were recorded yet."
-    busy["outcomes_this_week"] = {"confirmed_theft": 1, "false_alarm": 2}
+    busy["outcomes_in_period"] = {"confirmed_theft": 1, "false_alarm": 2}
     assert r.summary(busy)[0][2] == "5 case(s) were opened and 0 closed this week; 3 inspection(s) were recorded."
 
 
@@ -87,7 +91,7 @@ def test_summary_rules_steady_week_with_flat_priority_zone():
     (-2.5, 285, 58, ("steady", True)), (25.0, 285, 58, ("rising", True)), (-30.0, 285, 58, ("falling", True)),
     (-2.5, 40, 58, ("steady", False)), (None, 285, 58, ("steady", True)), (None, None, 58, ("none", False))])
 def test_trend_rule(change, avg, margin, expected):
-    d = week(region_margin_kwh=margin, week_average={"this": avg, "prev": 292})
+    d = week(region_margin_kwh=margin, period_average={"this": avg, "prev": 292})
     d["kpis"]["unexplained_change_pct"] = change
     assert r.trend(d) == expected
 
@@ -157,7 +161,7 @@ def test_simulated_versus_uploaded_data():
 
 def test_empty_week():
     assert "No detection results yet." in r.render_html({"region": "CEN", "empty": True})
-    quiet = week(week_average={"this": None, "prev": None}, daily_gap=[])
+    quiet = week(period_average={"this": None, "prev": None}, gap_series=[])
     quiet["kpis"]["unexplained_change_pct"] = None
     assert r.summary(quiet)[0][0] == "There are no meter data for this week, so unexplained energy cannot be measured."
     assert r.energy_takeaway(quiet) == "No meter data for this week, so there is nothing to compare."
@@ -208,3 +212,88 @@ def test_week_fixture_is_not_mutated():
     snapshot = copy.deepcopy(d)
     r.render_html(d, "ms")
     assert d == snapshot
+
+
+# --------------------------------------------------------------------------- periods (day, week, month, year, chosen dates)
+
+def test_period_windows():
+    from datetime import date
+
+    d = date
+    assert digest.span("day", d(2026, 9, 30)) == (d(2026, 9, 30), d(2026, 9, 30), d(2026, 9, 29), d(2026, 9, 29))
+    assert digest.span("week", d(2026, 9, 30)) == (d(2026, 9, 24), d(2026, 9, 30), d(2026, 9, 17), d(2026, 9, 23))
+    # A whole month against the whole month before; a month to date against the same days of the month before.
+    assert digest.span("month", d(2026, 9, 30)) == (d(2026, 9, 1), d(2026, 9, 30), d(2026, 8, 1), d(2026, 8, 31))
+    assert digest.span("month", d(2026, 10, 28)) == (d(2026, 10, 1), d(2026, 10, 28), d(2026, 9, 1), d(2026, 9, 28))
+    assert digest.span("month", d(2026, 3, 31)) == (d(2026, 3, 1), d(2026, 3, 31), d(2026, 2, 1), d(2026, 2, 28))
+    assert digest.span("year", d(2026, 9, 30)) == (d(2026, 1, 1), d(2026, 9, 30), d(2025, 1, 1), d(2025, 9, 30))
+    assert digest.span("year", d(2024, 12, 31))[3] == d(2023, 12, 31)
+    w = digest.windows("month", d(2026, 9, 30), d(2026, 10, 28))
+    assert w["energy"]["from"] == d(2026, 9, 1) and w["work"]["from"] == d(2026, 10, 1)
+    chosen = digest.windows("custom", d(2026, 9, 30), d(2026, 10, 28), d(2026, 8, 1), d(2026, 8, 31))
+    assert chosen["energy"] == chosen["work"] == {"from": d(2026, 8, 1), "to": d(2026, 8, 31), "prev_from": d(2026, 7, 1),
+                                                  "prev_to": d(2026, 7, 31)}
+    for bad in ((None, d(2026, 8, 31)), (d(2026, 9, 1), d(2026, 8, 31)), (d(2020, 1, 1), d(2026, 1, 1))):
+        with pytest.raises(digest.PeriodError):
+            digest.windows("custom", d(2026, 9, 30), d(2026, 10, 28), *bad)
+    with pytest.raises(digest.PeriodError):
+        digest.windows("fortnight", d(2026, 9, 30), d(2026, 10, 28))
+    assert digest.report_id("CEN", "month", w) == "VG-MO-CEN-2026-10"
+    assert digest.report_id("CEN", "week", digest.windows("week", d(2026, 9, 30), d(2026, 10, 28))) == "VG-WK-CEN-2026-W44"
+    assert digest.report_id("CEN", "custom", chosen) == "VG-RG-CEN-20260801-20260831"
+
+
+def test_period_series_switches_to_weekly_points_for_a_year():
+    from datetime import date, timedelta
+
+    days = {date(2026, 8, 1) + timedelta(days=i): {"gap": 280.0, "u2": 58.0 ** 2} for i in range(61)}
+    daily, size = digest.series(days, date(2026, 9, 24), date(2026, 9, 30), date(2026, 9, 17))
+    assert size == 1 and len(daily) == 14
+    yearly, size = digest.series(days, date(2026, 1, 1), date(2026, 9, 30), date(2025, 1, 1))
+    assert size == 7 and all(p["days"] <= 7 for p in yearly) and sum(p["days"] for p in yearly) == 61
+    # Blocks start on the period's first day; a block's margin is that of its average (√Σu² / n).
+    assert all((date.fromisoformat(p["date"]) - date(2026, 1, 1)).days % 7 == 0 for p in yearly)
+    full = next(p for p in yearly if p["days"] == 7)
+    assert full["gap_kwh"] == 280 and full["margin_kwh"] == round(58 * 7 ** 0.5 / 7)
+
+
+def month(**over) -> dict:
+    d = week(**over)
+    d["period"] = {"kind": "month", "days": 28, "bucket_days": 1}
+    d["report_id"] = "VG-MO-CEN-2026-10"
+    d["energy_window"] = {"from": "2026-09-01", "to": "2026-09-30", "prev_from": "2026-08-01", "prev_to": "2026-08-31"}
+    d["work_window"] = {"from": "2026-10-01", "to": "2026-10-28", "prev_from": "2026-09-01", "prev_to": "2026-09-28"}
+    d["energy_data"] = {"from": "2026-09-01", "to": "2026-09-30", "days": 30, "of": 30}
+    return d
+
+
+def test_period_words_follow_the_period():
+    sentences, _ = r.summary(month())
+    assert "2.5% lower than the month before" in sentences[0] and sentences[2].endswith("closed this month and no inspections were recorded.")
+    page = r.render_html(month(), "en")
+    assert "VoltGuard monthly summary" in page and "This month in one paragraph." in page and "this calendar month so far" in page
+    assert "this week" not in page and "the week before" not in page
+    malay = r.render_html(month(), "ms")
+    assert "Ringkasan bulanan VoltGuard" in malay and "bulan sebelumnya" in malay and "minggu" not in malay
+    assert r.headline(month()).startswith("2 flagged zone(s), 285 kWh/day unexplained (−2.5% vs the month before)")
+    assert r.message_label(month()) == "Monthly summary" and r.page_link(month()) == "weekly?period=month"
+    assert r.page_link(week()) == "weekly"
+
+
+def test_chosen_dates_without_meter_data_say_so():
+    d = week(period_average={"this": None, "prev": None}, gap_series=[], zones=[], region_margin_kwh=None, window_gap_days=0)
+    d["period"] = {"kind": "custom", "days": 28, "bucket_days": 1}
+    d["energy_window"] = d["work_window"] = {"from": "2026-10-01", "to": "2026-10-28", "prev_from": "2026-09-03", "prev_to": "2026-09-30"}
+    d["energy_data"] = {"from": None, "to": None, "days": 0, "of": 28}
+    d["kpis"]["unexplained_change_pct"] = None
+    why = r.why_two_dates(d)
+    assert why.startswith("Energy figures and field work both use the dates you chose (1–28 Oct 2026), compared with the 28 day(s) just before.")
+    assert "There are no meter data for these dates." in why
+    assert r.zones_takeaway(d) == "No meter data for this period, so the zones cannot be compared."
+    assert r.summary(d)[0][0] == "There are no meter data for this period, so unexplained energy cannot be measured."
+    assert r.page_link(d) == "weekly?period=custom&from=2026-10-01&to=2026-10-28"
+    year = week()
+    year["period"] = {"kind": "year", "days": 301, "bucket_days": 7}
+    year["energy_data"] = {"from": "2026-08-01", "to": "2026-09-30", "days": 61, "of": 273}
+    assert "Meter data cover 61 of these 273 days (1 Aug – 30 Sep 2026)." in r.why_two_dates(year)
+    assert "(kWh/day, weekly averages)" in r.render_html(year)

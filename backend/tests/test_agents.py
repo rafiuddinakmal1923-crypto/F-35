@@ -261,6 +261,83 @@ def test_FR_AG_04_legal_sections_by_number_and_no_index():
     assert [s for s, _ in sections][-1] == "Section 37" and "CHEQUE" not in sections[-1][1]
 
 
+def test_FR_AG_04_english_questions_reach_the_malay_act():
+    """The Act on file is the Malay reprint: English questions match it through paired terms, unrelated ones do not."""
+    from voltguard.agents import embed
+
+    statute = "37. (3) Mana-mana orang yang dengan curang mengambil elektrik atau mengganggu meter melakukan suatu kesalahan dan boleh didenda."
+    assert embed.keyword_overlap("What is the penalty for tampering with a meter?", statute) >= rag.MIN_RELEVANCE
+    assert embed.keyword_overlap("What is the punishment for electricity theft?", statute) >= rag.MIN_RELEVANCE
+    assert embed.keyword_overlap("What is the fine for overgrown hedges under the Street Act?", statute) < rag.MIN_RELEVANCE
+    assert embed.words("What should I photograph at the meter board?") == ["photograph", "meter", "board"]
+
+
+def test_FR_AG_04_statute_text_is_cleaned_and_split_by_section():
+    for header in ("42                              Undang-Undang Malaysia                AKTA 447 ",
+                   "66                                         Laws of Malaysia                      ACT 574 ",
+                   "Bekalan Elektrik                                       41 "):
+        assert rag._strip_running_header(f"{header}\n \n22. (1) Tertakluk kepada.") == " \n22. (1) Tertakluk kepada."
+    assert rag._strip_running_header("22. (1) Tertakluk kepada.\nmore") == "22. (1) Tertakluk kepada.\nmore"
+    # The arrangement at the front lists each section on one line; the section itself is kept, with its heading.
+    text = ("SUSUNAN SEKSYEN\n1. Tajuk ringkas\n37. Kesalahan\n"
+            "1. (1) Akta ini bolehlah dinamakan Akta Bekalan Elektrik 1990.\nKesalahan\n"
+            "37. (1) Mana-mana orang yang mengganggu pepasangan melakukan suatu kesalahan.")
+    sections = rag._sections_legal(text)
+    assert [s for s, _ in sections] == ["Section 1", "Section 37"]
+    assert sections[0][1].startswith("1. (1) Akta ini") and sections[1][1].startswith("Kesalahan\n37. (1)")
+
+
+def test_FR_AG_04_act_overview_and_named_section_come_first(monkeypatch):
+    asked = []
+    monkeypatch.setattr(rag, "_section_rows", lambda conn, section, docs: asked.append((section, docs)) or [])
+    assert rag.acts_named("Apakah hukuman di bawah Akta 447?") == ["esa_1990"]
+    rag.overview_passages(None, "What is Act 447?")
+    rag.overview_passages(None, "Terangkan Akta Bekalan Elektrik")
+    assert rag.overview_passages(None, "What does Act 447 say about meter tampering?") == []
+    assert rag.overview_passages(None, "What should I photograph?") == []
+    assert asked == [("Section 1", ["esa_1990"]), ("Section 1", ["esa_1990"])]
+
+    malay = rag.Passage("esa_1990:1:0", "esa_1990", "Electricity Supply Act 1990 (Act 447)", "Section 37", None, None, "document",
+                        "37. (1) Mana-mana orang yang mengganggu pepasangan melakukan suatu kesalahan. (2) Kesalahan kedua.", 2.0)
+    english = rag.Passage("g:1:0", "st_guide", "Guideline", "Section 3", None, None, "document",
+                          "Section 37 of Act 447 applies to every seller of equipment.", 1.0)
+    text, used = rag.extractive_answer("Section 37 of Act 447", [malay, english], named=1)
+    assert text.startswith("(1) Mana-mana orang yang mengganggu pepasangan melakukan suatu kesalahan. [1]") and used[0] == 0
+
+
+def test_FR_AG_04_question_checked_in_full_passages_by_pattern(monkeypatch):
+    """Statute capitals are not names: the passages go to the model with the pattern check only, after the
+    question itself passed the full check. A question naming a person never reaches the model."""
+    passage = rag.Passage("esa_1990:1:0", "esa_1990", "Electricity Supply Act 1990 (Act 447)", "Section 37", None, None, "document",
+                          "Mana-Mana Orang Yang Mengganggu Meter Melakukan Suatu Kesalahan dan boleh didenda.", 2.0)
+    from voltguard import db
+    from voltguard.db import Caller
+
+    calls = []
+    monkeypatch.setattr(db, "audit", lambda *a, **k: None)
+    monkeypatch.setattr(rag, "search", lambda conn, q, **k: [passage])
+    monkeypatch.setattr(rag, "section_passages", lambda conn, q: [])
+    monkeypatch.setattr(rag, "overview_passages", lambda conn, q: [])
+    monkeypatch.setattr(llm, "available", lambda: True)
+    monkeypatch.setattr(llm, "complete", lambda system, user, **k: calls.append(k) or llm.Completion("Boleh didenda [1].", "ollama", "qwen"))
+    caller = Caller("inspector.b", "inspector", "CEN", "T-CEN-B")
+    assert rag.answer(None, caller, "What is the penalty for tampering?")["answer"] == "Boleh didenda [1]."
+    assert calls == [{"presidio": False}]
+    calls.clear()
+    named = rag.answer(None, caller, "Encik Ahmad bin Ali tampered with a meter: penalty?")
+    assert calls == [] and named["mode"] == "extractive" and "didenda" in named["answer"]
+
+
+def test_FR_AG_04_chatbot_hands_document_questions_to_the_documents(api):
+    analyst = login(api, "analyst.cen")
+    r = api.post("/agents/chat", json={"agent": "analyst", "message": "What should I photograph at the meter board?"}, headers=analyst).json()
+    assert r["answered_by"] == "documents" and r["sources"][0]["doc_id"] == "field_evidence_checklist"
+    numbers = api.post("/agents/chat", json={"agent": "analyst", "message": "How many open cases are there?"}, headers=analyst).json()
+    assert numbers["query"] and "answered_by" not in numbers
+    nothing = api.post("/agents/chat", json={"agent": "analyst", "message": "hello there"}, headers=analyst).json()
+    assert "could not match" in nothing["answer"] and "answered_by" not in nothing
+
+
 def test_FR_UI_05_pdf_fallback_without_a_browser(monkeypatch):
     """Without Chromium (e.g. a minimal image) the export still produces a PDF with every line."""
     from pypdf import PdfReader

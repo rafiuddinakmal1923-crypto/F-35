@@ -216,29 +216,29 @@ Full report: `docs/REVIEW_AND_TEST_REPORT.md`. Redesign brief: `docs/UI_UX_DESIG
 <!-- auto:start -->
 ## Auto-generated state (scripts/handoff.py)
 
-- Generated: 2026-10-28T16:17
-- Branch: `claude/integrate`; last commit: `739a27a Integrate: pattern-v2 sub-reasons on the premise page, retuned weights, fresh reports`
-- Tests collected: 152 tests
+- Generated: 2026-10-28T19:35
+- Branch: `claude/weekly-dashboard`; last commit: `314505b Weekly page: dashboard of the week; the full report is the PDF`
+- Tests collected: 162 tests
 - Requirement coverage: see `TRACEABILITY.md`
 - Code graph: `graphify-out/GRAPH_REPORT.md` (open `graphify-out/graph.html` in a browser;
   query with `graphify query "<question>"` or `graphify explain "<name>"`)
 
 ### Graph summary
 
-- 2731 nodes · 6024 edges · 153 communities (143 shown, 10 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 188 edges (avg confidence: 0.93)
+- 2804 nodes · 6223 edges · 158 communities (148 shown, 10 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 200 edges (avg confidence: 0.92)
 - Token cost: 0 input · 0 output
 
 Most connected (core abstractions):
-1. `Caller` - 142 edges
-2. `t()` - 105 edges
-3. `login()` - 70 edges
+1. `Caller` - 145 edges
+2. `t()` - 111 edges
+3. `login()` - 72 edges
 4. `audit()` - 46 edges
-5. `get()` - 42 edges
+5. `get()` - 44 edges
 6. `admin_connection()` - 42 edges
 7. `useLoad()` - 33 edges
 8. `shot()` - 32 edges
-9. `request()` - 30 edges
+9. `render_html()` - 31 edges
 10. `run_detection()` - 29 edges
 
 ### File tree
@@ -269,7 +269,7 @@ Most connected (core abstractions):
 - `reports/ui/`: CHANGES.md, PLAN.md, weekly_report_after.html, weekly_report_after.pdf, weekly_report_after_ms.html, weekly_report_after_ms.pdf, weekly_report_before.html, weekly_report_before.pdf
 - `reports/ui/after/`: assistant_desktop.png, assistant_phone.png, audit_desktop.png, audit_phone.png, backtest_desktop.png, backtest_phone.png, case_desktop.png, case_phone.png, cases_desktop.png, cases_phone.png, data_manager_desktop.png, data_manager_phone.png, ... (+102)
 - `reports/ui/before/`: assistant_desktop.png, assistant_phone.png, audit_desktop.png, audit_phone.png, case_desktop.png, case_phone.png, cases_desktop.png, cases_phone.png, data_manager_desktop.png, data_manager_phone.png, dispatch_desktop.png, dispatch_phone.png, ... (+18)
-- `scripts/`: backtest.py, e2e_use_cases.py, fetch_datasets.py, fetch_docs.py, graph_labels.json, graph_labels.py, handoff.py, handoff.sh, setup_env.py, traceability.py, tunnel.sh, ui_check.py, ... (+1)
+- `scripts/`: _tmp_groups.py, backtest.py, e2e_use_cases.py, fetch_datasets.py, fetch_docs.py, graph_labels.json, graph_labels.py, handoff.py, handoff.sh, setup_env.py, traceability.py, tunnel.sh, ... (+2)
 - `web/`: .dockerignore, .gitignore, Dockerfile, index.html, nginx.conf, package-lock.json, package.json, vite.config.js
 - `web/public/`: icon.svg, manifest.webmanifest, sw.js
 - `web/src/`: App.jsx, api.js, i18n.js, main.jsx, styles.css, theme.js

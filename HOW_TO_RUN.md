@@ -72,7 +72,7 @@ Then open **http://localhost:8080** and sign in with an account it printed.
 
 | Account | Role | Lands on | Can do |
 | --- | --- | --- | --- |
-| `manager.cen`, `manager.nor` | Revenue Protection Manager | Network overview | Zone-level dashboard, weekly summary, second approval of reports, assistant |
+| `manager.cen`, `manager.nor` | Revenue Protection Manager | Network overview | Zone-level dashboard, summary report (daily, weekly, monthly, yearly or own dates), second approval of reports, assistant |
 | `analyst.cen`, `analyst2.cen`, `analyst.nor` | Analyst | My work | Zones, suspects, premises, claim cases, approve report content, assistant |
 | `supervisor.cen`, `supervisor.nor` | Supervisor | My work | Run the case job, approve dispatch, assign teams, team routes, Telegram chat, sign out a lost phone |
 | `inspector.a`, `inspector.b`, `inspector.c` | Field inspector | **Phone app** `…/#/field` | Today's route, case address, record outcomes with photos offline, messages, assistant |
@@ -107,7 +107,7 @@ graphics card when the laptop has an NVIDIA GPU, which plain `docker compose up 
 | `DB_HOST_PORT=15432` | Database port for Power BI; change it if it is taken |
 | `LLM_MODE=mock` or `ollama` | `mock` = no AI model needed. For `ollama`, first run `.\make.ps1 models` (about 5 GB) |
 | `REPORT_MODE=predrafted` or `live` | `live` = the AI writes the report assessment during the demo; use it only with a GPU, and keep `predrafted` as the fallback |
-| `TELEGRAM_BOT_TOKEN=` | Optional real Telegram bot (README "Telegram dispatch bot"). Without it the bot runs inside the app |
+| `TELEGRAM_BOT_TOKEN=` | Optional real Telegram bot (README "Telegram dispatch bot"). It simulates the phone notifications the inspector app will send later. Without it the bot runs inside the app |
 
 ---
 

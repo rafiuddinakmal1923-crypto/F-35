@@ -16,6 +16,20 @@ export function onSessionChange(fn) {
   return () => listeners.delete(fn);
 }
 
+// Assistant conversations, one per user (pages/Assistant.jsx). Only the signed-in user's survives a sign-in
+// change, and none survives signing out.
+export const CHAT_KEY = "vg_chat:";
+
+function dropChats(keepUser) {
+  try {
+    for (const key of Object.keys(sessionStorage)) {
+      if (key.startsWith(CHAT_KEY) && key !== CHAT_KEY + keepUser) sessionStorage.removeItem(key);
+    }
+  } catch {
+    /* storage blocked */
+  }
+}
+
 function setSession(t, u) {
   token = t;
   user = u;
@@ -26,6 +40,7 @@ function setSession(t, u) {
     sessionStorage.removeItem("vg_token");
     sessionStorage.removeItem("vg_user");
   }
+  dropChats(t ? u?.user_id : null);
   listeners.forEach((fn) => fn({ token, user }));
 }
 

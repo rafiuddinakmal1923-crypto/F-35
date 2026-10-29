@@ -1194,8 +1194,80 @@
    "has": []
   },
   {
-   "name": "Notifications (Telegram or console)",
+   "name": "Notifications (in-app chat; Telegram simulates phone alerts in R0)",
    "file": "backend/voltguard/service/notify.py",
+   "has": []
+  },
+  {
+   "name": "Theme, login page and zone map",
+   "file": "web/src/theme.js",
+   "has": []
+  },
+  {
+   "name": "Case page, charts and evidence timeline",
+   "file": "web/src/components/Charts.jsx",
+   "has": [
+    "Case.jsx"
+   ]
+  },
+  {
+   "name": "Weekly summary figures and sending",
+   "file": "backend/voltguard/service/digest.py",
+   "has": []
+  },
+  {
+   "name": "Weekly dashboard page",
+   "file": "web/src/pages/Weekly.jsx",
+   "has": []
+  },
+  {
+   "name": "Web API client, session and saved chats",
+   "file": "web/src/api.js",
+   "has": []
+  },
+  {
+   "name": "Demo reset and warm-up",
+   "file": "backend/voltguard/service/demo.py",
+   "has": []
+  },
+  {
+   "name": "Sign-in API and remote sign-out",
+   "file": "backend/voltguard/api/routes_auth.py",
+   "has": []
+  },
+  {
+   "name": "Canonical tables (schema document)",
+   "file": "backend/voltguard/data/canonical.py",
+   "has": []
+  },
+  {
+   "name": "Map tiles and team route map",
+   "file": "web/src/components/BaseTiles.jsx",
+   "has": []
+  },
+  {
+   "name": "Summary report rules and period tests",
+   "file": "backend/tests/test_digest_render.py",
+   "has": []
+  },
+  {
+   "name": "Rooftop solar tests",
+   "file": "backend/tests/test_solar.py",
+   "has": []
+  },
+  {
+   "name": "Case page: stepper, photos and report approval",
+   "file": "web/src/pages/Case.jsx",
+   "has": []
+  },
+  {
+   "name": "Demo kit: closed cases, RAG index, pre-drafted report",
+   "file": "backend/voltguard/service/seed.py",
+   "has": []
+  },
+  {
+   "name": "Batched nightly run tests",
+   "file": "backend/tests/test_pipeline_batches.py",
    "has": []
   }
  ]

@@ -38,20 +38,23 @@ def mode() -> str:
     return config.llm_mode()
 
 
-def check_prompt(*parts: str) -> None:
+def check_prompt(*parts: str, presidio: bool = True) -> None:
     for part in parts:
-        found = scrubber.scrub(part).found
+        found = scrubber.scrub(part, presidio=presidio).found
         if found:
             raise PromptBlocked(f"prompt held back: it looks like it contains personal details ({', '.join(found)})")
 
 
-def complete(system: str, user: str, timeout: float | None = None, max_tokens: int = 700) -> Completion | None:
+def complete(system: str, user: str, timeout: float | None = None, max_tokens: int = 700, presidio: bool = True) -> Completion | None:
     """Ask the model. Returns None in mock mode or when the model is unavailable (callers then use templates).
 
     The system prompt is a code constant; the user part carries data (questions, facts, passages) and is
     checked for personal details before anything is sent. PromptBlocked is raised in every mode.
+    presidio=False keeps only the Malaysian pattern checks (IC, phone, address), for a user part whose free
+    text was checked in full already: the field assistant checks the question itself fully, then sends it
+    with approved documents, whose capitalised Malay statute words Presidio reads as people's names.
     """
-    check_prompt(user)
+    check_prompt(user, presidio=presidio)
     if mode() != "ollama":
         return None
     url = os.environ.get("OLLAMA_URL", "http://localhost:11434").rstrip("/")

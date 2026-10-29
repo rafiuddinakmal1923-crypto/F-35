@@ -58,27 +58,39 @@ function SignIn({ onSignedIn, notice }) {
   );
 }
 
-function AskBox({ token }) {
+// The questions and answers live in FieldApp's memory, so they survive switching tabs; nothing is written to
+// the phone, and they are gone after signing out or reloading.
+function AskBox({ token, log, setLog }) {
   const [q, setQ] = useState("");
-  const [answer, setAnswer] = useState(null);
+  const [busy, setBusy] = useState(false);
   async function ask(e) {
     e.preventDefault();
+    const question = q.trim();
+    if (!question || busy) return;
+    setBusy(true);
+    let answer;
     try {
-      setAnswer(await call(token, "/agents/chat", { method: "POST", body: { agent: "field", message: q } }));
+      answer = await call(token, "/agents/chat", { method: "POST", body: { agent: "field", message: question } });
     } catch (err) {
-      setAnswer({ answer: err instanceof TypeError ? t("assistantNeedsConnection") : err.message, sources: [] });
+      answer = { answer: err instanceof TypeError ? t("assistantNeedsConnection") : err.message, sources: [] };
     }
+    setLog((items) => [...items, { q: question, answer }].slice(-10));
+    setQ("");
+    setBusy(false);
   }
   return (
     <form className="card stack" onSubmit={ask}>
       <h2>{t("assistant")}</h2>
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("askPlaceholder")} maxLength={1000} aria-label={t("assistant")} />
-      <button type="submit" className="primary" disabled={!q.trim()}>{t("ask")}</button>
-      {answer ? (
-        <div className="notice"><span>{answer.answer}
-          {answer.sources?.length ? <ol>{answer.sources.map((s, i) => <li key={i}><small>{s.title}{s.section ? `, ${s.section}` : ""}</small></li>)}</ol> : null}</span>
+      {log.map((item, i) => (
+        <div key={i} className="stack" style={{ gap: 4 }}>
+          <b>{item.q}</b>
+          <div className="notice"><span>{item.answer.answer}
+            {item.answer.sources?.length ? <ol>{item.answer.sources.map((s, j) => <li key={j}><small>{s.title}{s.section ? `, ${s.section}` : ""}</small></li>)}</ol> : null}</span>
+          </div>
         </div>
-      ) : null}
+      ))}
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("askPlaceholder")} maxLength={1000} aria-label={t("assistant")} />
+      <button type="submit" className="primary" disabled={!q.trim() || busy}>{busy ? "…" : t("ask")}</button>
     </form>
   );
 }
@@ -227,7 +239,9 @@ export default function FieldApp() {
   const [message, setMessage] = useState(null);
   const [notice, setNotice] = useState(null);
   const [tab, setTab] = useState("cases");
+  const [askLog, setAskLog] = useState([]);
   const syncing = useRef(false);
+  useEffect(() => { if (!session) setAskLog([]); }, [session]);
 
   const loadLocal = useCallback(async () => {
     if (await store.enforceMaxAge()) setNotice(t("wipedOld"));
@@ -370,7 +384,7 @@ export default function FieldApp() {
           </>
         ) : <p className="muted">{t("messagesNeedConnection")}</p>
       ) : !item && tab === "assistant" ? (
-        <AskBox token={session.token} />
+        <AskBox token={session.token} log={askLog} setLog={setAskLog} />
       ) : !item && tab === "me" ? (
         <div className="card stack">
           <h2>{session.user.user_id}</h2>

@@ -1,19 +1,22 @@
-"""Weekly manager summary (SDD 9.2 manager view, FR-ML-02 hit rates): one report per region and week.
+"""Manager summary (FR-ML-02 hit rates; the manager's report): one report per region and period.
 
-This module gathers the figures; `digest_render` turns them into rule-based sentences, charts, HTML
-and the PDF (English or Bahasa Melayu). Zone-level and case-level counts only, never premise IDs or
-personal details, so the report is safe for the dashboard, the PDF and a Telegram message alike.
-Two windows, both stated on the page:
-- energy: the last 7 days of meter data against the 7 days before (data arrive daily, not live);
-- work: the last 7 calendar days of cases, visits, reports and alerts.
-Runs on the caller's connection, so row-level security limits it to the caller's region.
+The manager picks the period: a day, a week (the default, also sent on a schedule), a month, a year, or
+their own From-To dates. This module gathers the figures; `digest_render` turns them into rule-based
+sentences, charts, HTML and the PDF (English or Bahasa Melayu). Zone-level and case-level counts only,
+never premise IDs or personal details, so the report is safe for the dashboard, the PDF and a message alike.
+Two windows, both stated on the page (`windows`):
+- energy: the latest period of meter data (data arrive daily, not live), against the period before;
+- work: the same period up to today, for cases, visits, reports and alerts.
+Chosen dates use the same dates for both. Runs on the caller's connection, so row-level security limits
+it to the caller's region.
 """
 
 from __future__ import annotations
 
+import calendar
 import logging
 import math
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 
 import psycopg
 from psycopg.types.json import Jsonb
@@ -64,50 +67,159 @@ def _flagged_at(rows: list[dict], k: int) -> bool:
     return len(over) >= k and all(over[-k:])
 
 
-def build(conn: psycopg.Connection, caller: Caller, now: datetime | None = None) -> dict:
+# --------------------------------------------------------------------------- periods
+
+PERIODS = ("day", "week", "month", "year", "custom")
+CODES = {"day": "DY", "week": "WK", "month": "MO", "year": "YR", "custom": "RG"}
+MAX_DAYS = 731                       # chosen dates: up to two years
+
+
+class PeriodError(ValueError):
+    pass
+
+
+def _back_months(d: date, months: int) -> date:
+    y, m = divmod(d.year * 12 + d.month - 1 - months, 12)
+    return date(y, m + 1, min(d.day, calendar.monthrange(y, m + 1)[1]))
+
+
+def span(period: str, anchor: date) -> tuple[date, date, date, date]:
+    """(from, to, prev_from, prev_to) of a preset period ending on `anchor`.
+
+    day: that day and the day before. week: the 7 days to `anchor` and the 7 before. month and year: the
+    calendar month or year so far, against the same days of the month or year before (the whole of it when
+    `anchor` is its last day), so a month to date is not compared with a full month.
+    """
+    if period == "day":
+        return anchor, anchor, anchor - timedelta(days=1), anchor - timedelta(days=1)
+    if period == "week":
+        return anchor - timedelta(days=6), anchor, anchor - timedelta(days=13), anchor - timedelta(days=7)
+    if period == "month":
+        start = anchor.replace(day=1)
+        prev_start = _back_months(start, 1)
+        full = anchor.day == calendar.monthrange(anchor.year, anchor.month)[1]
+        prev_end = start - timedelta(days=1) if full else _back_months(anchor, 1)
+        return start, anchor, prev_start, prev_end
+    if period == "year":
+        start, prev_start = date(anchor.year, 1, 1), date(anchor.year - 1, 1, 1)
+        prev_end = date(anchor.year - 1, 12, 31) if (anchor.month, anchor.day) == (12, 31) else _back_months(anchor, 12)
+        return start, anchor, prev_start, prev_end
+    raise PeriodError(f"unknown period {period!r}")
+
+
+def windows(period: str, last: date, today: date, start: date | None = None, end: date | None = None) -> dict:
+    """Energy and work windows. Presets: energy ends on the latest meter day, work on today. Chosen dates
+    (period "custom") use the same dates for both, against the same number of days just before."""
+    if period not in PERIODS:
+        raise PeriodError(f"period must be one of {', '.join(PERIODS)}")
+    if period == "custom":
+        if start is None or end is None:
+            raise PeriodError("chosen dates need both from and to")
+        if start > end:
+            raise PeriodError("from must be on or before to")
+        days = (end - start).days + 1
+        if days > MAX_DAYS:
+            raise PeriodError(f"chosen dates may cover at most {MAX_DAYS} days")
+        both = (start, end, start - timedelta(days=days), start - timedelta(days=1))
+        energy = work = both
+    else:
+        energy, work = span(period, last), span(period, today)
+    keys = ("from", "to", "prev_from", "prev_to")
+    return {"energy": dict(zip(keys, energy)), "work": dict(zip(keys, work))}
+
+
+def report_id(region: str, period: str, w: dict) -> str:
+    """VG-WK-CEN-2026-W44 (the week of the work window's end), VG-DY-CEN-2026-10-28, VG-MO-CEN-2026-10,
+    VG-YR-CEN-2026, VG-RG-CEN-20260801-20260831."""
+    end = w["work"]["to"]
+    label = {"day": end.isoformat(), "week": f"{end.isocalendar().year}-W{end.isocalendar().week:02d}",
+             "month": f"{end:%Y-%m}", "year": f"{end:%Y}",
+             "custom": f"{w['work']['from']:%Y%m%d}-{end:%Y%m%d}"}[period]
+    return f"VG-{CODES[period]}-{region}-{label}"
+
+
+def _blocks(first: date, last: date, size: int, prev_first: date) -> list[tuple[date, date]]:
+    """Chart points: blocks of `size` days from the period's first day forward, and back from the day before
+    it, so a block never straddles the start of the period."""
+    out, d = [], first
+    while d <= last:
+        out.append((d, min(d + timedelta(days=size - 1), last)))
+        d += timedelta(days=size)
+    d = first - timedelta(days=1)
+    while d >= prev_first:
+        out.insert(0, (max(d - timedelta(days=size - 1), prev_first), d))
+        d -= timedelta(days=size)
+    return out
+
+
+def series(daily: dict[date, dict], first: date, last: date, prev_first: date) -> tuple[list[dict], int]:
+    """Region gap per point (kWh/day) with its margin: daily for periods up to a month, then weekly (or 30-day
+    for chosen dates over 400 days) averages so a year stays readable. The margin of an n-day average is √Σu² / n."""
+    days = (last - first).days + 1
+    size = 1 if days <= 31 else 7 if days <= 400 else 30
+    out = []
+    for a, b in _blocks(first, last, size, prev_first):
+        pts = [v for d, v in daily.items() if a <= d <= b]
+        if pts:
+            out.append({"date": a.isoformat(), "to": b.isoformat(), "days": len(pts),
+                        "gap_kwh": round(sum(p["gap"] for p in pts) / len(pts)),
+                        "margin_kwh": round(math.sqrt(sum(p["u2"] for p in pts)) / len(pts))})
+    return out, size
+
+
+def _start_of(d: date) -> datetime:
+    return datetime.combine(d, time.min, MYT)
+
+
+def build(conn: psycopg.Connection, caller: Caller, now: datetime | None = None, period: str = "week",
+          start: date | None = None, end: date | None = None) -> dict:
     now = now or datetime.now(timezone.utc)
-    week_ago, two_weeks_ago = now - timedelta(days=7), now - timedelta(days=14)
     cfg = settings.thresholds(conn)
     zc, cc = cfg["zone"], cfg["cases"]
     k = int(zc["consecutive_days"])
     myt = now.astimezone(MYT)
-    iso = myt.isocalendar()
-    base = {"region": caller.region, "generated_at": now.isoformat(), "generated_myt": myt.isoformat(timespec="minutes"),
-            "report_id": f"VG-WK-{caller.region}-{iso.year}-W{iso.week:02d}"}
     last = conn.execute("SELECT max(date) AS d FROM zone_daily_balance").fetchone()["d"]
+    w = windows(period, last or myt.date(), myt.date(), start, end)
+    ew, ww = w["energy"], w["work"]
+    base = {"region": caller.region, "generated_at": now.isoformat(), "generated_myt": myt.isoformat(timespec="minutes"),
+            "report_id": report_id(caller.region, period, w),
+            "period": {"kind": period, "days": (ww["to"] - ww["from"]).days + 1}}
     if last is None:
         return {**base, "empty": True, "message": "No detection results yet."}
+    # Work window as times: from the first day's midnight (MYT) up to, not including, the day after the last.
+    w_from, w_to = _start_of(ww["from"]), _start_of(ww["to"] + timedelta(days=1))
+    p_from, p_to = _start_of(ww["prev_from"]), _start_of(ww["prev_to"] + timedelta(days=1))
 
     run = conn.execute("SELECT run_date, model_version, data_sources FROM detection_run WHERE status = 'done' "
                        "ORDER BY run_id DESC LIMIT 1").fetchone() or {}
     sources = (run.get("data_sources") or {}) if run else {}
     simulated = sources.get("meter_reading", "simulated") == "simulated"
 
-    # Energy: daily rows per zone for the two meter weeks (plus k days so last week's flag state is known).
+    # Energy: daily rows per zone for both meter periods (plus k days so the earlier period's flag state is known).
     rows = conn.execute(
         """SELECT b.transformer_id, t.district, b.date, b.gap_kwh, b.gap_pct, b.uncertainty_kwh, b.supplied_kwh,
                   b.over_threshold, b.balance_available
            FROM zone_daily_balance b JOIN transformer t USING (transformer_id)
-           WHERE b.date > %s::date - %s ORDER BY b.transformer_id, b.date""", (last, 14 + k)).fetchall()
+           WHERE b.date BETWEEN %s AND %s ORDER BY b.transformer_id, b.date""",
+        (ew["prev_from"] - timedelta(days=k), ew["to"])).fetchall()
     by_zone: dict[str, list[dict]] = {}
     for r in rows:
         by_zone.setdefault(r["transformer_id"], []).append(r)
-    week_start = last - timedelta(days=6)
-    prev_start, prev_end = last - timedelta(days=13), last - timedelta(days=7)
+    in_now = lambda d: ew["from"] <= d <= ew["to"]                # noqa: E731
+    in_prev = lambda d: ew["prev_from"] <= d <= ew["prev_to"]     # noqa: E731
 
     daily: dict[date, dict] = {}
     for r in rows:
-        if not r["balance_available"] or r["date"] < prev_start:
+        if not r["balance_available"] or not (in_now(r["date"]) or in_prev(r["date"])):
             continue
         d = daily.setdefault(r["date"], {"gap": 0.0, "u2": 0.0})
         d["gap"] += float(r["gap_kwh"] or 0)
         d["u2"] += float(r["uncertainty_kwh"] or 0) ** 2
-    daily_gap = [{"date": d.isoformat(), "gap_kwh": round(v["gap"]), "margin_kwh": round(math.sqrt(v["u2"]))}
-                 for d, v in sorted(daily.items())]
-    this_week = [p["gap_kwh"] for p in daily_gap if p["date"] >= week_start.isoformat()]
-    prev_week = [p["gap_kwh"] for p in daily_gap if p["date"] <= prev_end.isoformat()]
-    avg_now, avg_before = _avg(this_week), _avg(prev_week)
-    margin_now = _avg([p["margin_kwh"] for p in daily_gap if p["date"] >= week_start.isoformat()])
+    gap_series, bucket = series(daily, ew["from"], ew["to"], ew["prev_from"])
+    now_days = sorted(d for d in daily if in_now(d))
+    avg_now = _avg([v["gap"] for d, v in daily.items() if in_now(d)])
+    avg_before = _avg([v["gap"] for d, v in daily.items() if in_prev(d)])
+    margin_now = _avg([math.sqrt(v["u2"]) for d, v in daily.items() if in_now(d)])
 
     latest = {z["transformer_id"]: z for z in conn.execute(
         """SELECT transformer_id, district, balance_available, flagged, priority, gap_start, gap_since_start, flatness_cv
@@ -126,17 +238,21 @@ def build(conn: psycopg.Connection, caller: Caller, now: datetime | None = None)
         if not info.get("balance_available", zrows[-1]["balance_available"]):
             no_balance.append({"transformer_id": tx, "district": zrows[0]["district"], "open_cases": open_cases.get(tx, 0)})
             continue
-        week = [r for r in zrows if r["date"] >= week_start]
-        supply = _avg([float(r["supplied_kwh"] or 0) for r in week]) or 0.0
+        period_rows = [r for r in zrows if in_now(r["date"])]
+        flagged_prev += _flagged_at([r for r in zrows if r["date"] <= ew["prev_to"]], k)
+        if not period_rows:
+            continue           # no meter data for this zone in the period: nothing to show for it
+        supply = _avg([float(r["supplied_kwh"] or 0) for r in period_rows]) or 0.0
         threshold = max(zc["share_of_supply"] * supply, zc["min_gap_kwh_per_day"])
-        flagged_prev += _flagged_at([r for r in zrows if r["date"] <= prev_end], k)
+        # The latest run's flag describes the latest meter day; a period ending earlier uses the flag rule on its own last day.
+        flagged = info.get("flagged") if ew["to"] >= last and "flagged" in info else _flagged_at([r for r in zrows if r["date"] <= ew["to"]], k)
         zones.append({
             "transformer_id": tx, "district": info.get("district") or zrows[0]["district"],
-            "gap_kwh_per_day": round(_avg([float(r["gap_kwh"] or 0) for r in week]) or 0, 1),
-            "gap_pct": round((_avg([float(r["gap_pct"] or 0) for r in week]) or 0) * 100, 2),
-            "margin_kwh": round(_avg([float(r["uncertainty_kwh"] or 0) for r in week]) or 0, 1),
+            "gap_kwh_per_day": round(_avg([float(r["gap_kwh"] or 0) for r in period_rows]) or 0, 1),
+            "gap_pct": round((_avg([float(r["gap_pct"] or 0) for r in period_rows]) or 0) * 100, 2),
+            "margin_kwh": round(_avg([float(r["uncertainty_kwh"] or 0) for r in period_rows]) or 0, 1),
             "threshold_kwh": round(threshold, 1), "supply_kwh_per_day": round(supply),
-            "flagged": bool(info.get("flagged", _flagged_at(zrows, k))), "priority": info.get("priority") or "normal",
+            "flagged": bool(flagged), "priority": info.get("priority") or "normal",
             "gap_start": info["gap_start"].isoformat() if info.get("gap_start") else None,
             "gap_since_start": bool(info.get("gap_since_start")), "flatness_cv": info.get("flatness_cv"),
             "open_cases": open_cases.get(tx, 0), "suspects_without_case": waiting.get(tx, 0),
@@ -145,19 +261,21 @@ def build(conn: psycopg.Connection, caller: Caller, now: datetime | None = None)
     flagged_now = sum(z["flagged"] for z in zones)
     above = sum(max(0.0, z["gap_kwh_per_day"] - z["threshold_kwh"]) for z in zones)
 
-    # Work: cases, visits, reports and alerts in the last 7 calendar days (and the 7 before).
+    # Work: cases, visits, reports and alerts in the work window (and the period before).
     work = conn.execute(
-        """SELECT count(*) FILTER (WHERE created_at >= %(w)s) AS opened,
-                  count(*) FILTER (WHERE created_at >= %(w2)s AND created_at < %(w)s) AS opened_prev,
-                  count(*) FILTER (WHERE closed_at >= %(w)s) AS closed,
-                  count(*) FILTER (WHERE closed_at >= %(w2)s AND closed_at < %(w)s) AS closed_prev,
+        """SELECT count(*) FILTER (WHERE created_at >= %(w)s AND created_at < %(we)s) AS opened,
+                  count(*) FILTER (WHERE created_at >= %(p)s AND created_at < %(pe)s) AS opened_prev,
+                  count(*) FILTER (WHERE closed_at >= %(w)s AND closed_at < %(we)s) AS closed,
+                  count(*) FILTER (WHERE closed_at >= %(p)s AND closed_at < %(pe)s) AS closed_prev,
                   count(*) FILTER (WHERE status = 'closed') AS closed_total,
                   count(*) FILTER (WHERE status = 'assigned' AND assigned_at < %(overdue)s) AS overdue
            FROM inspection_case""",
-        {"w": week_ago, "w2": two_weeks_ago, "overdue": now - timedelta(hours=cfg["dispatch"]["escalation_hours"])}).fetchone()
+        {"w": w_from, "we": w_to, "p": p_from, "pe": p_to,
+         "overdue": now - timedelta(hours=cfg["dispatch"]["escalation_hours"])}).fetchone()
     status = {s["status"]: s["n"] for s in conn.execute("SELECT status, count(*) AS n FROM inspection_case GROUP BY status").fetchall()}
-    outcomes_week = {o["outcome"]: o["n"] for o in conn.execute(
-        "SELECT outcome, count(*) AS n FROM inspection_outcome WHERE recorded_at >= %s GROUP BY outcome", (week_ago,)).fetchall()}
+    outcomes_period = {o["outcome"]: o["n"] for o in conn.execute(
+        "SELECT outcome, count(*) AS n FROM inspection_outcome WHERE recorded_at >= %s AND recorded_at < %s GROUP BY outcome",
+        (w_from, w_to)).fetchall()}
     # All time = the same outcomes the hit rates learn from (training_label): live visits plus historic ones.
     outcomes_all = {o["outcome"]: o["n"] for o in conn.execute(
         """SELECT outcome, count(*) AS n FROM (SELECT outcome FROM inspection_outcome UNION ALL SELECT outcome FROM historic_outcome) o
@@ -172,17 +290,18 @@ def build(conn: psycopg.Connection, caller: Caller, now: datetime | None = None)
                                 "hit_rate_pct": round(h["confirmed"] / h["inspections"] * 100, 1) if h["inspections"] else None,
                                 "ci_low_pct": round(ci[0] * 100, 1) if ci else None, "ci_high_pct": round(ci[1] * 100, 1) if ci else None}
     reports = conn.execute(
-        """SELECT count(*) FILTER (WHERE export_approved_at >= %s) AS n, count(*) FILTER (WHERE export_approved_at >= %s
-           AND export_approved_at < %s) AS prev FROM case_report""", (week_ago, two_weeks_ago, week_ago)).fetchone()
+        """SELECT count(*) FILTER (WHERE export_approved_at >= %s AND export_approved_at < %s) AS n,
+                  count(*) FILTER (WHERE export_approved_at >= %s AND export_approved_at < %s) AS prev FROM case_report""",
+        (w_from, w_to, p_from, p_to)).fetchone()
     alerts = conn.execute(
-        """SELECT count(*) FILTER (WHERE acknowledged_by IS NULL) AS open, count(*) FILTER (WHERE ts >= %s) AS week
-           FROM alert WHERE region IN (%s, '*')""", (week_ago, caller.region)).fetchone()
+        """SELECT count(*) FILTER (WHERE acknowledged_by IS NULL) AS open, count(*) FILTER (WHERE ts >= %s AND ts < %s) AS period
+           FROM alert WHERE region IN (%s, '*')""", (w_from, w_to, caller.region)).fetchone()
 
-    # Data quality for the meter week, fallbacks in use, and the model.
+    # Data quality for the meter period, fallbacks in use, and the model.
     meters = conn.execute("SELECT count(*) FILTER (WHERE meter_type = 'smart') AS smart, count(*) AS total FROM meter").fetchone()
     short_days = conn.execute(
         "SELECT count(*) AS n FROM data_quality_flag WHERE date BETWEEN %s AND %s AND run_date = (SELECT max(run_date) FROM data_quality_flag)",
-        (week_start, last)).fetchone()["n"]
+        (ew["from"], ew["to"])).fetchone()["n"]
     notes = conn.execute("SELECT loss_method, voltage->>'method' AS vmethod, voltage->>'confidence' AS vconf FROM zone_run "
                          "WHERE run_date = (SELECT max(run_date) FROM zone_run)").fetchall()
     solar_registrations = conn.execute("SELECT count(*) AS n FROM account_event WHERE event_type = 'solar_registration'").fetchone()["n"]
@@ -210,11 +329,16 @@ def build(conn: psycopg.Connection, caller: Caller, now: datetime | None = None)
 
     rate = tariff()
     kwh_month = round(avg_now * 30) if avg_now is not None else None
+    iso = lambda win: {key: v.isoformat() for key, v in win.items()}    # noqa: E731
     return {
         **base, "empty": False,
-        "energy_window": {"from": week_start.isoformat(), "to": last.isoformat()},
-        "work_window": {"from": week_ago.astimezone(MYT).date().isoformat(), "to": myt.date().isoformat()},
-        "window_gap_days": (myt.date() - last).days,
+        "period": {**base["period"], "bucket_days": bucket},
+        "energy_window": iso(ew),
+        "work_window": iso(ww),
+        # Meter days with data inside the energy window (a year of a two-month dataset has 61 of 365).
+        "energy_data": {"from": now_days[0].isoformat() if now_days else None, "to": now_days[-1].isoformat() if now_days else None,
+                        "days": len(now_days), "of": (ew["to"] - ew["from"]).days + 1},
+        "window_gap_days": (ww["to"] - ew["to"]).days,
         "data_mode": {"simulated": simulated, "outcomes_simulated": sources.get("inspection_outcome", "simulated") == "simulated",
                       "sources": sources},
         "kpis": {"flagged_zones": flagged_now, "flagged_zones_prev": flagged_prev, "zones_with_balance": len(zones),
@@ -228,20 +352,21 @@ def build(conn: psycopg.Connection, caller: Caller, now: datetime | None = None)
                  "cases_opened": work["opened"], "cases_closed": work["closed"], "cases_opened_prev": work["opened_prev"],
                  "cases_closed_prev": work["closed_prev"], "cases_closed_total": work["closed_total"], "cases_overdue": work["overdue"],
                  "reports_exported": reports["n"], "reports_exported_prev": reports["prev"], "open_alerts": alerts["open"],
-                 "alerts_this_week": alerts["week"]},
+                 "alerts_in_period": alerts["period"]},
         "region_margin_kwh": round(margin_now) if margin_now is not None else None,
-        "week_average": {"this": round(avg_now) if avg_now is not None else None, "prev": round(avg_before) if avg_before is not None else None},
-        "daily_gap": daily_gap,
+        "period_average": {"this": round(avg_now) if avg_now is not None else None, "prev": round(avg_before) if avg_before is not None else None},
+        "gap_series": gap_series,
         "zones": zones,
         "no_balance_zones": no_balance,
         "top_zones": [{k2: z[k2] for k2 in ("transformer_id", "district", "gap_kwh_per_day", "gap_pct", "flagged")} for z in zones[:5]],
         "value": {"kwh_per_month": kwh_month, "kwh_per_month_above_threshold": round(above * 30),
                   "rm_per_kwh": rate["rm_per_kwh"], "tariff_source": rate["source"]},
         "cases_by_status": status,
-        "outcomes_this_week": outcomes_week,
+        "outcomes_in_period": outcomes_period,
         "outcomes_all_time": outcomes_all,
         "hit_rates": hit_rates,
-        "quality": {"meter_days_complete_pct": round(100 - short_days / max(meters["smart"] * 7, 1) * 100, 1) if meters["smart"] else None,
+        "quality": {"meter_days_complete_pct": (round(100 - short_days / max(meters["smart"] * len(now_days), 1) * 100, 1)
+                                                if meters["smart"] and now_days else None),
                     "monthly_read_pct": round((meters["total"] - meters["smart"]) / meters["total"] * 100, 1) if meters["total"] else None,
                     "zones_without_dtm": len(no_balance), "fallbacks": fallbacks},
         "solar": {"tagged": solar["tagged"], "suspected": solar["suspected"],
